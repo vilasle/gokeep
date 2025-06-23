@@ -77,7 +77,7 @@ func Test_Usepass_Save(t *testing.T) {
 			successEncrypt: true,
 		},
 		{
-			name:     "new user, need to add, got encryption error",
+			name:     "new usepass, need to add, got encryption error",
 			login:    "test1",
 			password: "password1",
 			srcData:  []byte("test1\npassword1"),
@@ -91,7 +91,7 @@ func Test_Usepass_Save(t *testing.T) {
 			successEncrypt: false,
 		},
 		{
-			name:     "new user, need to add, got saving private data error",
+			name:     "new usepass, need to add, got saving private data error",
 			login:    "test1",
 			password: "password1",
 			srcData:  []byte("test1\npassword1"),
@@ -209,7 +209,7 @@ func Test_Usepass_decryptData(t *testing.T) {
 			defer ctrl.Finish()
 			enc := NewMockEncrypter(ctrl)
 
-			behavior(enc, *tt.ed, tt.data, tt.err)
+			behavior(enc, *tt.ed, tt.data, tt.encErr)
 
 			usepass := newUsepass(nil, "", "")
 			usepass.encryptedData = tt.ed

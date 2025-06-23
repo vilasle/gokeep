@@ -101,7 +101,7 @@ func findBankCardByID(ctx context.Context, id int64, r PrivateDataRepository) (*
 
 	u, ok := data.(*BankCard)
 	if !ok {
-		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*Usepass'", id)
+		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*BankCard'", id)
 	}
 
 	return u, nil
