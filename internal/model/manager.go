@@ -1,6 +1,9 @@
 package model
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type ModelType = int8
 
@@ -85,6 +88,24 @@ func (c *usepassManager) FindByID(ctx context.Context, id int64) (*Usepass, erro
 type bankCardManager struct {
 	pvRepository  PrivateDataRepository
 	encRepository EncryptedDataRepository
+}
+
+func (c *bankCardManager) New(owner *User, number string, cvv int, expirationDate time.Time) *BankCard {
+	bankCard := newBankCard(owner, number, cvv, expirationDate)
+	bankCard.dataRepository = c.pvRepository
+	bankCard.encryptionRepository = c.encRepository
+	return bankCard
+}
+
+func (c *bankCardManager) FindByID(ctx context.Context, id int64) (*BankCard, error) {
+	//TODO add logger
+	usepass, err := findBankCardByID(ctx, id, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	usepass.dataRepository = c.pvRepository
+	usepass.encryptionRepository = c.encRepository
+	return usepass, nil
 }
 
 type plainTextManager struct {
