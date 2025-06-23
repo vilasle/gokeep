@@ -1,5 +1,7 @@
 package model
 
+import "context"
+
 type ModelType = int8
 
 const (
@@ -33,7 +35,7 @@ func (c *userManager) New(login, password string) *User {
 }
 
 // FindByLogin  finds a user by login on repository, return ErrUserNotFound if not found
-func (c *userManager) FindByLogin(login string) (*User, error) {
+func (c *userManager) FindByLogin(ctx context.Context, login string) (*User, error) {
 	//TODO add logger
-	return findUserByLogin(login, c.repository)
+	return findUserByLogin(ctx, login, c.repository)
 }

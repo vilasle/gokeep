@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -30,8 +31,8 @@ func Test_userManager_New(t *testing.T) {
 		repository: repository,
 	}
 	expected := &User{
-		Login:    "test",
-		Password: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+		login:    "test",
+		password: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
 		r:        repository,
 	}
 
@@ -46,17 +47,17 @@ func Test_userManager_Find(t *testing.T) {
 	repository := NewMockUserRepository(ctrl)
 
 	expected := &User{
-		Login:    "test",
-		Password: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+		login:    "test",
+		password: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
 		r:        repository,
 	}
-
-	repository.EXPECT().Get("test").Return(expected, nil)
+	ctx := context.Background()
+	repository.EXPECT().Get(ctx, "test").Return(expected, nil)
 
 	manager := userManager{
 		repository: repository,
 	}
 
-	u, _ := manager.FindByLogin("test")
+	u, _ := manager.FindByLogin(ctx, "test")
 	assert.Equal(t, expected, u)
 }

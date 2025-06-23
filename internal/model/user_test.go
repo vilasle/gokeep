@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -9,11 +10,11 @@ import (
 )
 
 func TestUser_Save(t *testing.T) {
-	behavior := func(m *MockUserRepository, user *User, err error) {
-		if user.ID == 0 {
-			m.EXPECT().Add(user).Return(err)
+	behavior := func(m *MockUserRepository, ctx context.Context, user *User, err error) {
+		if user.id == 0 {
+			m.EXPECT().Add(ctx, user).Return(err)
 		} else {
-			m.EXPECT().Update(user).Return(err)
+			m.EXPECT().Update(ctx, user).Return(err)
 		}
 	}
 	testCases := []struct {
@@ -66,20 +67,20 @@ func TestUser_Save(t *testing.T) {
 			}
 
 			user := newUser(tt.login, tt.password, r)
-			user.ID = tt.id
+			user.id = tt.id
+			ctx := context.Background()
+			behavior(r, ctx, user, testError)
 
-			behavior(r, user, testError)
-
-			err := user.Save()
+			err := user.Save(ctx)
 			assert.Equal(t, tt.success, err == nil)
 		})
 	}
 }
 
 func TestUser_Delete(t *testing.T) {
-	behavior := func(m *MockUserRepository, user *User, err error) {
-		if user.ID > 0 {
-			m.EXPECT().Delete(user).Return(err)
+	behavior := func(m *MockUserRepository, ctx context.Context, user *User, err error) {
+		if user.id > 0 {
+			m.EXPECT().Delete(ctx, user).Return(err)
 		}
 	}
 	testCases := []struct {
@@ -125,11 +126,11 @@ func TestUser_Delete(t *testing.T) {
 			}
 
 			user := newUser(tt.login, tt.password, r)
-			user.ID = tt.id
+			user.id = tt.id
+			ctx := context.Background()
+			behavior(r, ctx, user, testError)
 
-			behavior(r, user, testError)
-
-			err := user.Delete()
+			err := user.Delete(ctx)
 			assert.Equal(t, tt.success, err == nil)
 		})
 	}
@@ -223,9 +224,9 @@ func Test_findUserByLogin(t *testing.T) {
 			login:    "test",
 			password: "password",
 			expected: &User{
-				ID:       1,
-				Login:    "test",
-				Password: "5e884898da28047151d42d8",
+				id:       1,
+				login:    "test",
+				password: "5e884898da28047151d42d8",
 			},
 		},
 	}
@@ -234,10 +235,11 @@ func Test_findUserByLogin(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			ctx := context.Background()
 			r := NewMockUserRepository(ctrl)
-			r.EXPECT().Get(tt.login).Return(tt.expected, nil)
+			r.EXPECT().Get(ctx, tt.login).Return(tt.expected, nil)
 
-			actual, err := findUserByLogin(tt.login, r)
+			actual, err := findUserByLogin(ctx, tt.login, r)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})

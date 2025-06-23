@@ -5,6 +5,7 @@
 package model
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -71,58 +72,283 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockUserRepository) Add(arg0 *User) error {
+func (m *MockUserRepository) Add(arg0 context.Context, arg1 *User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Add", arg0)
+	ret := m.ctrl.Call(m, "Add", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Add indicates an expected call of Add.
-func (mr *MockUserRepositoryMockRecorder) Add(arg0 interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Add(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockUserRepository)(nil).Add), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockUserRepository)(nil).Add), arg0, arg1)
 }
 
 // Delete mocks base method.
-func (m *MockUserRepository) Delete(arg0 *User) error {
+func (m *MockUserRepository) Delete(arg0 context.Context, arg1 *User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockUserRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepository)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepository)(nil).Delete), arg0, arg1)
 }
 
 // Get mocks base method.
-func (m *MockUserRepository) Get(arg0 string) (*User, error) {
+func (m *MockUserRepository) Get(arg0 context.Context, arg1 string) (*User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", arg0)
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockUserRepositoryMockRecorder) Get(arg0 interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepository)(nil).Get), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepository)(nil).Get), arg0, arg1)
 }
 
 // Update mocks base method.
-func (m *MockUserRepository) Update(arg0 *User) error {
+func (m *MockUserRepository) Update(arg0 context.Context, arg1 *User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), arg0, arg1)
+}
+
+// MockPrivateData is a mock of PrivateData interface.
+type MockPrivateData struct {
+	ctrl     *gomock.Controller
+	recorder *MockPrivateDataMockRecorder
+}
+
+// MockPrivateDataMockRecorder is the mock recorder for MockPrivateData.
+type MockPrivateDataMockRecorder struct {
+	mock *MockPrivateData
+}
+
+// NewMockPrivateData creates a new mock instance.
+func NewMockPrivateData(ctrl *gomock.Controller) *MockPrivateData {
+	mock := &MockPrivateData{ctrl: ctrl}
+	mock.recorder = &MockPrivateDataMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPrivateData) EXPECT() *MockPrivateDataMockRecorder {
+	return m.recorder
+}
+
+// EncryptedData mocks base method.
+func (m *MockPrivateData) EncryptedData() EncryptedData {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EncryptedData")
+	ret0, _ := ret[0].(EncryptedData)
+	return ret0
+}
+
+// EncryptedData indicates an expected call of EncryptedData.
+func (mr *MockPrivateDataMockRecorder) EncryptedData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EncryptedData", reflect.TypeOf((*MockPrivateData)(nil).EncryptedData))
+}
+
+// ID mocks base method.
+func (m *MockPrivateData) ID() int64 {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ID")
+	ret0, _ := ret[0].(int64)
+	return ret0
+}
+
+// ID indicates an expected call of ID.
+func (mr *MockPrivateDataMockRecorder) ID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockPrivateData)(nil).ID))
+}
+
+// Owner mocks base method.
+func (m *MockPrivateData) Owner() *User {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Owner")
+	ret0, _ := ret[0].(*User)
+	return ret0
+}
+
+// Owner indicates an expected call of Owner.
+func (mr *MockPrivateDataMockRecorder) Owner() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Owner", reflect.TypeOf((*MockPrivateData)(nil).Owner))
+}
+
+// MockPrivateDataRepository is a mock of PrivateDataRepository interface.
+type MockPrivateDataRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockPrivateDataRepositoryMockRecorder
+}
+
+// MockPrivateDataRepositoryMockRecorder is the mock recorder for MockPrivateDataRepository.
+type MockPrivateDataRepositoryMockRecorder struct {
+	mock *MockPrivateDataRepository
+}
+
+// NewMockPrivateDataRepository creates a new mock instance.
+func NewMockPrivateDataRepository(ctrl *gomock.Controller) *MockPrivateDataRepository {
+	mock := &MockPrivateDataRepository{ctrl: ctrl}
+	mock.recorder = &MockPrivateDataRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPrivateDataRepository) EXPECT() *MockPrivateDataRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Add mocks base method.
+func (m *MockPrivateDataRepository) Add(arg0 context.Context, arg1 PrivateData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Add", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Add indicates an expected call of Add.
+func (mr *MockPrivateDataRepositoryMockRecorder) Add(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockPrivateDataRepository)(nil).Add), arg0, arg1)
+}
+
+// Delete mocks base method.
+func (m *MockPrivateDataRepository) Delete(arg0 context.Context, arg1 PrivateData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockPrivateDataRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockPrivateDataRepository)(nil).Delete), arg0, arg1)
+}
+
+// Get mocks base method.
+func (m *MockPrivateDataRepository) Get(arg0 context.Context, arg1 int64) (PrivateData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret0, _ := ret[0].(PrivateData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockPrivateDataRepositoryMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPrivateDataRepository)(nil).Get), arg0, arg1)
+}
+
+// Update mocks base method.
+func (m *MockPrivateDataRepository) Update(arg0 context.Context, arg1 PrivateData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPrivateDataRepositoryMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPrivateDataRepository)(nil).Update), arg0, arg1)
+}
+
+// MockEncryptedDataRepository is a mock of EncryptedDataRepository interface.
+type MockEncryptedDataRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockEncryptedDataRepositoryMockRecorder
+}
+
+// MockEncryptedDataRepositoryMockRecorder is the mock recorder for MockEncryptedDataRepository.
+type MockEncryptedDataRepositoryMockRecorder struct {
+	mock *MockEncryptedDataRepository
+}
+
+// NewMockEncryptedDataRepository creates a new mock instance.
+func NewMockEncryptedDataRepository(ctrl *gomock.Controller) *MockEncryptedDataRepository {
+	mock := &MockEncryptedDataRepository{ctrl: ctrl}
+	mock.recorder = &MockEncryptedDataRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockEncryptedDataRepository) EXPECT() *MockEncryptedDataRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Add mocks base method.
+func (m *MockEncryptedDataRepository) Add(arg0 context.Context, arg1 *EncryptedData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Add", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Add indicates an expected call of Add.
+func (mr *MockEncryptedDataRepositoryMockRecorder) Add(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockEncryptedDataRepository)(nil).Add), arg0, arg1)
+}
+
+// Delete mocks base method.
+func (m *MockEncryptedDataRepository) Delete(arg0 context.Context, arg1 *EncryptedData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockEncryptedDataRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockEncryptedDataRepository)(nil).Delete), arg0, arg1)
+}
+
+// Get mocks base method.
+func (m *MockEncryptedDataRepository) Get(arg0 context.Context, arg1 int64) (*EncryptedData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", arg0, arg1)
+	ret0, _ := ret[0].(*EncryptedData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockEncryptedDataRepositoryMockRecorder) Get(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockEncryptedDataRepository)(nil).Get), arg0, arg1)
+}
+
+// Update mocks base method.
+func (m *MockEncryptedDataRepository) Update(arg0 context.Context, arg1 *EncryptedData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockEncryptedDataRepositoryMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockEncryptedDataRepository)(nil).Update), arg0, arg1)
 }

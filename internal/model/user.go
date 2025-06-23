@@ -1,59 +1,58 @@
 package model
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"time"
 )
 
 // User - presentation user in storage, keep login by creating user and checking password
 type User struct {
-	ID    int64
-	Login string
+	id    int64
+	login string
 	//hashed password
-	Password  string
-	CreatedAt time.Time
-	r         UserRepository
+	password string
+	r        UserRepository
 }
 
 // newUser - create new user and create password hash
 func newUser(login, password string, r UserRepository) *User {
 	return &User{
-		Login:    login,
-		Password: hash256(password),
+		login:    login,
+		password: hash256(password),
 		r:        r,
 	}
 }
 
 // PasswordIsValid - check matching passwords
 func (u *User) PasswordIsValid(password string) bool {
-	return u.Password == hash256(password)
-}
-
-// IsExists - return false if user does not exists in storage
-func (u *User) IsExists() bool {
-	return u.ID > 0
+	return u.password == hash256(password)
 }
 
 // Save - save user to storage
-func (u *User) Save() error {
-	if u.IsExists() {
-		return u.update()
+func (u *User) Save(ctx context.Context) error {
+	if u.isExists() {
+		return u.update(ctx)
 	}
-	return u.add()
+	return u.add(ctx)
 }
 
 // Delete - delete user from storage
-func (u *User) Delete() error {
-	if !u.IsExists() {
-		return ErrUserNotExists
+func (u *User) Delete(ctx context.Context) error {
+	if u.isExists() {
+		return u.delete(ctx)
 	}
-	return u.delete()
+	return ErrUserNotExists
+}
+
+// isExists - return false if user does not exists in storage
+func (u *User) isExists() bool {
+	return u.id > 0
 }
 
 // add - add new user to storage
-func (u *User) add() error {
-	if err := u.r.Add(u); err != nil {
+func (u *User) add(ctx context.Context) error {
+	if err := u.r.Add(ctx, u); err != nil {
 		return err
 	}
 	return nil
@@ -61,16 +60,16 @@ func (u *User) add() error {
 }
 
 // update - update user in storage
-func (u *User) update() error {
-	if err := u.r.Update(u); err != nil {
+func (u *User) update(ctx context.Context) error {
+	if err := u.r.Update(ctx, u); err != nil {
 		return err
 	}
 	return nil
 }
 
 // delete - delete user from storage
-func (u *User) delete() error {
-	if err := u.r.Delete(u); err != nil {
+func (u *User) delete(ctx context.Context) error {
+	if err := u.r.Delete(ctx, u); err != nil {
 		return err
 	}
 	return nil
@@ -87,6 +86,6 @@ func hash256(v string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func findUserByLogin(login string, r UserRepository) (*User, error) {
-	return r.Get(login)
+func findUserByLogin(ctx context.Context, login string, r UserRepository) (*User, error) {
+	return r.Get(ctx, login)
 }
