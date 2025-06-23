@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -15,8 +16,12 @@ func Test_NewModelManager(t *testing.T) {
 	m := NewMockRepositoryCollector(ctrl)
 
 	ur := NewMockUserRepository(ctrl)
+	pvR := NewMockPrivateDataRepository(ctrl)
+	encR := NewMockEncryptedDataRepository(ctrl)
 
 	m.EXPECT().User().Return(ur)
+	m.EXPECT().Private().Return(pvR).Times(3)
+	m.EXPECT().Encryption().Return(encR).Times(3)
 
 	NewModelManager(m)
 }
@@ -60,4 +65,83 @@ func Test_userManager_Find(t *testing.T) {
 
 	u, _ := manager.FindByLogin(ctx, "test")
 	assert.Equal(t, expected, u)
+}
+
+func Test_usepassManager_New(t *testing.T) {
+	manager := usepassManager{
+		pvRepository:  nil,
+		encRepository: nil,
+	}
+
+	user := newUser("test", "test", nil)
+
+	expected := &Usepass{
+		Model: Model{
+			owner: user,
+		},
+		login:    "test",
+		password: "password",
+	}
+
+	usepass := manager.New(user, "test", "password")
+
+	assert.Equal(t, expected, usepass)
+}
+
+func Test_usepassManager_FindByID(t *testing.T) {
+	testCases := []struct {
+		name     string
+		id       int64
+		expected *Usepass
+		err      error
+	}{
+		{
+			name: "usepass is found",
+			id:   1234,
+			expected: &Usepass{
+				Model: Model{
+					id:    1234,
+					owner: newUser("test", "test", nil),
+				},
+				login:    "test",
+				password: "password",
+			},
+			err: nil,
+		},
+		{
+			name:     "usepass is not found",
+			id:       1234,
+			expected: nil,
+			err:      errors.New("usepass not found"),
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			pvRepository := NewMockPrivateDataRepository(ctrl)
+			encRepository := NewMockEncryptedDataRepository(ctrl)
+
+			manager := usepassManager{
+				pvRepository:  pvRepository,
+				encRepository: encRepository,
+			}
+			ctx := context.Background()
+			pvRepository.EXPECT().Get(ctx, tt.id).Return(tt.expected, tt.err)
+
+			usepass, err := manager.FindByID(ctx, tt.id)
+
+			if tt.err != nil {
+				assert.Error(t, tt.err, err)
+				return
+			}
+			expected := tt.expected
+			expected.dataRepository = pvRepository
+			expected.encryptionRepository = encRepository
+
+			assert.Equal(t, expected, usepass)
+		})
+	}
 }

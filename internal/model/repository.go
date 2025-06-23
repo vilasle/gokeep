@@ -4,6 +4,9 @@ import "context"
 
 type RepositoryCollector interface {
 	User() UserRepository
+	Private() (PrivateDataRepository)
+	Encryption() (EncryptedDataRepository)
+	 
 }
 
 type UserRepository interface {

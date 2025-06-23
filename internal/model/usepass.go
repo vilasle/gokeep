@@ -12,77 +12,32 @@ var _ PrivateData = (*Usepass)(nil)
 
 // Usepass - work with logins and password and encrypt it
 type Usepass struct {
-	id                   int64
-	owner                *User
-	login                string
-	password             string
-	encryptedData        *EncryptedData
-	encrypter            Encrypter
-	dataRepository       PrivateDataRepository
-	encryptionRepository EncryptedDataRepository
+	Model
+	login    string
+	password string
 }
 
-func newUsepass(owner *User, login, password string,
-	encrypter Encrypter,
-	dR PrivateDataRepository,
-	eR EncryptedDataRepository) *Usepass {
-
+func newUsepass(owner *User, login, password string) *Usepass {
 	return &Usepass{
-		owner:                owner,
-		login:                login,
-		password:             password,
-		encrypter:            encrypter,
-		dataRepository:       dR,
-		encryptionRepository: eR,
+		Model: Model{
+			owner: owner,
+		},
+		login:    login,
+		password: password,
 	}
 }
 
-func (u *Usepass) Save(ctx context.Context) (err error) {
-	if err := u.prepareEncryptedData(); err != nil {
+func (u *Usepass) Save(ctx context.Context, encrypter Encrypter) (err error) {
+	if err := u.prepareEncryptedData(encrypter); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
-
-	var saveUsepassFn func(context.Context, PrivateData) error
-	var saveEncryptedDataFn func(context.Context, *EncryptedData) error
-
-	isExists := u.isExists()
-
-	if isExists {
-		saveUsepassFn = u.dataRepository.Update
-		saveEncryptedDataFn = u.encryptionRepository.Update
-	} else {
-		saveUsepassFn = u.dataRepository.Add
-		saveEncryptedDataFn = u.encryptionRepository.Add
-	}
-
-	if err := saveUsepassFn(ctx, u); err == nil {
-		return saveEncryptedDataFn(ctx, u.encryptedData)
-	} else {
-		return err
-	}
+	return u.Model.Save(ctx)
 }
-
-func (u *Usepass) Delete(ctx context.Context) (err error) {
-	isExists := u.isExists()
-
-	if !isExists {
-		//TODO use package error
-		return errors.New("entity is not exists")
-	}
-
-	errs := make([]error, 0, 2)
-
-	errs = append(errs, u.dataRepository.Delete(ctx, u))
-	errs = append(errs, u.encryptionRepository.Delete(ctx, u.encryptedData))
-
-	return errors.Join(errs...)
-}
-
-func (u *Usepass) prepareEncryptedData() error {
+func (u *Usepass) prepareEncryptedData(encrypter Encrypter) error {
 	data := u.dataForEncryption()
 
-	encryptedData, err := u.encrypter.Encrypt(data)
+	encryptedData, err := encrypter.Encrypt(data)
 	if err != nil {
 		return err
 	}
@@ -94,25 +49,8 @@ func (u *Usepass) prepareEncryptedData() error {
 	return nil
 }
 
-// isExists - return false if user does not exists in storage
-func (u Usepass) isExists() bool {
-	return u.id > 0
-}
-
-func (u Usepass) ID() int64 {
-	return u.id
-}
-
-func (u Usepass) Owner() *User {
-	return u.owner
-}
-
-func (u Usepass) EncryptedData() EncryptedData {
-	return *u.encryptedData
-}
-
-func (u *Usepass) decryptData() error {
-	data, err := u.encrypter.Decrypt(*u.encryptedData)
+func (u *Usepass) decryptData(encrypter Encrypter) error {
+	data, err := encrypter.Decrypt(*u.encryptedData)
 	if err != nil {
 		return err
 	}

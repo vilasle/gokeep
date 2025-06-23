@@ -16,7 +16,9 @@ func Test_EncryptedData_ID(t *testing.T) {
 
 func Test_EncryptedData_Owner(t *testing.T) {
 	expected := &Usepass{
-		id: 1,
+		Model: Model{
+			id: 1,
+		},
 	}
 
 	ed := &EncryptedData{

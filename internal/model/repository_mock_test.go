@@ -34,6 +34,34 @@ func (m *MockRepositoryCollector) EXPECT() *MockRepositoryCollectorMockRecorder 
 	return m.recorder
 }
 
+// Encryption mocks base method.
+func (m *MockRepositoryCollector) Encryption() EncryptedDataRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Encryption")
+	ret0, _ := ret[0].(EncryptedDataRepository)
+	return ret0
+}
+
+// Encryption indicates an expected call of Encryption.
+func (mr *MockRepositoryCollectorMockRecorder) Encryption() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encryption", reflect.TypeOf((*MockRepositoryCollector)(nil).Encryption))
+}
+
+// Private mocks base method.
+func (m *MockRepositoryCollector) Private() PrivateDataRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Private")
+	ret0, _ := ret[0].(PrivateDataRepository)
+	return ret0
+}
+
+// Private indicates an expected call of Private.
+func (mr *MockRepositoryCollectorMockRecorder) Private() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Private", reflect.TypeOf((*MockRepositoryCollector)(nil).Private))
+}
+
 // User mocks base method.
 func (m *MockRepositoryCollector) User() UserRepository {
 	m.ctrl.T.Helper()
