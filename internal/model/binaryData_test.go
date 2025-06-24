@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_PlainText_Save(t *testing.T) {
+func Test_BinaryData_Save(t *testing.T) {
 	behaviorPD := func(m *MockPrivateDataRepository, ctx context.Context, isExists bool, up PrivateData, err error) {
 		if isExists {
 			m.EXPECT().Add(ctx, up).Return(err)
@@ -45,11 +45,10 @@ func Test_PlainText_Save(t *testing.T) {
 		successEncrypt bool
 	}{
 		{
-			name:    "new plain text, need to add",
+			name:    "new binary data, need to add",
 			id:      0,
 			data:    []byte("some text"),
-			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
+			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
 				id:   0,
 				data: []byte{},
@@ -60,11 +59,10 @@ func Test_PlainText_Save(t *testing.T) {
 			successEncrypt: true,
 		},
 		{
-			name:    "plain text is existed, need to update",
+			name:    "binary data is existed, need to update",
 			id:      1234,
 			data:    []byte("some text"),
-			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
+			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
 				id:   1234,
 				data: []byte{},
@@ -75,11 +73,9 @@ func Test_PlainText_Save(t *testing.T) {
 			successEncrypt: true,
 		},
 		{
-			name:    "new plain text, need to add, got encryption error",
+			name:    "new binary data, need to add, got encryption error",
 			data:    []byte("some text"),
-			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
-			encryptedData: &EncryptedData{
+			srcData: []byte("some text"), encryptedData: &EncryptedData{
 				data: []byte{},
 				key:  []byte{},
 			},
@@ -88,10 +84,9 @@ func Test_PlainText_Save(t *testing.T) {
 			successEncrypt: false,
 		},
 		{
-			name:    "new plain text, need to add, got saving private data error",
+			name:    "new binary data, need to add, got saving private data error",
 			data:    []byte("some text"),
-			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
+			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
 				data: []byte{},
 				key:  []byte{},
@@ -111,7 +106,7 @@ func Test_PlainText_Save(t *testing.T) {
 			encryptedR := NewMockEncryptedDataRepository(ctrl)
 			encrypter := NewMockEncrypter(ctrl)
 
-			plainText := newPlainText(nil, tt.data)
+			plainText := newBinaryData(nil, tt.data)
 
 			plainText.dataRepository = usepassR
 			plainText.encryptionRepository = encryptedR
@@ -151,7 +146,7 @@ func Test_PlainText_Save(t *testing.T) {
 	}
 }
 
-func Test_PlainText_decryptData(t *testing.T) {
+func Test_BinaryData_decryptData(t *testing.T) {
 	behavior := func(m *MockEncrypter, ed EncryptedData, data []byte, err error) {
 		m.EXPECT().Decrypt(ed).Return(data, err)
 	}
@@ -170,8 +165,7 @@ func Test_PlainText_decryptData(t *testing.T) {
 				key:  []byte{},
 				data: []byte{},
 			},
-			data: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0}, //some text
+			data:        []byte("some text"),
 			expectedTxt: []byte("some text"),
 		},
 		{
@@ -180,8 +174,7 @@ func Test_PlainText_decryptData(t *testing.T) {
 				key:  []byte{},
 				data: []byte{},
 			},
-			data: []byte{31,139,8,0,0,0,0,0,2,255,
-				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0}, //some text
+			data:   []byte("some text"),
 			encErr: errors.New("error"),
 		},
 	}
@@ -194,7 +187,7 @@ func Test_PlainText_decryptData(t *testing.T) {
 
 			behavior(enc, *tt.ed, tt.data, tt.encErr)
 
-			plainText := newPlainText(nil, []byte{})
+			plainText := newBinaryData(nil, []byte{})
 			plainText.encryptedData = tt.ed
 
 			err := plainText.decryptData(enc)
@@ -204,36 +197,36 @@ func Test_PlainText_decryptData(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.expectedTxt, plainText.text)
+			assert.Equal(t, tt.expectedTxt, plainText.data)
 		})
 	}
 
 }
 
-func Test_findPlainTextByID(t *testing.T) {
+func Test_findBinaryDataByID(t *testing.T) {
 	testCases := []struct {
 		name        string
 		id          int64
 		privateData PrivateData
 		repErr      error
 		err         error
-		expected    *PlainText
+		expected    *BinaryData
 	}{
 		{
 			name: "success",
 			id:   1,
-			privateData: &PlainText{
+			privateData: &BinaryData{
 				Model: Model{
 					id: 1,
 				},
-				text: []byte("some text"),
+				data: []byte("some text"),
 			},
 			err: nil,
-			expected: &PlainText{
+			expected: &BinaryData{
 				Model: Model{
 					id: 1,
 				},
-				text: []byte("some text"),
+				data: []byte("some text"),
 			},
 		},
 		{
@@ -263,7 +256,7 @@ func Test_findPlainTextByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.id).Return(tt.privateData, tt.repErr)
 
-			actual, err := findPlainTextByID(ctx, tt.id, r)
+			actual, err := findBinaryDataByID(ctx, tt.id, r)
 
 			if tt.err != nil || tt.repErr != nil {
 				require.Error(t, err)
