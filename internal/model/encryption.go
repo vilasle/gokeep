@@ -3,9 +3,6 @@ package model
 type Encrypter interface {
 	Encrypt([]byte) (*EncryptedData, error)
 	Decrypt(EncryptedData) ([]byte, error)
-
-	EncryptKey(EncryptedData) ([]byte, error)
-	DecryptKey([]byte) (*EncryptedData, error)
 }
 
 type EncryptedData struct {

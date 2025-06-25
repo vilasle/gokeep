@@ -48,21 +48,6 @@ func (mr *MockEncrypterMockRecorder) Decrypt(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decrypt", reflect.TypeOf((*MockEncrypter)(nil).Decrypt), arg0)
 }
 
-// DecryptKey mocks base method.
-func (m *MockEncrypter) DecryptKey(arg0 []byte) (*EncryptedData, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DecryptKey", arg0)
-	ret0, _ := ret[0].(*EncryptedData)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DecryptKey indicates an expected call of DecryptKey.
-func (mr *MockEncrypterMockRecorder) DecryptKey(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecryptKey", reflect.TypeOf((*MockEncrypter)(nil).DecryptKey), arg0)
-}
-
 // Encrypt mocks base method.
 func (m *MockEncrypter) Encrypt(arg0 []byte) (*EncryptedData, error) {
 	m.ctrl.T.Helper()
@@ -76,19 +61,4 @@ func (m *MockEncrypter) Encrypt(arg0 []byte) (*EncryptedData, error) {
 func (mr *MockEncrypterMockRecorder) Encrypt(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncrypter)(nil).Encrypt), arg0)
-}
-
-// EncryptKey mocks base method.
-func (m *MockEncrypter) EncryptKey(arg0 EncryptedData) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EncryptKey", arg0)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// EncryptKey indicates an expected call of EncryptKey.
-func (mr *MockEncrypterMockRecorder) EncryptKey(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EncryptKey", reflect.TypeOf((*MockEncrypter)(nil).EncryptKey), arg0)
 }
