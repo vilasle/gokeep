@@ -8,12 +8,13 @@ type Encryptor interface {
 }
 
 type EncryptedData struct {
+	enc  Encryptor
 	Data string `json:"data"`
 	Key  string `json:"key"`
 }
 
-func (ed *EncryptedData) Encrypt(enc Encryptor, data []byte) error {
-	encData, err := enc.Encrypt(data)
+func (ed *EncryptedData) Encrypt(data []byte) error {
+	encData, err := ed.enc.Encrypt(data)
 	if err != nil {
 		return err
 	}
@@ -21,12 +22,12 @@ func (ed *EncryptedData) Encrypt(enc Encryptor, data []byte) error {
 	return nil
 }
 
-func (ed *EncryptedData) Decrypt(enc Encryptor) ([]byte, error) {
+func (ed *EncryptedData) Decrypt() ([]byte, error) {
 	data, err := hex.DecodeString(ed.Data)
 	if err != nil {
 		return nil, err
 	}
-	return enc.Decrypt(data)
+	return ed.enc.Decrypt(data)
 }
 
 func (ed *EncryptedData) EncryptKey(enc Encryptor, data []byte) error {
@@ -46,7 +47,7 @@ func (ed *EncryptedData) DecryptKey(enc Encryptor) ([]byte, error) {
 	return enc.Decrypt(data)
 }
 
-func (ed *EncryptedData) ReplaceMasterKey(current Encryptor, new Encryptor) error {
+func (ed *EncryptedData) ReplaceKey(current, new Encryptor) error {
 	key, err := ed.DecryptKey(current)
 	if err != nil {
 		return err

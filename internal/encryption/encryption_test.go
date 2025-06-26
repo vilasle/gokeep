@@ -1,264 +1,198 @@
 package encryption
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/hex"
-	"encoding/json"
-	"encoding/pem"
-	"fmt"
-	"os"
 	"testing"
 
+	"errors"
+
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type encryptedData struct {
-	Data string `json:"data"`
-	Key  string `json:"key"`
+func Test_RSACipher_EncryptDecrypt(t *testing.T) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	testCases := []struct {
+		name    string
+		key     string
+		public  *rsa.PublicKey
+		private *rsa.PrivateKey
+		data    []byte
+		encErr  error
+		decErr  error
+	}{
+		{
+			name:    "success",
+			public:  &privateKey.PublicKey,
+			private: privateKey,
+			data:    []byte("SomeContentForEncryptionAndDecryption"),
+			encErr:  nil,
+			decErr:  nil,
+		},
+		{
+			name:    "without public key",
+			public:  nil,
+			private: privateKey,
+			data:    []byte("SomeContentForEncryptionAndDecryption"),
+			encErr:  errors.New("error"),
+			decErr:  nil,
+		},
+		{
+			name:    "without private key",
+			public:  &privateKey.PublicKey,
+			private: nil,
+			data:    []byte("SomeContentForEncryptionAndDecryption"),
+			encErr:  nil,
+			decErr:  errors.New("error"),
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			c := NewRSACipher(tt.public, tt.private)
+
+			encData, err := c.Encrypt(tt.data)
+			if tt.encErr != nil {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			decData, err := c.Decrypt(encData)
+			if tt.decErr != nil {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.data, decData)
+
+		})
+	}
 }
 
-type aesKey struct {
-	Key   string `json:"key"`
-	Nonce string `json:"nonce"`
-	key   []byte
-	nonce []byte
-	gcm   cipher.AEAD
+func Test_AESKey_NewAESKeyFromJSON(t *testing.T) {
+	testCases := []struct {
+		name        string
+		jsonContent []byte
+		err         error
+	}{
+		{
+			name: "success",
+			jsonContent: []byte(
+				`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`),
+			err: nil,
+		},
+		{
+			name: "wrong json",
+			jsonContent: []byte(
+				`"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"`),
+			err: errors.New("error"),
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewAESKeyFromJSON(tt.jsonContent)
+			if tt.err != nil {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+
 }
 
-func (k *aesKey) initGCM() error {
-	key, err := hex.DecodeString(k.Key)
-	if err != nil {
-		return err
-	}
+func TestAESKey_JSON(t *testing.T) {
+	expected := []byte(`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`)
 
-	nonce, err := hex.DecodeString(k.Nonce)
-	if err != nil {
-		return err
-	}
+	key, err := NewAESKeyFromJSON(expected)
+	require.NoError(t, err)
 
-	aesBlock, err := aes.NewCipher(key)
-	if err != nil {
-		return err
-	}
+	json := key.JSON()
 
-	aesGcm, err := cipher.NewGCM(aesBlock)
-	if err != nil {
-		return err
-	}
-
-	k.gcm = aesGcm
-	k.key = key
-	k.nonce = nonce
-	return nil
+	assert.Equal(t, string(expected), json)
 }
 
-func (k *aesKey) encrypt(data []byte) ([]byte, error) {
-	return k.gcm.Seal(nil, k.nonce, data, nil), nil
+func TestAESKey_EncryptDecrypt(t *testing.T) {
+	jsonKey := []byte(`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`)
+	content := []byte("SomeContentForEncryptionAndDecryption")
+	key, err := NewAESKeyFromJSON(jsonKey)
+	require.NoError(t, err)
+
+	encData, err := key.Encrypt(content)
+	require.NoError(t, err)
+
+	decData, err := key.Decrypt(encData)
+	require.NoError(t, err)
+
+	require.Equal(t, content, decData)
 }
 
-func (k *aesKey) decrypt(data []byte) ([]byte, error) {
-	return k.gcm.Open(nil, k.nonce, data, nil)
+func Test_EncryptedData_EncryptDecrypt(t *testing.T) {
+	jsonKey := []byte(`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`)
+	content := []byte("SomeContentForEncryptionAndDecryption")
+	DEK, err := NewAESKeyFromJSON(jsonKey)
+	require.NoError(t, err)
+
+	data := EncryptedData{enc: DEK}
+
+	err = data.Encrypt(content)
+	require.NoError(t, err)
+
+	decData, err := data.Decrypt()
+	require.NoError(t, err)
+
+	require.Equal(t, content, decData)
 }
 
-func (k aesKey) String() string {
-	return fmt.Sprintf(`{"key":"%s","nonce":"%s"}`, k.Key, k.Nonce)
-}
-
-func TestCreateMasterAESKey(t *testing.T) {
-	key := make([]byte, 2*aes.BlockSize)
-	_, err := rand.Read(key)
+func Test_EncryptedData_ReplaceKey(t *testing.T) {
+	//create DEK key
+	jsonKey := []byte(`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`)
+	content := []byte("SomeContentForEncryptionAndDecryption")
+	DEK, err := NewAESKeyFromJSON(jsonKey)
 	require.NoError(t, err)
 
-	aesBlock, err := aes.NewCipher(key)
+	//create server key
+	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	masterKey := NewRSACipher(&privateKey1.PublicKey, privateKey1)
+
+	//create client key
+	privateKey2, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	clientKey := NewRSACipher(&privateKey2.PublicKey, privateKey2)
+
+	data := EncryptedData{enc: DEK}
+	//encrypt key with created DEK key
+	err = data.Encrypt(content)
 	require.NoError(t, err)
 
-	aesGcm, err := cipher.NewGCM(aesBlock)
-
+	//encrypt key with server key
+	err = data.EncryptKey(masterKey, jsonKey)
 	require.NoError(t, err)
 
-	nonce := make([]byte, aesGcm.NonceSize())
-	_, err = rand.Read(nonce)
+	//replace key, decrypt key with master key and encrypt key with client key
+	err = data.ReplaceKey(masterKey, clientKey)
 	require.NoError(t, err)
 
-	objKey := aesKey{
-		Key:   hex.EncodeToString(key),
-		Nonce: hex.EncodeToString(nonce),
-	}
-
-	content, err := json.Marshal(objKey)
+	//decrypt key with client key
+	decDataKey, err := data.DecryptKey(clientKey)
 	require.NoError(t, err)
 
-	err = os.WriteFile("key.json", content, 0644)
-	require.NoError(t, err)
-}
-
-func TestCreateDEKAESKey(t *testing.T) {
-	key := make([]byte, 2*aes.BlockSize)
-	_, err := rand.Read(key)
+	//create DEK key from decrypted key
+	decDEK, err := NewAESKeyFromJSON(decDataKey)
 	require.NoError(t, err)
 
-	aesBlock, err := aes.NewCipher(key)
+	data.enc = decDEK
+	//decrypt data with decrypted key
+	decData, err := data.Decrypt()
 	require.NoError(t, err)
 
-	aesGcm, err := cipher.NewGCM(aesBlock)
-
-	require.NoError(t, err)
-
-	nonce := make([]byte, aesGcm.NonceSize())
-	_, err = rand.Read(nonce)
-	require.NoError(t, err)
-
-	objKey := aesKey{
-		Key:   hex.EncodeToString(key),
-		Nonce: hex.EncodeToString(nonce),
-	}
-
-	content, err := json.Marshal(objKey)
-	require.NoError(t, err)
-
-	err = os.WriteFile("dek.json", content, 0644)
-	require.NoError(t, err)
-}
-
-func TestCreateClientRSAKey(t *testing.T) {
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err)
-
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(key)
-
-	privateKeyBlock := &pem.Block{
-		Type:  "RSA PRIVATE KEY",
-		Bytes: privateKeyBytes,
-	}
-
-	publicKeyBytes := x509.MarshalPKCS1PublicKey(&key.PublicKey)
-
-	publicKeyBlock := &pem.Block{
-		Type:  "RSA PUBLIC KEY",
-		Bytes: publicKeyBytes,
-	}
-
-	fdPriv, err := os.OpenFile("private.key", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	require.NoError(t, err)
-
-	fdPub, err := os.OpenFile("public.key", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	require.NoError(t, err)
-
-	pem.Encode(fdPriv, privateKeyBlock)
-	pem.Encode(fdPub, publicKeyBlock)
-}
-
-func TestXxx(t *testing.T) {
-	source := []byte("some text which need to be encrypted")
-	fmt.Println("source", source)
-
-	//read master key
-	content, err := os.ReadFile("key.json")
-	require.NoError(t, err)
-
-	objKey := aesKey{}
-	err = json.Unmarshal(content, &objKey)
-	require.NoError(t, err)
-
-	err = objKey.initGCM()
-	require.NoError(t, err)
-
-	//create DEK certificate
-	dekKey := aesKey{}
-	err = json.Unmarshal(content, &dekKey)
-	require.NoError(t, err)
-
-	err = dekKey.initGCM()
-	require.NoError(t, err)
-
-	publicKeyContent, err := os.ReadFile("public.key")
-	require.NoError(t, err)
-
-	publicBlock, _ := pem.Decode(publicKeyContent)
-	publicKey, err := x509.ParsePKCS1PublicKey(publicBlock.Bytes)
-	require.NoError(t, err)
-
-	privateKeyContent, err := os.ReadFile("private.key")
-	require.NoError(t, err)
-
-	privateBlock, _ := pem.Decode(privateKeyContent)
-	require.NoError(t, err)
-
-	privateKey, err := x509.ParsePKCS1PrivateKey(privateBlock.Bytes)
-	require.NoError(t, err)
-
-	_, _ = publicKey, privateKey
-	//encrypt data with DEK certificate
-	encData, err := dekKey.encrypt(source)
-	require.NoError(t, err)
-
-	//encrypt DEK certificate with master key
-	encryptedDEK, err := objKey.encrypt([]byte(dekKey.String()))
-	require.NoError(t, err)
-
-	serverData := encryptedData{
-		Data: hex.EncodeToString(encData),
-		Key:  hex.EncodeToString(encryptedDEK),
-	}
-
-	fmt.Println(serverData)
-
-	clientEncDEKKey, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(dekKey.String()), nil)
-	require.NoError(t, err)
-
-	//decrypt data via master key and private key
-	clientData := encryptedData{
-		Data: hex.EncodeToString(encData),
-		Key:  hex.EncodeToString(clientEncDEKKey),
-	}
-
-	fmt.Println(clientData)
-
-	//decrypt data via master key and private key
-
-	//server part
-	sdKey, err := hex.DecodeString(serverData.Key)
-	require.NoError(t, err)
-
-	decDEK, err := objKey.decrypt([]byte(sdKey))
-	require.NoError(t, err)
-
-	decDEKObj := aesKey{}
-	err = json.Unmarshal(decDEK, &decDEKObj)
-	require.NoError(t, err)
-
-	err = decDEKObj.initGCM()
-	require.NoError(t, err)
-
-	sdd, err := hex.DecodeString(serverData.Data)
-	require.NoError(t, err)
-	decData, err := decDEKObj.decrypt([]byte(sdd))
-	require.NoError(t, err)
-
-	fmt.Println("server part", string(decData))
-
-	//client part
-	cdKey, err := hex.DecodeString(clientData.Key)
-	require.NoError(t, err)
-	decDEK1, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, []byte(cdKey), nil)
-	require.NoError(t, err)
-
-	decDEKObj1 := aesKey{}
-	err = json.Unmarshal(decDEK1, &decDEKObj1)
-	require.NoError(t, err)
-
-	err = decDEKObj1.initGCM()
-	require.NoError(t, err)
-
-	cdd, err := hex.DecodeString(serverData.Data)
-	require.NoError(t, err)
-	decData1, err := decDEKObj1.decrypt([]byte(cdd))
-	require.NoError(t, err)
-
-	fmt.Println("client part", string(decData1))
+	require.Equal(t, content, decData)
 }
