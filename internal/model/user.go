@@ -29,6 +29,10 @@ func (u *User) PasswordIsValid(password string) bool {
 	return u.password == hash256(password)
 }
 
+func (u *User) ID() int64 {
+	return u.id
+}
+
 // Save - save user to storage
 func (u *User) Save(ctx context.Context) error {
 	if u.isExists() {
@@ -42,7 +46,7 @@ func (u *User) Delete(ctx context.Context) error {
 	if u.isExists() {
 		return u.delete(ctx)
 	}
-	return ErrUserNotExists
+	return ErrUserNotFound
 }
 
 // isExists - return false if user does not exists in storage
@@ -87,5 +91,9 @@ func hash256(v string) string {
 }
 
 func findUserByLogin(ctx context.Context, login string, r UserRepository) (*User, error) {
-	return r.Get(ctx, login)
+	return r.Find(ctx, login)
+}
+
+func getUserByID(ctx context.Context, id int64, r UserRepository) (*User, error) {
+	return r.Get(ctx, id)
 }

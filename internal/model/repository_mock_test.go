@@ -127,8 +127,23 @@ func (mr *MockUserRepositoryMockRecorder) Delete(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepository)(nil).Delete), arg0, arg1)
 }
 
+// Find mocks base method.
+func (m *MockUserRepository) Find(arg0 context.Context, arg1 string) (*User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", arg0, arg1)
+	ret0, _ := ret[0].(*User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockUserRepositoryMockRecorder) Find(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepository)(nil).Find), arg0, arg1)
+}
+
 // Get mocks base method.
-func (m *MockUserRepository) Get(arg0 context.Context, arg1 string) (*User, error) {
+func (m *MockUserRepository) Get(arg0 context.Context, arg1 int64) (*User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].(*User)

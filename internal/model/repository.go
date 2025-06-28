@@ -13,7 +13,9 @@ type UserRepository interface {
 	Add(context.Context, *User) error
 	Update(context.Context, *User) error
 	Delete(context.Context, *User) error
-	Get(context.Context, string) (*User, error)
+	Find(context.Context, string) (*User, error)
+	Get(context.Context, int64) (*User, error)
+	
 }
 
 type PrivateData interface {

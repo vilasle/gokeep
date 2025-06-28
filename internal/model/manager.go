@@ -25,8 +25,8 @@ type ModelManager struct {
 }
 
 // NewModelManager creates a new model manager
-func NewModelManager(repository RepositoryCollector) *ModelManager {
-	return &ModelManager{
+func NewModelManager(repository RepositoryCollector) ModelManager {
+	return ModelManager{
 		repository: repository,
 		Users: &userManager{
 			repository: repository.User(),
@@ -60,6 +60,11 @@ func (c *userManager) New(login, password string) *User {
 func (c *userManager) FindByLogin(ctx context.Context, login string) (*User, error) {
 	//TODO add logger
 	return findUserByLogin(ctx, login, c.repository)
+}
+
+func (c *userManager) GetByID(ctx context.Context, id int64) (*User, error) {
+	//TODO add logger
+	return getUserByID(ctx, id, c.repository)
 }
 
 type usepassManager struct {

@@ -58,7 +58,7 @@ func Test_userManager_Find(t *testing.T) {
 		r:        repository,
 	}
 	ctx := context.Background()
-	repository.EXPECT().Get(ctx, "test").Return(expected, nil)
+	repository.EXPECT().Find(ctx, "test").Return(expected, nil)
 
 	manager := userManager{
 		repository: repository,

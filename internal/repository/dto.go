@@ -23,7 +23,3 @@ type UpdateUserDTO struct {
 	Login    string
 	Password string
 }
-
-type DeleteUserDTO struct {
-	ID int
-}

@@ -237,7 +237,7 @@ func Test_findUserByLogin(t *testing.T) {
 
 			ctx := context.Background()
 			r := NewMockUserRepository(ctrl)
-			r.EXPECT().Get(ctx, tt.login).Return(tt.expected, nil)
+			r.EXPECT().Find(ctx, tt.login).Return(tt.expected, nil)
 
 			actual, err := findUserByLogin(ctx, tt.login, r)
 			assert.NoError(t, err)
