@@ -21,7 +21,7 @@ func Test_BinaryData_Save(t *testing.T) {
 	}
 
 	behaviorED := func(m *MockEncryptedDataRepository, ctx context.Context, ed *EncryptedData, err error) {
-		if ed.id == 0 {
+		if ed.ID == 0 {
 			m.EXPECT().Add(ctx, ed).Return(err)
 		} else {
 			m.EXPECT().Update(ctx, ed).Return(err)
@@ -50,9 +50,9 @@ func Test_BinaryData_Save(t *testing.T) {
 			data:    []byte("some text"),
 			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
-				id:   0,
-				data: []byte{},
-				key:  []byte{},
+				ID:   0,
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      true,
 			successED:      true,
@@ -64,9 +64,9 @@ func Test_BinaryData_Save(t *testing.T) {
 			data:    []byte("some text"),
 			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
-				id:   1234,
-				data: []byte{},
-				key:  []byte{},
+				ID:   1234,
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      true,
 			successED:      true,
@@ -76,8 +76,8 @@ func Test_BinaryData_Save(t *testing.T) {
 			name:    "new binary data, need to add, got encryption error",
 			data:    []byte("some text"),
 			srcData: []byte("some text"), encryptedData: &EncryptedData{
-				data: []byte{},
-				key:  []byte{},
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      false,
 			successED:      false,
@@ -88,8 +88,8 @@ func Test_BinaryData_Save(t *testing.T) {
 			data:    []byte("some text"),
 			srcData: []byte("some text"),
 			encryptedData: &EncryptedData{
-				data: []byte{},
-				key:  []byte{},
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successEncrypt: true,
 			successPD:      false,
@@ -162,8 +162,8 @@ func Test_BinaryData_decryptData(t *testing.T) {
 		{
 			name: "success decryption",
 			ed: &EncryptedData{
-				key:  []byte{},
-				data: []byte{},
+				Key:  []byte{},
+				Data: []byte{},
 			},
 			data:        []byte("some text"),
 			expectedTxt: []byte("some text"),
@@ -171,8 +171,8 @@ func Test_BinaryData_decryptData(t *testing.T) {
 		{
 			name: "encryption error",
 			ed: &EncryptedData{
-				key:  []byte{},
-				data: []byte{},
+				Key:  []byte{},
+				Data: []byte{},
 			},
 			data:   []byte("some text"),
 			encErr: errors.New("error"),

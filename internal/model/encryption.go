@@ -6,24 +6,8 @@ type Encrypter interface {
 }
 
 type EncryptedData struct {
-	id    int64
-	owner PrivateData
-	data  []byte
-	key   []byte
-}
-
-func (e EncryptedData) ID() int64 {
-	return e.id
-}
-
-func (e EncryptedData) Owner() PrivateData {
-	return e.owner
-}
-
-func (e EncryptedData) Data() []byte {
-	return e.data
-}
-
-func (e EncryptedData) Key() []byte {
-	return e.key
+	ID    int64
+	Owner PrivateData
+	Data  []byte
+	Key   []byte
 }

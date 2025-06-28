@@ -77,7 +77,7 @@ func (u *BankCard) prepareEncryptedData(encrypter Encrypter) error {
 
 	u.encryptedData = encryptedData
 
-	u.encryptedData.owner = u
+	u.encryptedData.Owner = u
 
 	return nil
 }

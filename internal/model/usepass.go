@@ -44,7 +44,7 @@ func (u *Usepass) prepareEncryptedData(encrypter Encrypter) error {
 
 	u.encryptedData = encryptedData
 
-	u.encryptedData.owner = u
+	u.encryptedData.Owner = u
 
 	return nil
 }

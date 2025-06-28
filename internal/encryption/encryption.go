@@ -8,13 +8,13 @@ type Encryptor interface {
 }
 
 type EncryptedData struct {
-	enc  Encryptor
+	dek  Encryptor
 	Data string `json:"data"`
 	Key  string `json:"key"`
 }
 
 func (ed *EncryptedData) Encrypt(data []byte) error {
-	encData, err := ed.enc.Encrypt(data)
+	encData, err := ed.dek.Encrypt(data)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func (ed *EncryptedData) Decrypt() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ed.enc.Decrypt(data)
+	return ed.dek.Decrypt(data)
 }
 
 func (ed *EncryptedData) EncryptKey(enc Encryptor, data []byte) error {

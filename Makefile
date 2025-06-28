@@ -15,6 +15,7 @@ generate-proto:
 generate-mock:
 	mockgen -package=model -destination=internal/model/repository_mock_test.go -source=internal/model/repository.go
 	mockgen -package=model -destination=internal/model/encryption_mock_test.go -source=internal/model/encryption.go
+	mockgen -package=encryption -destination=internal/encryption/repository_mock_test.go -source=internal/model/repository.go
 
 test:
 	go test ./...

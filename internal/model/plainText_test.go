@@ -21,7 +21,7 @@ func Test_PlainText_Save(t *testing.T) {
 	}
 
 	behaviorED := func(m *MockEncryptedDataRepository, ctx context.Context, ed *EncryptedData, err error) {
-		if ed.id == 0 {
+		if ed.ID == 0 {
 			m.EXPECT().Add(ctx, ed).Return(err)
 		} else {
 			m.EXPECT().Update(ctx, ed).Return(err)
@@ -51,9 +51,8 @@ func Test_PlainText_Save(t *testing.T) {
 			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
 			encryptedData: &EncryptedData{
-				id:   0,
-				data: []byte{},
-				key:  []byte{},
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      true,
 			successED:      true,
@@ -66,9 +65,9 @@ func Test_PlainText_Save(t *testing.T) {
 			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
 			encryptedData: &EncryptedData{
-				id:   1234,
-				data: []byte{},
-				key:  []byte{},
+				ID:   1234,
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      true,
 			successED:      true,
@@ -80,8 +79,8 @@ func Test_PlainText_Save(t *testing.T) {
 			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
 			encryptedData: &EncryptedData{
-				data: []byte{},
-				key:  []byte{},
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successPD:      false,
 			successED:      false,
@@ -93,8 +92,8 @@ func Test_PlainText_Save(t *testing.T) {
 			srcData: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0},
 			encryptedData: &EncryptedData{
-				data: []byte{},
-				key:  []byte{},
+				Data: []byte{},
+				Key:  []byte{},
 			},
 			successEncrypt: true,
 			successPD:      false,
@@ -167,8 +166,8 @@ func Test_PlainText_decryptData(t *testing.T) {
 		{
 			name: "success decryption",
 			ed: &EncryptedData{
-				key:  []byte{},
-				data: []byte{},
+				Key:  []byte{},
+				Data: []byte{},
 			},
 			data: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0}, //some text
@@ -177,8 +176,8 @@ func Test_PlainText_decryptData(t *testing.T) {
 		{
 			name: "encryption error",
 			ed: &EncryptedData{
-				key:  []byte{},
-				data: []byte{},
+				Key:  []byte{},
+				Data: []byte{},
 			},
 			data: []byte{31,139,8,0,0,0,0,0,2,255,
 				42,206,207,77,85,40,73,173,40,1,4,0,0,255,255,186,189,186,79,9,0,0,0}, //some text

@@ -43,7 +43,7 @@ func (tp *PlainText) prepareEncryptedData(encrypter Encrypter) error {
 	if err != nil {
 		return err
 	}
-	encryptedData.owner = tp
+	encryptedData.Owner = tp
 
 	tp.encryptedData = encryptedData
 

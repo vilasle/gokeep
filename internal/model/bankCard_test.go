@@ -22,7 +22,7 @@ func Test_BankCard_Save(t *testing.T) {
 	}
 
 	behaviorED := func(m *MockEncryptedDataRepository, ctx context.Context, ed *EncryptedData, err error) {
-		if ed.id == 0 {
+		if ed.ID == 0 {
 			m.EXPECT().Add(ctx, ed).Return(err)
 		} else {
 			m.EXPECT().Update(ctx, ed).Return(err)
@@ -53,9 +53,8 @@ func Test_BankCard_Save(t *testing.T) {
 			expiration: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			srcData:    []byte("1234567890123\n123\n2020-01-01"),
 			encryptedData: &EncryptedData{
-				id:   0,
-				data: []byte("1234567890123\n123\n2020-01-01"),
-				key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successED:      true,
@@ -69,9 +68,9 @@ func Test_BankCard_Save(t *testing.T) {
 			expiration: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			srcData:    []byte("1234567890123\n123\n2020-01-01"),
 			encryptedData: &EncryptedData{
-				id:   1234,
-				data: []byte("1234567890123\n123\n2020-01-01"),
-				key:  []byte("key"),
+				ID:   1234,
+				Data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successED:      true,
@@ -84,8 +83,8 @@ func Test_BankCard_Save(t *testing.T) {
 			expiration: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			srcData:    []byte("1234567890123\n123\n2020-01-01"),
 			encryptedData: &EncryptedData{
-				data: []byte("1234567890123\n123\n2020-01-01"),
-				key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
 			},
 			successPD:      false,
 			successED:      false,
@@ -98,8 +97,8 @@ func Test_BankCard_Save(t *testing.T) {
 			expiration: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			srcData:    []byte("1234567890123\n123\n2020-01-01"),
 			encryptedData: &EncryptedData{
-				data: []byte("1234567890123\n123\n2020-01-01"),
-				key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
 			},
 			successEncrypt: true,
 			successPD:      false,
@@ -174,8 +173,8 @@ func Test_BankCard_decryptData(t *testing.T) {
 		{
 			name: "success decryption",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("test\npassword"),
+				Key:  []byte("key"),
+				Data: []byte("test\npassword"),
 			},
 			data:               []byte("1234567890123\n123\n2020-01-01"),
 			expectedNumber:     "1234567890123",
@@ -185,8 +184,8 @@ func Test_BankCard_decryptData(t *testing.T) {
 		{
 			name: "encryption error",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
 			},
 			data:               []byte{},
 			encErr:             errors.New("error"),
@@ -197,8 +196,8 @@ func Test_BankCard_decryptData(t *testing.T) {
 		{
 			name: "unexpected encryption data, wrong format",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
 			},
 			data:               []byte("1234567890123_123_2020-01-01"),
 			err:                errors.New("error"),
@@ -209,8 +208,8 @@ func Test_BankCard_decryptData(t *testing.T) {
 		{
 			name: "unexpected encryption data, cvv is not a number",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
 			},
 			data:               []byte("1234567890123\ndsfdsaf\n2020-01-01"),
 			err:                errors.New("error"),
@@ -221,8 +220,8 @@ func Test_BankCard_decryptData(t *testing.T) {
 		{
 			name: "unexpected encryption data, expiration is not a time",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("1234567890123\n123\n2020-01-01"),
+				Key:  []byte("key"),
+				Data: []byte("1234567890123\n123\n2020-01-01"),
 			},
 			data:               []byte("1234567890123\n123\nv2213-3v-vfd1"),
 			err:                errors.New("error"),

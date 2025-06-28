@@ -21,7 +21,7 @@ func Test_Usepass_Save(t *testing.T) {
 	}
 
 	behaviorED := func(m *MockEncryptedDataRepository, ctx context.Context, ed *EncryptedData, err error) {
-		if ed.id == 0 {
+		if ed.ID == 0 {
 			m.EXPECT().Add(ctx, ed).Return(err)
 		} else {
 			m.EXPECT().Update(ctx, ed).Return(err)
@@ -52,9 +52,8 @@ func Test_Usepass_Save(t *testing.T) {
 			srcData:  []byte("test1\npassword1"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				id:   0,
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successED:      true,
@@ -68,9 +67,9 @@ func Test_Usepass_Save(t *testing.T) {
 			srcData:  []byte("test1\npassword1"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				id:   1234,
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				ID:   1234,
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successED:      true,
@@ -83,8 +82,8 @@ func Test_Usepass_Save(t *testing.T) {
 			srcData:  []byte("test1\npassword1"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			successPD:      false,
 			successED:      false,
@@ -97,8 +96,8 @@ func Test_Usepass_Save(t *testing.T) {
 			srcData:  []byte("test1\npassword1"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			successEncrypt: true,
 			successPD:      false,
@@ -172,8 +171,8 @@ func Test_Usepass_decryptData(t *testing.T) {
 		{
 			name: "success decryption",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("test\npassword"),
+				Key:  []byte("key"),
+				Data: []byte("test\npassword"),
 			},
 			data:             []byte("test\npassword"),
 			expectedLogin:    "test",
@@ -182,8 +181,8 @@ func Test_Usepass_decryptData(t *testing.T) {
 		{
 			name: "encryption error",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("test\npassword"),
+				Key:  []byte("key"),
+				Data: []byte("test\npassword"),
 			},
 			data:             []byte{},
 			encErr:           errors.New("error"),
@@ -193,8 +192,8 @@ func Test_Usepass_decryptData(t *testing.T) {
 		{
 			name: "unexpected encryption data",
 			ed: &EncryptedData{
-				key:  []byte("key"),
-				data: []byte("test\npassword"),
+				Key:  []byte("key"),
+				Data: []byte("test\npassword"),
 			},
 			data:             []byte("test_password"),
 			err:              errors.New("error"),

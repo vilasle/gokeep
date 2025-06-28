@@ -140,7 +140,7 @@ func Test_EncryptedData_EncryptDecrypt(t *testing.T) {
 	DEK, err := NewAESKeyFromJSON(jsonKey)
 	require.NoError(t, err)
 
-	data := EncryptedData{enc: DEK}
+	data := EncryptedData{dek: DEK}
 
 	err = data.Encrypt(content)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func Test_EncryptedData_ReplaceKey(t *testing.T) {
 	require.NoError(t, err)
 	clientKey := NewRSACipher(&privateKey2.PublicKey, privateKey2)
 
-	data := EncryptedData{enc: DEK}
+	data := EncryptedData{dek: DEK}
 	//encrypt key with created DEK key
 	err = data.Encrypt(content)
 	require.NoError(t, err)
@@ -189,7 +189,7 @@ func Test_EncryptedData_ReplaceKey(t *testing.T) {
 	decDEK, err := NewAESKeyFromJSON(decDataKey)
 	require.NoError(t, err)
 
-	data.enc = decDEK
+	data.dek = decDEK
 	//decrypt data with decrypted key
 	decData, err := data.Decrypt()
 	require.NoError(t, err)

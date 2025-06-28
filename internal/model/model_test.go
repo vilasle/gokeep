@@ -37,9 +37,9 @@ func Test_Usepass_Delete(t *testing.T) {
 			password: "password1",
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				id:   0,
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				ID:   0,
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			isExists:  false,
 			successPD: false,
@@ -52,9 +52,9 @@ func Test_Usepass_Delete(t *testing.T) {
 			password: "password1",
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				id:   1234,
-				data: []byte("test1\npassword1"),
-				key:  []byte("key"),
+				ID:   1234,
+				Data: []byte("test1\npassword1"),
+				Key:  []byte("key"),
 			},
 			isExists:  true,
 			successPD: true,
@@ -125,8 +125,8 @@ func Test_Model_Owner(t *testing.T) {
 func Test_Model_EncryptedData(t *testing.T) {
 	usepass := Model{}
 	expected := EncryptedData{
-		key:  []byte("key"),
-		data: []byte("data"),
+		Key:  []byte("key"),
+		Data: []byte("data"),
 	}
 	usepass.encryptedData = &expected
 	assert.Equal(t, expected, usepass.EncryptedData())
