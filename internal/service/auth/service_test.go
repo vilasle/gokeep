@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vilasle/gokeep/internal/model"
+	"github.com/vilasle/gokeep/internal/service"
 )
 
 func Test_AuthService_Register(t *testing.T) {
@@ -75,8 +76,8 @@ func Test_AuthService_Register(t *testing.T) {
 			rep := NewMockRepositoryCollector(ctrl)
 			userRep := NewMockUserRepository(ctrl)
 			rep.EXPECT().User().Return(userRep).Times(1)
-			rep.EXPECT().Private().Return(nil).Times(3)
-			rep.EXPECT().Encryption().Return(nil).Times(3)
+			rep.EXPECT().Private().Return(nil).Times(4)
+			rep.EXPECT().Encryption().Return(nil).Times(4)
 
 			ctx := context.Background()
 			behaviorFind(userRep, ctx, tt.username, tt.findErr)
@@ -87,7 +88,10 @@ func Test_AuthService_Register(t *testing.T) {
 
 			authService := NewAuthService(manager, tt.key)
 
-			token, err := authService.Register(ctx, tt.username, tt.password)
+			token, err := authService.Register(ctx, service.RegisterLoginUser{
+				Username: tt.username,
+				Password: tt.password,
+			})
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -164,8 +168,8 @@ func Test_AuthService_Login(t *testing.T) {
 			rep := NewMockRepositoryCollector(ctrl)
 			userRep := NewMockUserRepository(ctrl)
 			rep.EXPECT().User().Return(userRep).Times(1)
-			rep.EXPECT().Private().Return(nil).Times(3)
-			rep.EXPECT().Encryption().Return(nil).Times(3)
+			rep.EXPECT().Private().Return(nil).Times(4)
+			rep.EXPECT().Encryption().Return(nil).Times(4)
 
 			ctx := context.Background()
 
@@ -177,7 +181,10 @@ func Test_AuthService_Login(t *testing.T) {
 
 			authService := NewAuthService(manager, key)
 
-			token, err := authService.Login(ctx, tt.username, tt.password)
+			token, err := authService.Login(ctx, service.RegisterLoginUser{
+				Username: tt.username,
+				Password: tt.password,
+			})
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -263,8 +270,8 @@ func Test_AuthService_Valid(t *testing.T) {
 			rep := NewMockRepositoryCollector(ctrl)
 			userRep := NewMockUserRepository(ctrl)
 			rep.EXPECT().User().Return(userRep).Times(1)
-			rep.EXPECT().Private().Return(nil).Times(3)
-			rep.EXPECT().Encryption().Return(nil).Times(3)
+			rep.EXPECT().Private().Return(nil).Times(4)
+			rep.EXPECT().Encryption().Return(nil).Times(4)
 
 			ctx := context.Background()
 

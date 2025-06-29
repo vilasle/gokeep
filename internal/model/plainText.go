@@ -11,13 +11,13 @@ import (
 var _ PrivateData = (*PlainText)(nil)
 
 type PlainText struct {
-	Model
+	model
 	text []byte
 }
 
 func newPlainText(owner *User, text []byte) *PlainText {
 	return &PlainText{
-		Model: Model{
+		model: model{
 			owner: owner,
 		},
 		text: text,
@@ -29,7 +29,7 @@ func (tp *PlainText) Save(ctx context.Context, encrypter Encrypter) (err error) 
 		//TODO wrap error with package error
 		return err
 	}
-	return tp.Model.Save(ctx)
+	return tp.model.Save(ctx)
 }
 
 func (tp *PlainText) prepareEncryptedData(encrypter Encrypter) error {
@@ -48,6 +48,15 @@ func (tp *PlainText) prepareEncryptedData(encrypter Encrypter) error {
 	tp.encryptedData = encryptedData
 
 	return nil
+}
+
+func (tp *PlainText) String() (string) {
+	view := tp.text[:20]
+	return string(view)
+}
+
+func (tp *PlainText) SetText(text []byte) {
+	tp.text = text
 }
 
 func (tp *PlainText) decryptData(encrypter Encrypter) (err error) {
@@ -75,7 +84,8 @@ func (tp PlainText) dataForEncryption() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func findPlainTextByID(ctx context.Context, id int64, r PrivateDataRepository) (*PlainText, error) {
+//FIXME add getting plain text by id and check that owner was right id
+func findPlainTextByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*PlainText, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err

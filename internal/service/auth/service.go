@@ -23,14 +23,14 @@ func NewAuthService(modelManager model.ModelManager, jwtKey []byte) *AuthService
 }
 
 // Login check user's login and password and return credential token
-func (s *AuthService) Login(ctx context.Context, username, password string) (string, error) {
-	u, err := s.manager.Users.FindByLogin(ctx, username)
+func (s *AuthService) Login(ctx context.Context, req service.RegisterLoginUser) (string, error) {
+	u, err := s.manager.Users.FindByLogin(ctx, req.Username)
 	if err != nil {
 		//TODO repository error
 		return "", err
 	}
 
-	if !u.PasswordIsValid(password) {
+	if !u.PasswordIsValid(req.Password) {
 		//TODO wrap error
 		return "", errors.New("invalid password")
 	}
@@ -40,8 +40,8 @@ func (s *AuthService) Login(ctx context.Context, username, password string) (str
 }
 
 // Register create user if it does not exist	and return credential token
-func (s *AuthService) Register(ctx context.Context, username, password string) (string, error) {
-	if _, err := s.manager.Users.FindByLogin(ctx, username); !errors.Is(err, model.ErrUserNotFound) {
+func (s *AuthService) Register(ctx context.Context, req service.RegisterLoginUser) (string, error) {
+	if _, err := s.manager.Users.FindByLogin(ctx, req.Username); !errors.Is(err, model.ErrUserNotFound) {
 		if err != nil {
 			//TODO repository error
 			return "", err
@@ -49,7 +49,7 @@ func (s *AuthService) Register(ctx context.Context, username, password string) (
 		return "", errors.New("user already exists")
 	}
 
-	u := s.manager.Users.New(username, password)
+	u := s.manager.Users.New(req.Username, req.Password)
 	if err := u.Save(ctx); err != nil {
 		//TODO storage error
 		return "", err
@@ -99,7 +99,7 @@ func (s *AuthService) checkToken(ctx context.Context, token string) error {
 		return errors.New("invalid token")
 	}
 
-	if _, err := s.manager.Users.GetByID(ctx, id); err != nil {
+	if _, err := s.manager.Users.Get(ctx, id); err != nil {
 		//user not found or we get storage error
 		//TODO wrap error
 		return err

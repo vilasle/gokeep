@@ -13,7 +13,7 @@ import (
 var _ PrivateData = (*Usepass)(nil)
 
 type BankCard struct {
-	Model
+	model
 	number     string
 	cvv        int
 	expiration time.Time
@@ -21,7 +21,7 @@ type BankCard struct {
 
 func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) *BankCard {
 	return &BankCard{
-		Model: Model{
+		model: model{
 			owner: owner,
 		},
 		number:     cardNumber,
@@ -59,12 +59,29 @@ func (bc *BankCard) decryptData(encrypter Encrypter) (err error) {
 	return nil
 }
 
+func (u *BankCard) String() string {
+	view := u.number[:4] + strings.Repeat("*", len(u.number)-4)
+	return string(view)
+}
+
+func (u *BankCard) SetNumber(number string) {
+	u.number = number
+}
+
+func (u *BankCard) SetCVV(cvv int) {
+	u.cvv = cvv
+}
+
+func (u *BankCard) SetExpiration(expiration time.Time) {
+	u.expiration = expiration
+}
+
 func (u *BankCard) Save(ctx context.Context, encrypter Encrypter) (err error) {
 	if err := u.prepareEncryptedData(encrypter); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
-	return u.Model.Save(ctx)
+	return u.model.Save(ctx)
 }
 
 func (u *BankCard) prepareEncryptedData(encrypter Encrypter) error {
@@ -93,7 +110,8 @@ func (bc BankCard) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-func findBankCardByID(ctx context.Context, id int64, r PrivateDataRepository) (*BankCard, error) {
+// FIXME add getting band card by id and check that owner was right id
+func findBankCardByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*BankCard, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err

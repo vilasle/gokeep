@@ -12,14 +12,14 @@ var _ PrivateData = (*Usepass)(nil)
 
 // Usepass - work with logins and password and encrypt it
 type Usepass struct {
-	Model
+	model
 	login    string
 	password string
 }
 
 func newUsepass(owner *User, login, password string) *Usepass {
 	return &Usepass{
-		Model: Model{
+		model: model{
 			owner: owner,
 		},
 		login:    login,
@@ -32,8 +32,21 @@ func (u *Usepass) Save(ctx context.Context, encrypter Encrypter) (err error) {
 		//TODO wrap error with package error
 		return err
 	}
-	return u.Model.Save(ctx)
+	return u.model.Save(ctx)
 }
+
+func (u *Usepass) String() (string) {
+	return u.login
+}
+
+func (u *Usepass) SetUsername(username string) {
+	u.login = username
+}
+
+func (u *Usepass) SetPassword(password string) {
+	u.password = password
+}
+
 func (u *Usepass) prepareEncryptedData(encrypter Encrypter) error {
 	data := u.dataForEncryption()
 
@@ -74,7 +87,8 @@ func (u Usepass) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-func findUsepassByID(ctx context.Context, id int64, r PrivateDataRepository) (*Usepass, error) {
+//FIXME add getting usepass by id and check that owner was right id
+func findUsepassByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*Usepass, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err

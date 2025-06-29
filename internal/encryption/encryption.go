@@ -13,6 +13,18 @@ type EncryptedData struct {
 	Key  string `json:"key"`
 }
 
+func NewEncryptedDataFromReadyData(dek Encryptor, data, key []byte) *EncryptedData {
+	return &EncryptedData{
+		dek:  dek,
+		Data: string(data),
+		Key:  string(key),
+	}
+}
+
+func NewEncryptedData(dek Encryptor) *EncryptedData {
+	return &EncryptedData{dek: dek}
+}
+
 func (ed *EncryptedData) Encrypt(data []byte) error {
 	encData, err := ed.dek.Encrypt(data)
 	if err != nil {

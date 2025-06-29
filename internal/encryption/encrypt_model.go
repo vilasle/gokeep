@@ -7,16 +7,16 @@ import (
 )
 
 type EncryptionModel struct {
-	masterKey Encryptor
-	dek       Encryptor
-	dekSrc    []byte
+	kek    Encryptor
+	dek    Encryptor
+	dekSrc []byte
 }
 
-func NewEncryptionModel(dekSrc []byte, masterKey, dek Encryptor) *EncryptionModel {
+func NewEncryptionModel(dekSrc []byte, kek, dek Encryptor) *EncryptionModel {
 	return &EncryptionModel{
-		masterKey: masterKey,
-		dek:       dek,
-		dekSrc:    dekSrc,
+		kek:    kek,
+		dek:    dek,
+		dekSrc: dekSrc,
 	}
 }
 
@@ -28,7 +28,7 @@ func (em EncryptionModel) Encrypt(data []byte) (*model.EncryptedData, error) {
 	//encrypt data with DEK
 	errs = append(errs, ed.Encrypt(data))
 	//encrypt DEK key with master key
-	errs = append(errs, ed.EncryptKey(em.masterKey, em.dekSrc))
+	errs = append(errs, ed.EncryptKey(em.kek, em.dekSrc))
 	return &model.EncryptedData{
 		Data: []byte(ed.Data),
 		Key:  []byte(ed.Key),

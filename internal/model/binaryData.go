@@ -8,45 +8,60 @@ import (
 var _ PrivateData = (*BinaryData)(nil)
 
 type BinaryData struct {
-	Model
+	model
+	name string
 	data []byte
 }
 
-func newBinaryData(owner *User, data []byte) *BinaryData {
+func newBinaryData(owner *User, data []byte, name string) *BinaryData {
 	return &BinaryData{
-		Model: Model{
+		model: model{
 			owner: owner,
 		},
+		name: name,
 		data: data,
 	}
 }
 
-func (tp *BinaryData) Save(ctx context.Context, encrypter Encrypter) (err error) {
-	if err := tp.prepareEncryptedData(encrypter); err != nil {
+func (bd *BinaryData) Save(ctx context.Context, encrypter Encrypter) (err error) {
+	if err := bd.prepareEncryptedData(encrypter); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
-	return tp.Model.Save(ctx)
+	return bd.model.Save(ctx)
 }
 
-func (tp *BinaryData) prepareEncryptedData(encrypter Encrypter) error {
-	encryptedData, err := encrypter.Encrypt(tp.data)
+func (bd *BinaryData) String() string {
+	return bd.name
+}
+
+func (bd *BinaryData) SetName(name string) {
+	bd.name = name
+}
+
+func (bd *BinaryData) SetData(data []byte) {
+	bd.data = data
+}
+
+func (bd *BinaryData) prepareEncryptedData(encrypter Encrypter) error {
+	encryptedData, err := encrypter.Encrypt(bd.data)
 	if err != nil {
 		return err
 	}
-	encryptedData.Owner = tp
+	encryptedData.Owner = bd
 
-	tp.encryptedData = encryptedData
+	bd.encryptedData = encryptedData
 
 	return nil
 }
 
-func (tp *BinaryData) decryptData(encrypter Encrypter) (err error) {
-	tp.data, err = encrypter.Decrypt(*tp.encryptedData)
+func (bd *BinaryData) decryptData(encrypter Encrypter) (err error) {
+	bd.data, err = encrypter.Decrypt(*bd.encryptedData)
 	return err
 }
 
-func findBinaryDataByID(ctx context.Context, id int64, r PrivateDataRepository) (*BinaryData, error) {
+// FIXME add getting binary data by id and check that owner was right id
+func findBinaryDataByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*BinaryData, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err

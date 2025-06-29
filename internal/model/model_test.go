@@ -70,7 +70,7 @@ func Test_Usepass_Delete(t *testing.T) {
 			pvR := NewMockPrivateDataRepository(ctrl)
 			encR := NewMockEncryptedDataRepository(ctrl)
 
-			model := &Model{
+			model := &model{
 				id:                   tt.id,
 				owner:                tt.owner,
 				dataRepository:       pvR,
@@ -106,7 +106,7 @@ func Test_Usepass_Delete(t *testing.T) {
 
 func Test_Model_ID(t *testing.T) {
 	expected := int64(1)
-	usepass := Model{
+	usepass := model{
 		id: expected,
 	}
 	usepass.id = expected
@@ -116,14 +116,14 @@ func Test_Model_ID(t *testing.T) {
 
 func Test_Model_Owner(t *testing.T) {
 	expected := newUser("test", "password", nil)
-	usepass := Model{
+	usepass := model{
 		owner: expected,
 	}
 	assert.Equal(t, expected, usepass.Owner())
 }
 
 func Test_Model_EncryptedData(t *testing.T) {
-	usepass := Model{}
+	usepass := model{}
 	expected := EncryptedData{
 		Key:  []byte("key"),
 		Data: []byte("data"),

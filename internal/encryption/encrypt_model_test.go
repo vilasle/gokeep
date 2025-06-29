@@ -30,8 +30,8 @@ func TestEncryptionModel_Encrypt(t *testing.T) {
 	pvRep := NewMockPrivateDataRepository(ctrl)
 	encRep := NewMockEncryptedDataRepository(ctrl)
 	rep.EXPECT().User().Return(nil).Times(1)
-	rep.EXPECT().Private().Return(pvRep).Times(3)
-	rep.EXPECT().Encryption().Return(encRep).Times(3)
+	rep.EXPECT().Private().Return(pvRep).Times(4)
+	rep.EXPECT().Encryption().Return(encRep).Times(4)
 
 	pvRep.EXPECT().Add(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 	encRep.EXPECT().Add(gomock.Any(), gomock.Any()).Return(nil).Times(1)

@@ -5,9 +5,9 @@ import (
 	"errors"
 )
 
-var _ PrivateData = (*BankCard)(nil)
+var _ PrivateData = (*model)(nil)
 
-type Model struct {
+type model struct {
 	id                   int64
 	owner                *User
 	encryptedData        *EncryptedData
@@ -15,7 +15,7 @@ type Model struct {
 	encryptionRepository EncryptedDataRepository
 }
 
-func (m *Model) Save(ctx context.Context) (err error) {
+func (m *model) Save(ctx context.Context) (err error) {
 	var saveFn func(context.Context, PrivateData) error
 	var saveEncryptedDataFn func(context.Context, *EncryptedData) error
 
@@ -36,7 +36,11 @@ func (m *Model) Save(ctx context.Context) (err error) {
 	}
 }
 
-func (m *Model) Delete(ctx context.Context) (err error) {
+func (m *model) String() string {
+	return ""
+}
+
+func (m *model) Delete(ctx context.Context) (err error) {
 	isExists := m.isExists()
 
 	if !isExists {
@@ -53,18 +57,18 @@ func (m *Model) Delete(ctx context.Context) (err error) {
 }
 
 // isExists - return false if user does not exists in storage
-func (m Model) isExists() bool {
+func (m model) isExists() bool {
 	return m.id > 0
 }
 
-func (m Model) ID() int64 {
+func (m model) ID() int64 {
 	return m.id
 }
 
-func (m Model) Owner() *User {
+func (m model) Owner() *User {
 	return m.owner
 }
 
-func (m Model) EncryptedData() EncryptedData {
+func (m model) EncryptedData() EncryptedData {
 	return *m.encryptedData
 }

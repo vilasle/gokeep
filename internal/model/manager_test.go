@@ -21,8 +21,8 @@ func Test_NewModelManager(t *testing.T) {
 	encR := NewMockEncryptedDataRepository(ctrl)
 
 	m.EXPECT().User().Return(ur)
-	m.EXPECT().Private().Return(pvR).Times(3)
-	m.EXPECT().Encryption().Return(encR).Times(3)
+	m.EXPECT().Private().Return(pvR).Times(4)
+	m.EXPECT().Encryption().Return(encR).Times(4)
 
 	NewModelManager(m)
 }
@@ -75,7 +75,7 @@ func Test_usepassManager_New(t *testing.T) {
 	}
 
 	expected := &Usepass{
-		Model:    Model{},
+		model:    model{},
 		login:    "test",
 		password: "password",
 	}
@@ -96,7 +96,7 @@ func Test_usepassManager_FindByID(t *testing.T) {
 			name: "usepass is found",
 			id:   1234,
 			expected: &Usepass{
-				Model: Model{
+				model: model{
 					id:    1234,
 					owner: newUser("test", "test", nil),
 				},
@@ -128,7 +128,7 @@ func Test_usepassManager_FindByID(t *testing.T) {
 			ctx := context.Background()
 			pvRepository.EXPECT().Get(ctx, tt.id).Return(tt.expected, tt.err)
 
-			usepass, err := manager.FindByID(ctx, tt.id)
+			usepass, err := manager.Get(ctx, nil, tt.id)
 
 			if tt.err != nil {
 				assert.Error(t, tt.err, err)
@@ -150,7 +150,7 @@ func Test_bankCardManager_New(t *testing.T) {
 	}
 
 	expected := &BankCard{
-		Model: Model{
+		model: model{
 			owner: nil,
 		},
 		number:     "123456789012",
@@ -174,7 +174,7 @@ func Test_bankCardManager_FindByID(t *testing.T) {
 			name: "bank card is found",
 			id:   1234,
 			expected: &BankCard{
-				Model: Model{
+				model: model{
 					id: 1234,
 				},
 				number:     "123456789012",
@@ -206,7 +206,7 @@ func Test_bankCardManager_FindByID(t *testing.T) {
 			ctx := context.Background()
 			pvRepository.EXPECT().Get(ctx, tt.id).Return(tt.expected, tt.err)
 
-			bankCard, err := manager.FindByID(ctx, tt.id)
+			bankCard, err := manager.Get(ctx, nil, tt.id)
 
 			if tt.err != nil {
 				assert.Error(t, tt.err, err)

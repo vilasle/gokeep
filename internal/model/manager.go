@@ -22,6 +22,7 @@ type ModelManager struct {
 	BankCards  *bankCardManager
 	PlainTexts *plainTextManager
 	BinaryData *binaryDataManager
+	Usepass    *usepassManager
 }
 
 // NewModelManager creates a new model manager
@@ -40,6 +41,10 @@ func NewModelManager(repository RepositoryCollector) ModelManager {
 			encRepository: repository.Encryption(),
 		},
 		BinaryData: &binaryDataManager{
+			pvRepository:  repository.Private(),
+			encRepository: repository.Encryption(),
+		},
+		Usepass: &usepassManager{
 			pvRepository:  repository.Private(),
 			encRepository: repository.Encryption(),
 		},
@@ -62,7 +67,7 @@ func (c *userManager) FindByLogin(ctx context.Context, login string) (*User, err
 	return findUserByLogin(ctx, login, c.repository)
 }
 
-func (c *userManager) GetByID(ctx context.Context, id int64) (*User, error) {
+func (c *userManager) Get(ctx context.Context, id int64) (*User, error) {
 	//TODO add logger
 	return getUserByID(ctx, id, c.repository)
 }
@@ -79,9 +84,14 @@ func (c *usepassManager) New(owner *User, login, password string) *Usepass {
 	return usepass
 }
 
-func (c *usepassManager) FindByID(ctx context.Context, id int64) (*Usepass, error) {
+func (c *usepassManager) List(ctx context.Context, owner *User) ([]*Usepass, error) {
+	//TODO implement it
+	panic("not implemented")
+}
+
+func (c *usepassManager) Get(ctx context.Context, owner *User, id int64) (*Usepass, error) {
 	//TODO add logger
-	usepass, err := findUsepassByID(ctx, id, c.pvRepository)
+	usepass, err := findUsepassByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
 	}
@@ -102,9 +112,9 @@ func (c *bankCardManager) New(owner *User, number string, cvv int, expirationDat
 	return bankCard
 }
 
-func (c *bankCardManager) FindByID(ctx context.Context, id int64) (*BankCard, error) {
+func (c *bankCardManager) Get(ctx context.Context, owner *User, id int64) (*BankCard, error) {
 	//TODO add logger
-	usepass, err := findBankCardByID(ctx, id, c.pvRepository)
+	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
 	}
@@ -113,12 +123,63 @@ func (c *bankCardManager) FindByID(ctx context.Context, id int64) (*BankCard, er
 	return usepass, nil
 }
 
+func (c *bankCardManager) List(ctx context.Context, owner *User) ([]*BankCard, error) {
+	//TODO implement it
+	panic("not implemented")
+}
+
 type plainTextManager struct {
 	pvRepository  PrivateDataRepository
 	encRepository EncryptedDataRepository
 }
 
+func (c *plainTextManager) New(owner *User, text []byte) *PlainText {
+	plainText := newPlainText(owner, text)
+	plainText.dataRepository = c.pvRepository
+	plainText.encryptionRepository = c.encRepository
+	return plainText
+}
+
+func (c *plainTextManager) Get(ctx context.Context, owner *User, id int64) (*PlainText, error) {
+	//TODO add logger
+	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	plainText.dataRepository = c.pvRepository
+	plainText.encryptionRepository = c.encRepository
+	return plainText, nil
+}
+
+func (c *plainTextManager) List(ctx context.Context, owner *User) ([]*PlainText, error) {
+	//TODO implement it
+	panic("not implemented")
+}
+
 type binaryDataManager struct {
 	pvRepository  PrivateDataRepository
 	encRepository EncryptedDataRepository
+}
+
+func (c *binaryDataManager) New(owner *User, name string, data []byte) *BinaryData {
+	binaryData := newBinaryData(owner, data, name)
+	binaryData.dataRepository = c.pvRepository
+	binaryData.encryptionRepository = c.encRepository
+	return binaryData
+}
+
+func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int64) (*BinaryData, error) {
+	//TODO add logger
+	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	binaryData.dataRepository = c.pvRepository
+	binaryData.encryptionRepository = c.encRepository
+	return binaryData, nil
+}
+
+func (c *binaryDataManager) List(ctx context.Context, owner *User) ([]*BinaryData, error) {
+	//TODO implement it
+	panic("not implemented")
 }

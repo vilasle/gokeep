@@ -21,6 +21,7 @@ type UserRepository interface {
 type PrivateData interface {
 	ID() int64
 	Owner() *User
+	String() string
 	EncryptedData() EncryptedData
 }
 

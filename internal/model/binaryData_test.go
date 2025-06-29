@@ -106,7 +106,7 @@ func Test_BinaryData_Save(t *testing.T) {
 			encryptedR := NewMockEncryptedDataRepository(ctrl)
 			encrypter := NewMockEncrypter(ctrl)
 
-			plainText := newBinaryData(nil, tt.data)
+			plainText := newBinaryData(nil, tt.data, "test")
 
 			plainText.dataRepository = usepassR
 			plainText.encryptionRepository = encryptedR
@@ -128,7 +128,7 @@ func Test_BinaryData_Save(t *testing.T) {
 			}
 
 			if tt.successEncrypt {
-				behaviorPD(usepassR, ctx, !plainText.isExists(), &plainText.Model, errPD)
+				behaviorPD(usepassR, ctx, !plainText.isExists(), &plainText.model, errPD)
 			}
 
 			//if can not save private data, does not try to save encrypted data
@@ -187,7 +187,7 @@ func Test_BinaryData_decryptData(t *testing.T) {
 
 			behavior(enc, *tt.ed, tt.data, tt.encErr)
 
-			plainText := newBinaryData(nil, []byte{})
+			plainText := newBinaryData(nil, []byte{}, "test")
 			plainText.encryptedData = tt.ed
 
 			err := plainText.decryptData(enc)
@@ -216,14 +216,14 @@ func Test_findBinaryDataByID(t *testing.T) {
 			name: "success",
 			id:   1,
 			privateData: &BinaryData{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				data: []byte("some text"),
 			},
 			err: nil,
 			expected: &BinaryData{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				data: []byte("some text"),
@@ -256,7 +256,7 @@ func Test_findBinaryDataByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.id).Return(tt.privateData, tt.repErr)
 
-			actual, err := findBinaryDataByID(ctx, tt.id, r)
+			actual, err := findBinaryDataByID(ctx, tt.id, nil, r)
 
 			if tt.err != nil || tt.repErr != nil {
 				require.Error(t, err)

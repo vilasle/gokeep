@@ -3,8 +3,10 @@ package encryption
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"strings"
 )
 
@@ -14,6 +16,29 @@ type AESKey struct {
 	key   []byte
 	nonce []byte
 	gcm   cipher.AEAD
+}
+
+func GenerateNewAESKey() (*AESKey, error) {
+	key := make([]byte, 32)
+	if _, err := rand.Reader.Read(key); err != nil {
+		return nil, errors.Join(errors.New("error generating random encryption key"), err)
+	}
+
+	aesKey := &AESKey{
+		Key:   hex.EncodeToString(key),
+		Nonce: "",
+	}
+
+	if err := aesKey.initGCM(); err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, aesKey.gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, errors.Join(errors.New("error generating random nonce"), err)
+	}
+	aesKey.Nonce = hex.EncodeToString(nonce)
+	return aesKey, nil
 }
 
 func NewAESKeyFromJSON(content []byte) (*AESKey, error) {

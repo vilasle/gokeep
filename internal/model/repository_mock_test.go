@@ -236,6 +236,20 @@ func (mr *MockPrivateDataMockRecorder) Owner() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Owner", reflect.TypeOf((*MockPrivateData)(nil).Owner))
 }
 
+// String mocks base method.
+func (m *MockPrivateData) String() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "String")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// String indicates an expected call of String.
+func (mr *MockPrivateDataMockRecorder) String() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "String", reflect.TypeOf((*MockPrivateData)(nil).String))
+}
+
 // MockPrivateDataRepository is a mock of PrivateDataRepository interface.
 type MockPrivateDataRepository struct {
 	ctrl     *gomock.Controller

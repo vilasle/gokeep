@@ -132,7 +132,7 @@ func Test_PlainText_Save(t *testing.T) {
 			}
 
 			if tt.successEncrypt {
-				behaviorPD(usepassR, ctx, !plainText.isExists(), &plainText.Model, errPD)
+				behaviorPD(usepassR, ctx, !plainText.isExists(), &plainText.model, errPD)
 			}
 
 			//if can not save private data, does not try to save encrypted data
@@ -222,14 +222,14 @@ func Test_findPlainTextByID(t *testing.T) {
 			name: "success",
 			id:   1,
 			privateData: &PlainText{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				text: []byte("some text"),
 			},
 			err: nil,
 			expected: &PlainText{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				text: []byte("some text"),
@@ -262,7 +262,7 @@ func Test_findPlainTextByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.id).Return(tt.privateData, tt.repErr)
 
-			actual, err := findPlainTextByID(ctx, tt.id, r)
+			actual, err := findPlainTextByID(ctx, tt.id, nil, r)
 
 			if tt.err != nil || tt.repErr != nil {
 				require.Error(t, err)

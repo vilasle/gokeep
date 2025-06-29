@@ -136,7 +136,7 @@ func Test_Usepass_Save(t *testing.T) {
 			}
 
 			if tt.successEncrypt {
-				behaviorPD(usepassR, ctx, !usepass.isExists(), &usepass.Model, errPD)
+				behaviorPD(usepassR, ctx, !usepass.isExists(), &usepass.model, errPD)
 			}
 
 			//if can not save private data, does not try to save encrypted data
@@ -240,7 +240,7 @@ func Test_findUsepassByID(t *testing.T) {
 			name: "success",
 			id:   1,
 			privateData: &Usepass{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				login:    "test",
@@ -248,7 +248,7 @@ func Test_findUsepassByID(t *testing.T) {
 			},
 			err: nil,
 			expected: &Usepass{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				login:    "test",
@@ -259,7 +259,7 @@ func Test_findUsepassByID(t *testing.T) {
 			name: "repository return wrong type",
 			id:   1,
 			privateData: &Usepass{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				login:    "test",
@@ -274,7 +274,7 @@ func Test_findUsepassByID(t *testing.T) {
 			privateData: &MockPrivateData{},
 			err:         errors.New("wrong type"),
 			expected: &Usepass{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				login:    "test",
@@ -294,7 +294,7 @@ func Test_findUsepassByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.id).Return(tt.privateData, tt.repErr)
 
-			actual, err := findUsepassByID(ctx, tt.id, r)
+			actual, err := findUsepassByID(ctx, tt.id, nil, r)
 
 			if tt.err != nil || tt.repErr != nil {
 				require.Error(t, err)

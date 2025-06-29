@@ -137,7 +137,7 @@ func Test_BankCard_Save(t *testing.T) {
 			}
 
 			if tt.successEncrypt {
-				behaviorPD(usepassR, ctx, !bankCard.isExists(), &bankCard.Model, errPD)
+				behaviorPD(usepassR, ctx, !bankCard.isExists(), &bankCard.model, errPD)
 			}
 
 			//if can not save private data, does not try to save encrypted data
@@ -270,7 +270,7 @@ func Test_findBankCardByID(t *testing.T) {
 			name: "success",
 			id:   1,
 			privateData: &BankCard{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				number:     "123456789012",
@@ -279,7 +279,7 @@ func Test_findBankCardByID(t *testing.T) {
 			},
 			err: nil,
 			expected: &BankCard{
-				Model: Model{
+				model: model{
 					id: 1,
 				},
 				number:     "123456789012",
@@ -314,7 +314,7 @@ func Test_findBankCardByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.id).Return(tt.privateData, tt.repErr)
 
-			actual, err := findBankCardByID(ctx, tt.id, r)
+			actual, err := findBankCardByID(ctx, tt.id, nil, r)
 
 			if tt.err != nil || tt.repErr != nil {
 				require.Error(t, err)
