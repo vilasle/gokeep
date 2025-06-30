@@ -30,6 +30,7 @@ type PrivateDataRepository interface {
 	Update(context.Context, PrivateData) error
 	Delete(context.Context, PrivateData) error
 	Get(context.Context, int64) (PrivateData, error)
+	List(ctx context.Context, modelType int8, owner *User) ([]PrivateData, error)
 }
 
 type EncryptedDataRepository interface {

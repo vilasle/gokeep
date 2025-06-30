@@ -85,8 +85,7 @@ func (c *usepassManager) New(owner *User, login, password string) *Usepass {
 }
 
 func (c *usepassManager) List(ctx context.Context, owner *User) ([]*Usepass, error) {
-	//TODO implement it
-	panic("not implemented")
+	return fillListOfPrivateData[*Usepass](ctx, owner, ModelTypeUsepass, c.pvRepository)
 }
 
 func (c *usepassManager) Get(ctx context.Context, owner *User, id int64) (*Usepass, error) {
@@ -124,8 +123,7 @@ func (c *bankCardManager) Get(ctx context.Context, owner *User, id int64) (*Bank
 }
 
 func (c *bankCardManager) List(ctx context.Context, owner *User) ([]*BankCard, error) {
-	//TODO implement it
-	panic("not implemented")
+	return fillListOfPrivateData[*BankCard](ctx, owner, ModelTypeBankCard, c.pvRepository)
 }
 
 type plainTextManager struct {
@@ -152,8 +150,7 @@ func (c *plainTextManager) Get(ctx context.Context, owner *User, id int64) (*Pla
 }
 
 func (c *plainTextManager) List(ctx context.Context, owner *User) ([]*PlainText, error) {
-	//TODO implement it
-	panic("not implemented")
+	return fillListOfPrivateData[*PlainText](ctx, owner, ModelTypePlainText, c.pvRepository)
 }
 
 type binaryDataManager struct {
@@ -180,6 +177,24 @@ func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int64) (*Bi
 }
 
 func (c *binaryDataManager) List(ctx context.Context, owner *User) ([]*BinaryData, error) {
-	//TODO implement it
-	panic("not implemented")
+	return fillListOfPrivateData[*BinaryData](ctx, owner, ModelTypeBinaryData, c.pvRepository)
+}
+
+func fillListOfPrivateData[T *Usepass | *BankCard | *PlainText | *BinaryData](ctx context.Context, owner *User, modelType ModelType, repository PrivateDataRepository) ([]T, error) {
+	privateData, err := repository.List(ctx, modelType, owner)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]T, len(privateData))
+	for i, data := range privateData {
+		if entity, ok := data.(T); ok {
+			result[i] = entity
+		} else {
+			//TODO add logger about wrong type of data
+			//TODO implement it
+			panic("not implemented")
+		}
+	}
+	return result, nil
 }

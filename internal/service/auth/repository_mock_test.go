@@ -317,6 +317,21 @@ func (mr *MockPrivateDataRepositoryMockRecorder) Get(arg0, arg1 interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPrivateDataRepository)(nil).Get), arg0, arg1)
 }
 
+// List mocks base method.
+func (m *MockPrivateDataRepository) List(ctx context.Context, modelType int8, owner *model.User) ([]model.PrivateData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, modelType, owner)
+	ret0, _ := ret[0].([]model.PrivateData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockPrivateDataRepositoryMockRecorder) List(ctx, modelType, owner interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPrivateDataRepository)(nil).List), ctx, modelType, owner)
+}
+
 // Update mocks base method.
 func (m *MockPrivateDataRepository) Update(arg0 context.Context, arg1 model.PrivateData) error {
 	m.ctrl.T.Helper()
