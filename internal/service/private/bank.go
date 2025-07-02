@@ -29,7 +29,7 @@ func (s *BankCardService) List(ctx context.Context, userID int64) (service.ListP
 		return service.ListPrivateDataResponse{Error: "user not found"}, err
 	}
 
-	result, err := s.manager.BinaryData.List(ctx, user)
+	result, err := s.manager.BankCards.List(ctx, user)
 
 	if err != nil {
 		//TODO improve message
@@ -48,7 +48,7 @@ func (s *BankCardService) List(ctx context.Context, userID int64) (service.ListP
 	for i, pv := range result {
 		response.Data[i] = map[string]any{
 			"id":    pv.ID(),
-			"login": pv.String(),
+			"card": pv.String(),
 		}
 	}
 

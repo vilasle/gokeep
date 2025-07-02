@@ -60,7 +60,7 @@ func (bc *BankCard) decryptData(encrypter Encrypter) (err error) {
 }
 
 func (u *BankCard) String() string {
-	view := u.number[:4] + strings.Repeat("*", len(u.number)-4)
+	view := strings.Repeat("*", len(u.number)-4) + u.number[len(u.number)-4:]
 	return string(view)
 }
 

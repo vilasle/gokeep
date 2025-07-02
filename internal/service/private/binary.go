@@ -48,7 +48,7 @@ func (s *BinaryDataService) List(ctx context.Context, userID int64) (service.Lis
 	for i, pv := range result {
 		response.Data[i] = map[string]any{
 			"id":    pv.ID(),
-			"login": pv.String(),
+			"name": pv.String(),
 		}
 	}
 
