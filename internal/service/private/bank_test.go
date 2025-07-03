@@ -32,7 +32,7 @@ func Test_BankCardService_List(t *testing.T) {
 		m.EXPECT().Get(ctx, args.userID).Return(user, args.err).Times(1)
 	}
 
-	behaviorPrivateList := func(m *MockPrivateDataRepository, ctx context.Context, args argsPrivateRepositoryList, user *model.User, dto []model.PrivateData) {
+	behaviorPrivateGet := func(m *MockPrivateDataRepository, ctx context.Context, args argsPrivateRepositoryList, user *model.User, dto []model.PrivateData) {
 		d := dto
 		if args.empty {
 			d = []model.PrivateData{}
@@ -155,7 +155,7 @@ func Test_BankCardService_List(t *testing.T) {
 				bk.SetNumber(tt.privateRepArgs.number)
 				bk.SetExpiration(tt.privateRepArgs.expireAt)
 
-				behaviorPrivateList(pvRep, ctx, tt.privateRepArgs, user, []model.PrivateData{bk})
+				behaviorPrivateGet(pvRep, ctx, tt.privateRepArgs, user, []model.PrivateData{bk})
 			}
 
 			svc := NewBankCardService(manager)
@@ -169,6 +169,275 @@ func Test_BankCardService_List(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, dto)
 
+		})
+
+	}
+}
+
+func Test_BankCardService_Get(t *testing.T) {
+	type argsUserGet struct {
+		userID int64
+		err    error
+	}
+
+	type argsPrivateRepositoryGet struct {
+		id       int64
+		number   string
+		cvv      int
+		expireAt time.Time
+		err      error
+	}
+
+	behaviorUserGet := func(m *MockUserRepository, ctx context.Context, args argsUserGet, user *model.User) {
+		m.EXPECT().Get(ctx, args.userID).Return(user, args.err).Times(1)
+	}
+
+	behaviorPrivateList := func(m *MockPrivateDataRepository, ctx context.Context, args argsPrivateRepositoryGet, user *model.User, dto model.PrivateData) {
+		d := dto
+		m.EXPECT().Get(ctx, args.id).Return(d, args.err).Times(1)
+	}
+
+	testCases := []struct {
+		name           string
+		userID         int64
+		entityID       int64
+		userRepArgs    argsUserGet
+		privateRepArgs argsPrivateRepositoryGet
+		expected       service.PrivateDataResponse
+		wantErr        bool
+	}{
+		{
+			name:     "success",
+			userID:   1,
+			entityID: 1,
+			userRepArgs: argsUserGet{
+				userID: 1,
+				err:    nil,
+			},
+			privateRepArgs: argsPrivateRepositoryGet{
+				id:       1,
+				number:   "1234567890",
+				cvv:      123,
+				expireAt: time.Date(2030, 5, 5, 0, 0, 0, 0, time.UTC),
+				err:      nil,
+			},
+			expected: service.PrivateDataResponse{
+				Fields: map[string]any{
+					"id":   int64(0),
+					"name": "******7890",
+				},
+			},
+		},
+		{
+			name:     "user not found",
+			userID:   1,
+			entityID: 1,
+			userRepArgs: argsUserGet{
+				userID: 1,
+				err:    errors.New("error`"),
+			},
+			privateRepArgs: argsPrivateRepositoryGet{},
+			expected: service.PrivateDataResponse{
+				Error: "user not found",
+			},
+			wantErr: true,
+		},
+		{
+			name:     "repository error",
+			userID:   1,
+			entityID: 1,
+			userRepArgs: argsUserGet{
+				userID: 1,
+				err:    nil,
+			},
+			privateRepArgs: argsPrivateRepositoryGet{
+				id:       1,
+				number:   "1234567890",
+				cvv:      123,
+				expireAt: time.Date(2030, 5, 5, 0, 0, 0, 0, time.UTC),
+				err:      errors.New("error"),
+			},
+			expected: service.PrivateDataResponse{
+				Error: "error getting bank card",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			collector := NewMockRepositoryCollector(ctrl)
+
+			userRep := NewMockUserRepository(ctrl)
+
+			pvRep := NewMockPrivateDataRepository(ctrl)
+
+			collector.EXPECT().User().Return(userRep).Times(1)
+			collector.EXPECT().Private().Return(pvRep).Times(4)
+			collector.EXPECT().Encryption().Return(nil).Times(4)
+
+			manager := model.NewModelManager(collector)
+
+			user := manager.Users.New("test", "test")
+
+			behaviorUserGet(userRep, ctx, tt.userRepArgs, user)
+
+			if tt.userRepArgs.err == nil {
+				bk := &model.BankCard{}
+				bk.SetCVV(tt.privateRepArgs.cvv)
+				bk.SetNumber(tt.privateRepArgs.number)
+				bk.SetExpiration(tt.privateRepArgs.expireAt)
+
+				behaviorPrivateList(pvRep, ctx, tt.privateRepArgs, user, bk)
+			}
+
+			svc := NewBankCardService(manager)
+
+			dto, err := svc.Get(ctx, service.GetPrivateData{
+				UserID: tt.userID,
+				ID:     tt.privateRepArgs.id,
+			})
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+
+			require.Equal(t, tt.expected, dto)
+
+		})
+
+	}
+}
+
+func Test_BankCardService_Delete(t *testing.T) {
+	type argsUserGet struct {
+		userID int64
+		err    error
+	}
+
+	type argsPrivateRepositoryGet struct {
+		id       int64
+		number   string
+		cvv      int
+		expireAt time.Time
+		err      error
+	}
+
+	type argsEncryptedDataRepositoryDelete struct {
+		err error
+	}
+
+	type argsPrivateRepositoryDelete struct {
+		err error
+	}
+
+	behaviorUserGet := func(m *MockUserRepository, ctx context.Context, args argsUserGet, user *model.User) {
+		m.EXPECT().Get(ctx, args.userID).Return(user, args.err).Times(1)
+	}
+
+	behaviorPrivateGet := func(m *MockPrivateDataRepository, ctx context.Context, args argsPrivateRepositoryGet, dto model.PrivateData) {
+		d := dto
+		m.EXPECT().Get(ctx, args.id).Return(d, args.err).Times(1)
+	}
+
+	behaviorPrivateDelete := func(m *MockPrivateDataRepository, ctx context.Context, args argsPrivateRepositoryDelete) {
+		m.EXPECT().Delete(ctx, gomock.Any()).Return(args.err).Times(1)
+	}
+
+	behaviorEncryptedDelete := func(m *MockEncryptedDataRepository, ctx context.Context, args argsEncryptedDataRepositoryDelete) {
+		m.EXPECT().Delete(ctx, gomock.Any()).Return(args.err).Times(1)
+	}
+
+	testCases := []struct {
+		name                   string
+		userID                 int64
+		entityID               int64
+		userRepArgs            argsUserGet
+		privateRepArgsGet      argsPrivateRepositoryGet
+		privateRepArgsDelete   argsPrivateRepositoryDelete
+		encryptedRepArgsDelete argsEncryptedDataRepositoryDelete
+		wantErr                bool
+	}{
+		{
+			name:     "success",
+			userID:   1,
+			entityID: 1,
+			userRepArgs: argsUserGet{
+				userID: 1,
+				err:    nil,
+			},
+			privateRepArgsGet: argsPrivateRepositoryGet{
+				id:       1,
+				number:   "1234567890",
+				cvv:      123,
+				expireAt: time.Date(2030, 5, 5, 0, 0, 0, 0, time.UTC),
+				err:      nil,
+			},
+			privateRepArgsDelete: argsPrivateRepositoryDelete{
+				err: nil,
+			},
+			encryptedRepArgsDelete: argsEncryptedDataRepositoryDelete{
+				err: nil,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			collector := NewMockRepositoryCollector(ctrl)
+
+			userRep := NewMockUserRepository(ctrl)
+
+			pvRep := NewMockPrivateDataRepository(ctrl)
+			encRep := NewMockEncryptedDataRepository(ctrl)
+
+			collector.EXPECT().User().Return(userRep).Times(1)
+			collector.EXPECT().Private().Return(pvRep).Times(4)
+			collector.EXPECT().Encryption().Return(encRep).Times(4)
+
+			manager := model.NewModelManager(collector)
+
+			user := manager.Users.New("test", "test")
+
+			behaviorUserGet(userRep, ctx, tt.userRepArgs, user)
+
+			if tt.userRepArgs.err == nil {
+				bk := &model.BankCard{}
+				bk.SetCVV(tt.privateRepArgsGet.cvv)
+				bk.SetNumber(tt.privateRepArgsGet.number)
+				bk.SetExpiration(tt.privateRepArgsGet.expireAt)
+
+				behaviorPrivateGet(pvRep, ctx, tt.privateRepArgsGet, bk)
+			}
+
+			if tt.userRepArgs.err == nil && tt.privateRepArgsGet.err == nil {
+				behaviorPrivateDelete(pvRep, ctx, tt.privateRepArgsDelete)
+				behaviorEncryptedDelete(encRep, ctx, tt.encryptedRepArgsDelete)
+			}
+
+			svc := NewBankCardService(manager)
+
+			err := svc.Delete(ctx, service.DeletePrivateData{
+				UserID: tt.userID,
+				ID:     tt.privateRepArgsGet.id,
+			})
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 
 	}

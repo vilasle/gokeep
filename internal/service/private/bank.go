@@ -47,7 +47,7 @@ func (s *BankCardService) List(ctx context.Context, userID int64) (service.ListP
 
 	for i, pv := range result {
 		response.Data[i] = map[string]any{
-			"id":    pv.ID(),
+			"id":   pv.ID(),
 			"card": pv.String(),
 		}
 	}
@@ -62,7 +62,7 @@ func (s *BankCardService) Get(ctx context.Context, req service.GetPrivateData) (
 		return service.PrivateDataResponse{Error: "user not found"}, err
 	}
 
-	result, err := s.manager.BinaryData.Get(ctx, user, req.ID)
+	result, err := s.manager.BankCards.Get(ctx, user, req.ID)
 	if err != nil {
 		//TODO change error, and if not found user, message about it
 		return service.PrivateDataResponse{Error: "error getting bank card"}, err
@@ -82,7 +82,7 @@ func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateD
 		return err
 	}
 
-	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
+	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
 	if err != nil {
 		return err
 	}
