@@ -1,14 +1,15 @@
 BUILD_VERSION=$(shell git describe --always --long)
 BUILD_DATE=$(shell date +'%Y/%m/%d %H:%M:%S')
 BUILD_COMMIT=$(shell git log --format='%H' -n 1)
-build-server:
-	go build -o bin/server -ldflags "-X 'main.buildVersion=$(BUILD_VERSION)' -X 'main.buildDate=$(BUILD_DATE)' -X 'main.buildCommit=$(BUILD_COMMIT)'" cmd/server/*.go
+server:
+	go build -o bin/gokeep-backend -ldflags "-X 'main.buildVersion=$(BUILD_VERSION)' -X 'main.buildDate=$(BUILD_DATE)' -X 'main.buildCommit=$(BUILD_COMMIT)'" cmd/server/*.go
 
-build-client:
-	go build -o bin/client -ldflags "-X 'main.buildVersion=$(BUILD_VERSION)' -X 'main.buildDate=$(BUILD_DATE)' -X 'main.buildCommit=$(BUILD_COMMIT)'" cmd/client/*.go
+client:
+	go build -o bin/gokeep-cli -ldflags "-X 'main.buildVersion=$(BUILD_VERSION)' -X 'main.buildDate=$(BUILD_DATE)' -X 'main.buildCommit=$(BUILD_COMMIT)'" cmd/client/*.go
 
 clear:
 	rm -rf bin/*
+	
 generate-proto:
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/service.proto	
 
