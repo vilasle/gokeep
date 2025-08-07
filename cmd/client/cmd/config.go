@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 )
 
 var (
@@ -28,10 +30,27 @@ var initCmd = &cobra.Command{
 	Long: `init - create main directory with config files
 	generate RSA keys and create config file with information about local database and grpc server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called 'config init'")
-		fmt.Println("grpc socket:", grpcSocket)
-		fmt.Println("local database path:", localDatabasePath)
-		fmt.Println("config file", customConfig)
+		if customWorkplace == "" {
+			fmt.Println("custom workplace is not set")
+			os.Exit(1)
+		}
+
+		if grpcSocket == "" {
+			fmt.Println("grpc socket is not set")
+			os.Exit(2)
+		}
+
+		if localDatabasePath == "" {
+			fmt.Println("local database path is not set")
+			os.Exit(3)
+		}
+
+		err := client.CreateNewConfiguration(customWorkplace, grpcSocket, localDatabasePath)
+		if err != nil {
+			fmt.Println("creating new configuration failed:", err)
+			os.Exit(4)
+		}
+		fmt.Println("configuration created")
 	},
 }
 
@@ -41,8 +60,18 @@ var reportCmd = &cobra.Command{
 	Short: "report - print current config values",
 	Long:  `report - check and print current config values`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called 'config report'")
-		fmt.Println("config file", customConfig)
+		if customWorkplace == "" {
+			fmt.Println("custom workplace is not set")
+			os.Exit(1)
+		}
+
+		config, err := client.GetCurrentConfiguration(customWorkplace)
+		if err != nil {
+			fmt.Println("getting current configuration failed:", err)
+			os.Exit(2)
+		}
+		fmt.Println("current configuration:")
+		config.Report()
 	},
 }
 

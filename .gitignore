@@ -2,3 +2,4 @@ bin/
 .vscode
 *.yaml
 cert/
+config/

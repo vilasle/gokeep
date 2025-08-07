@@ -1,14 +1,15 @@
 package client
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/ilyakaznacheev/cleanenv"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,6 +32,12 @@ type WorkplaceConfig struct {
 	CredentialsPath     PathInfo
 }
 
+func (w WorkplaceConfig) Report() {
+	fmt.Println("workplace directory:", w.ConfigDirectoryPath.Path)
+	fmt.Println("config:", w.ConfigPath.Path)
+	fmt.Println("certificate:", w.CertificatePath.Path)
+}
+
 type PathInfo struct {
 	Path  string
 	Error error
@@ -45,7 +52,7 @@ func GetCurrentConfiguration(customConfigPath string) (WorkplaceConfig, error) {
 
 func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error) {
 	workplaceConfig := WorkplaceConfig{}
-	if len(configPath) == 0 {
+	if len(configPath) > 0 {
 		workplaceConfig, err = customConfiguration(configPath)
 		if err != nil {
 			return err
@@ -84,29 +91,11 @@ func defaultConfiguration() WorkplaceConfig {
 }
 
 func customConfiguration(path string) (WorkplaceConfig, error) {
-	customConfig := &struct {
-		Config struct {
-			ConfigDirectoryPath string `yaml:"folder" env-required:"true"`
-			ConfigPath          string `yaml:"config" env-required:"true"`
-			CertificatePath     string `yaml:"certificates" env-required:"true"`
-		}
-	}{}
-
-	fd, err := os.Open(path)
-	if err != nil {
-		return WorkplaceConfig{}, errors.Join(errors.New("opening config file"), err)
-	}
-	defer fd.Close()
-
-	if err := cleanenv.ParseYAML(fd, &customConfig); err != nil {
-		return WorkplaceConfig{}, errors.Join(err, errors.New("can not parse config file"))
-	}
-
 	return WorkplaceConfig{
-		ConfigDirectoryPath: getPathInfoCheckOnlyExisting(customConfig.Config.ConfigDirectoryPath),
-		ConfigPath:          getPathInfoCheckOnlyExisting(customConfig.Config.ConfigPath),
-		CertificatePath:     getCertificatesPathInfo(customConfig.Config.CertificatePath),
-		CredentialsPath:     getCredentialsPathInfo(customConfig.Config.ConfigDirectoryPath),
+		ConfigDirectoryPath: getPathInfoCheckOnlyExisting(path),
+		ConfigPath:          getPathInfoCheckOnlyExisting(filepath.Join(path, configName)),
+		CertificatePath:     getCertificatesPathInfo(filepath.Join(path, certificateNameDirectory)),
+		CredentialsPath:     getCredentialsPathInfo(path),
 	}, nil
 
 }
@@ -168,7 +157,7 @@ func createDirectories(path ...PathInfo) error {
 }
 
 func generateRSAKeys(savePath string) error {
-	privateKey, err := rsa.GenerateKey(nil, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return errors.Join(err, errors.New("generate private key"))
 	}

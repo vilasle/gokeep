@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	customConfig string
+	customWorkplace string
 	Version      string
 	Date         string
 	Commit       string
@@ -46,9 +46,9 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&customConfig,
-		"config", "c", "",
-		"custom config file, with gokeep directories and files")
+	rootCmd.PersistentFlags().StringVarP(&customWorkplace,
+		"workplace", "c", "",
+		"custom workplace, with gokeep directories and files. Default workplace is $HOME/.gokeep")
 
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(versionCmd)
