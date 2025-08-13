@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 )
 
 // accountCmd represents the account command
@@ -22,13 +23,42 @@ var createCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called account create")
 		if len(args) == 0 {
 			fmt.Println("does not define account name")
 			os.Exit(1)
 		}
 		accountName := args[0]
-		fmt.Println("account name:", accountName)
+
+		config, err := client.GetCurrentConfiguration(customWorkplace)
+		if err != nil {
+			fmt.Println("getting current configuration failed:", err)
+			fmt.Println(`if you did not initialize configuration try call before creating account: 
+				gokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH`)
+			os.Exit(2)
+		}
+
+		fmt.Println("login:", accountName)
+		fmt.Print("password: ")
+		// bytePwd, err := term.ReadPassword(int(syscall.Stdin))
+		// if err != nil {
+		// 	fmt.Println("failed to read password")
+		// 	os.Exit(1)
+		// }
+		// fmt.Print("\n")
+		// pass := string(bytePwd)
+
+		pass := "some password"
+
+		app, err := client.NewClient(config)
+		if err != nil {
+			fmt.Println("failed to create client")
+			os.Exit(1)
+		}
+
+		if err := app.CreateAccount(accountName, pass); err != nil {
+			fmt.Println("failed to create account")
+			os.Exit(1)
+		}
 	},
 }
 

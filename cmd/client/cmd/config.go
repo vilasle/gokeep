@@ -60,11 +60,6 @@ var reportCmd = &cobra.Command{
 	Short: "report - print current config values",
 	Long:  `report - check and print current config values`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if customWorkplace == "" {
-			fmt.Println("custom workplace is not set")
-			os.Exit(1)
-		}
-
 		config, err := client.GetCurrentConfiguration(customWorkplace)
 		if err != nil {
 			fmt.Println("getting current configuration failed:", err)

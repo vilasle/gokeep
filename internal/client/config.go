@@ -181,8 +181,8 @@ func generateRSAKeys(savePath string) error {
 	}
 	publicKeyPEM := pem.EncodeToMemory(publicKeyBlock)
 
-	privKeyPath := filepath.Join(savePath, "private.key")
-	pubKeyPath := filepath.Join(savePath, "public.key")
+	privKeyPath := filepath.Join(savePath, privKeyName)
+	pubKeyPath := filepath.Join(savePath, pubKeyName)
 
 	if err := os.WriteFile(privKeyPath, privateKeyPEM, 0644); err != nil {
 		return errors.Join(err, errors.New("write private key"))
