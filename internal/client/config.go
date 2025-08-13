@@ -26,16 +26,21 @@ type Config struct {
 }
 
 type WorkplaceConfig struct {
-	ConfigDirectoryPath PathInfo
-	ConfigPath          PathInfo
-	CertificatePath     PathInfo
-	CredentialsPath     PathInfo
+	ConfigDirectory PathInfo
+	Config          PathInfo
+	Certificate     PathInfo
+	Credentials     PathInfo
 }
 
 func (w WorkplaceConfig) Report() {
-	fmt.Println("workplace directory:", w.ConfigDirectoryPath.Path)
-	fmt.Println("config:", w.ConfigPath.Path)
-	fmt.Println("certificate:", w.CertificatePath.Path)
+	fmt.Println("workplace directory:", w.ConfigDirectory.Path)
+	fmt.Println("config:", w.Config.Path)
+	fmt.Println("certificate:", w.Certificate.Path)
+}
+
+func (w WorkplaceConfig) PathError() error {
+	return errors.Join(w.ConfigDirectory.Error, w.Config.Error,
+		w.Certificate.Error)
 }
 
 type PathInfo struct {
@@ -44,32 +49,33 @@ type PathInfo struct {
 }
 
 func GetCurrentConfiguration(customConfigPath string) (WorkplaceConfig, error) {
+	var workplace WorkplaceConfig
 	if len(customConfigPath) > 0 {
-		return customConfiguration(customConfigPath)
+		workplace = customConfiguration(customConfigPath)
+	} else {
+		workplace = defaultConfiguration()
 	}
-	return defaultConfiguration(), nil
+
+	return workplace, workplace.PathError()
 }
 
 func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error) {
 	workplaceConfig := WorkplaceConfig{}
 	if len(configPath) > 0 {
-		workplaceConfig, err = customConfiguration(configPath)
-		if err != nil {
-			return err
-		}
+		workplaceConfig = customConfiguration(configPath)
 	} else {
 		workplaceConfig = defaultConfiguration()
 	}
 
-	if err := createDirectories(workplaceConfig.ConfigDirectoryPath, workplaceConfig.CertificatePath); err != nil {
+	if err := createDirectories(workplaceConfig.ConfigDirectory, workplaceConfig.Certificate); err != nil {
 		return err
 	}
 
-	if err := generateRSAKeys(workplaceConfig.CertificatePath.Path); err != nil {
+	if err := generateRSAKeys(workplaceConfig.Certificate.Path); err != nil {
 		return err
 	}
 
-	return generateConfig(workplaceConfig.ConfigPath.Path, serverSocket, dbPath)
+	return generateConfig(workplaceConfig.Config.Path, serverSocket, dbPath)
 }
 
 func defaultConfiguration() WorkplaceConfig {
@@ -83,21 +89,20 @@ func defaultConfiguration() WorkplaceConfig {
 	certPath := filepath.Join(configDir, certificateNameDirectory)
 
 	return WorkplaceConfig{
-		ConfigDirectoryPath: getPathInfoCheckOnlyExisting(configDir),
-		ConfigPath:          getPathInfoCheckOnlyExisting(configPath),
-		CertificatePath:     getCertificatesPathInfo(certPath),
-		CredentialsPath:     getCredentialsPathInfo(configDir),
+		ConfigDirectory: getPathInfoCheckOnlyExisting(configDir),
+		Config:          getPathInfoCheckOnlyExisting(configPath),
+		Certificate:     getCertificatesPathInfo(certPath),
+		Credentials:     getCredentialsPathInfo(configDir),
 	}
 }
 
-func customConfiguration(path string) (WorkplaceConfig, error) {
+func customConfiguration(path string) WorkplaceConfig {
 	return WorkplaceConfig{
-		ConfigDirectoryPath: getPathInfoCheckOnlyExisting(path),
-		ConfigPath:          getPathInfoCheckOnlyExisting(filepath.Join(path, configName)),
-		CertificatePath:     getCertificatesPathInfo(filepath.Join(path, certificateNameDirectory)),
-		CredentialsPath:     getCredentialsPathInfo(path),
-	}, nil
-
+		ConfigDirectory: getPathInfoCheckOnlyExisting(path),
+		Config:          getPathInfoCheckOnlyExisting(filepath.Join(path, configName)),
+		Certificate:     getCertificatesPathInfo(filepath.Join(path, certificateNameDirectory)),
+		Credentials:     getCredentialsPathInfo(path),
+	}
 }
 
 func isExists(path string) error {
@@ -108,7 +113,8 @@ func isExists(path string) error {
 func getPathInfoCheckOnlyExisting(path string) PathInfo {
 	if err := isExists(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return PathInfo{Path: path, Error: errors.New("does not exists")}
+
+			return PathInfo{Path: path, Error: fmt.Errorf("%s does not exists", path)}
 		} else {
 			return PathInfo{Path: path, Error: err}
 		}

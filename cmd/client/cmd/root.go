@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	customWorkplace string
-	Version      string
-	Date         string
-	Commit       string
+	customWorkspace string
+	Version         string
+	Date            string
+	Commit          string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -46,8 +46,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&customWorkplace,
-		"workplace", "c", "",
+	rootCmd.PersistentFlags().StringVarP(&customWorkspace,
+		"workspace", "c", "",
 		"custom workplace, with gokeep directories and files. Default workplace is $HOME/.gokeep")
 
 	rootCmd.AddCommand(configCmd)

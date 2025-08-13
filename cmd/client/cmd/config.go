@@ -30,11 +30,6 @@ var initCmd = &cobra.Command{
 	Long: `init - create main directory with config files
 	generate RSA keys and create config file with information about local database and grpc server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if customWorkplace == "" {
-			fmt.Println("custom workplace is not set")
-			os.Exit(1)
-		}
-
 		if grpcSocket == "" {
 			fmt.Println("grpc socket is not set")
 			os.Exit(2)
@@ -45,7 +40,7 @@ var initCmd = &cobra.Command{
 			os.Exit(3)
 		}
 
-		err := client.CreateNewConfiguration(customWorkplace, grpcSocket, localDatabasePath)
+		err := client.CreateNewConfiguration(customWorkspace, grpcSocket, localDatabasePath)
 		if err != nil {
 			fmt.Println("creating new configuration failed:", err)
 			os.Exit(4)
@@ -60,7 +55,7 @@ var reportCmd = &cobra.Command{
 	Short: "report - print current config values",
 	Long:  `report - check and print current config values`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := client.GetCurrentConfiguration(customWorkplace)
+		config, err := client.GetCurrentConfiguration(customWorkspace)
 		if err != nil {
 			fmt.Println("getting current configuration failed:", err)
 			os.Exit(2)

@@ -29,11 +29,12 @@ var createCmd = &cobra.Command{
 		}
 		accountName := args[0]
 
-		config, err := client.GetCurrentConfiguration(customWorkplace)
+		config, err := client.GetCurrentConfiguration(customWorkspace)
 		if err != nil {
-			fmt.Println("getting current configuration failed:", err)
-			fmt.Println(`if you did not initialize configuration try call before creating account: 
-				gokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH`)
+			fmt.Println("getting current configuration failed:")
+			fmt.Println(err)
+			fmt.Println("\nif you did not initialize configuration try call before creating account:")
+			fmt.Println("\tgokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH")
 			os.Exit(2)
 		}
 
@@ -73,7 +74,37 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		accountName := args[0]
-		fmt.Println("account name:", accountName)
+		config, err := client.GetCurrentConfiguration(customWorkspace)
+		if err != nil {
+			fmt.Println("getting current configuration failed:")
+			fmt.Println(err)
+			fmt.Println("\nif you did not initialize configuration try call before creating account:")
+			fmt.Println("\tgokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH")
+			os.Exit(2)
+		}
+
+		fmt.Println("login:", accountName)
+		fmt.Print("password: ")
+		// bytePwd, err := term.ReadPassword(int(syscall.Stdin))
+		// if err != nil {
+		// 	fmt.Println("failed to read password")
+		// 	os.Exit(1)
+		// }
+		// fmt.Print("\n")
+		// pass := string(bytePwd)
+
+		pass := "some password"
+
+		app, err := client.NewClient(config)
+		if err != nil {
+			fmt.Println("failed to create client")
+			os.Exit(1)
+		}
+
+		if err := app.Login(accountName, pass); err != nil {
+			fmt.Println("failed to create account")
+			os.Exit(1)
+		}
 	},
 }
 

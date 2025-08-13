@@ -4,9 +4,13 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/vilasle/gokeep/internal/service/client"
+	"github.com/vilasle/gokeep/internal/service/client/grpc"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,6 +26,9 @@ type Client struct {
 	privateKey *rsa.PrivateKey
 	//publicKeyContent - need only bytes for pass it to server
 	publicKeyContent []byte
+	auth             client.AuthService
+	data             client.PrivateDataService
+	credential       []byte
 }
 
 func NewClient(workspace WorkplaceConfig) (*Client, error) {
@@ -33,16 +40,22 @@ func NewClient(workspace WorkplaceConfig) (*Client, error) {
 		return nil, err
 	}
 
+	if err := client.loadCredentialIfExists(); err != nil {
+		return nil, err
+	}
+
 	if err := client.loadRSAKeys(); err != nil {
 		return nil, err
 	}
+
+	client.auth = grpc.NewGRPCAuthService(client.config.ServerSocket)
 
 	return client, nil
 }
 
 func (c *Client) loadConfiguration() error {
 	//try load information about grpc server and local database
-	configFd, err := os.Open(c.workspace.ConfigPath.Path)
+	configFd, err := os.Open(c.workspace.Config.Path)
 	if err != nil {
 		//TODO add error context
 		return err
@@ -60,7 +73,7 @@ func (c *Client) loadConfiguration() error {
 }
 
 func (c *Client) loadRSAKeys() error {
-	publicPath, privatePath, err := findKeysPath(c.workspace.CredentialsPath.Path)
+	publicPath, privatePath, err := findKeysPath(c.workspace.Certificate.Path)
 	if publicPath == "" || privatePath == "" {
 		//TODO add error context
 		return fmt.Errorf("public and private keys not found")
@@ -92,6 +105,35 @@ func (c *Client) loadRSAKeys() error {
 	return nil
 }
 
+// loadCredentialIfExists - load credential from file if it exists. if file does not exists method will not return error
+func (c *Client) loadCredentialIfExists() error {
+	if c.workspace.Credentials.Error != nil {
+		return nil
+	}
+
+	credential, err := os.ReadFile(c.workspace.Credentials.Path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	c.credential = credential
+	return nil
+}
+
+func (c *Client) saveCredential(account string) error {
+	if len(c.credential) == 0 {
+		return errors.New("credential is empty")
+	}
+
+	path := filepath.Join(c.workspace.Credentials.Path, account)
+	path += creadExt
+
+	return os.WriteFile(path, c.credential, 0600)
+}
+
 func findKeysPath(path string) (string, string, error) {
 	var publicPath, privatePath string
 
@@ -103,9 +145,9 @@ func findKeysPath(path string) (string, string, error) {
 
 	for _, file := range ls {
 		if file.Name() == pubKeyName {
-			publicPath = file.Name()
+			publicPath = filepath.Join(path, file.Name())
 		} else if file.Name() == privKeyName {
-			privatePath = file.Name()
+			privatePath = filepath.Join(path, file.Name())
 		}
 	}
 
