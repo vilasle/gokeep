@@ -12,7 +12,7 @@ var _ service.BandCardService = (*BankCardService)(nil)
 
 type BankCardService struct {
 	//key encryption key
-	kek     encryption.Encryptor
+	kek     encryption.Encoder
 	manager model.ModelManager
 }
 
@@ -90,7 +90,7 @@ func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateD
 	return entity.Delete(ctx)
 }
 
-func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -101,7 +101,7 @@ func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clie
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -120,7 +120,7 @@ func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BankCardService) save(ctx context.Context, entity *model.BankCard, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BankCardService) save(ctx context.Context, entity *model.BankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	//generate new key for data
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {

@@ -23,8 +23,8 @@ func newBinaryData(owner *User, data []byte, name string) *BinaryData {
 	}
 }
 
-func (bd *BinaryData) Save(ctx context.Context, encrypter Encrypter) (err error) {
-	if err := bd.prepareEncryptedData(encrypter); err != nil {
+func (bd *BinaryData) Save(ctx context.Context, encoder Encoder) (err error) {
+	if err := bd.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
@@ -43,8 +43,8 @@ func (bd *BinaryData) SetData(data []byte) {
 	bd.data = data
 }
 
-func (bd *BinaryData) prepareEncryptedData(encrypter Encrypter) error {
-	encryptedData, err := encrypter.Encrypt(bd.data)
+func (bd *BinaryData) prepareEncryptedData(encoder Encoder) error {
+	encryptedData, err := encoder.Encrypt(bd.data)
 	if err != nil {
 		return err
 	}
@@ -55,8 +55,8 @@ func (bd *BinaryData) prepareEncryptedData(encrypter Encrypter) error {
 	return nil
 }
 
-func (bd *BinaryData) decryptData(encrypter Encrypter) (err error) {
-	bd.data, err = encrypter.Decrypt(*bd.encryptedData)
+func (bd *BinaryData) decryptData(encoder Encoder) (err error) {
+	bd.data, err = encoder.Decrypt(*bd.encryptedData)
 	return err
 }
 

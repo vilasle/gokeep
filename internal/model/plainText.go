@@ -24,22 +24,22 @@ func newPlainText(owner *User, text []byte) *PlainText {
 	}
 }
 
-func (tp *PlainText) Save(ctx context.Context, encrypter Encrypter) (err error) {
-	if err := tp.prepareEncryptedData(encrypter); err != nil {
+func (tp *PlainText) Save(ctx context.Context, encoder Encoder) (err error) {
+	if err := tp.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
 	return tp.model.Save(ctx)
 }
 
-func (tp *PlainText) prepareEncryptedData(encrypter Encrypter) error {
+func (tp *PlainText) prepareEncryptedData(encoder Encoder) error {
 	data, err := tp.dataForEncryption()
 	if err != nil {
 		//TODO wrap error with package error
 		return err
 	}
 
-	encryptedData, err := encrypter.Encrypt(data)
+	encryptedData, err := encoder.Encrypt(data)
 	if err != nil {
 		return err
 	}
@@ -59,8 +59,8 @@ func (tp *PlainText) SetText(text []byte) {
 	tp.text = text
 }
 
-func (tp *PlainText) decryptData(encrypter Encrypter) (err error) {
-	data, err := encrypter.Decrypt(*tp.encryptedData)
+func (tp *PlainText) decryptData(encoder Encoder) (err error) {
+	data, err := encoder.Decrypt(*tp.encryptedData)
 	if err != nil {
 		return err
 	}

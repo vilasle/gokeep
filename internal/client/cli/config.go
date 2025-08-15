@@ -1,4 +1,4 @@
-package client
+package cli
 
 import (
 	"crypto/rand"
@@ -16,6 +16,7 @@ import (
 const (
 	mainDir                  = ".gokeep"
 	configName               = "config.yaml"
+	uploadName               = "upload"
 	certificateNameDirectory = "cert"
 	creadExt                 = ".cread"
 )
@@ -27,6 +28,7 @@ type Config struct {
 
 type WorkplaceConfig struct {
 	ConfigDirectory PathInfo
+	UploadDirectory PathInfo
 	Config          PathInfo
 	Certificate     PathInfo
 	Credentials     PathInfo
@@ -34,6 +36,7 @@ type WorkplaceConfig struct {
 
 func (w WorkplaceConfig) Report() {
 	fmt.Println("workplace directory:", w.ConfigDirectory.Path)
+	fmt.Println("upload directory:", w.UploadDirectory.Path)
 	fmt.Println("config:", w.Config.Path)
 	fmt.Println("certificate:", w.Certificate.Path)
 }
@@ -90,6 +93,7 @@ func defaultConfiguration() WorkplaceConfig {
 
 	return WorkplaceConfig{
 		ConfigDirectory: getPathInfoCheckOnlyExisting(configDir),
+		UploadDirectory: getPathInfoCheckOnlyExisting(filepath.Join(configDir, uploadName)),
 		Config:          getPathInfoCheckOnlyExisting(configPath),
 		Certificate:     getCertificatesPathInfo(certPath),
 		Credentials:     getCredentialsPathInfo(configDir),
@@ -99,6 +103,7 @@ func defaultConfiguration() WorkplaceConfig {
 func customConfiguration(path string) WorkplaceConfig {
 	return WorkplaceConfig{
 		ConfigDirectory: getPathInfoCheckOnlyExisting(path),
+		UploadDirectory: getPathInfoCheckOnlyExisting(filepath.Join(path, uploadName)),
 		Config:          getPathInfoCheckOnlyExisting(filepath.Join(path, configName)),
 		Certificate:     getCertificatesPathInfo(filepath.Join(path, certificateNameDirectory)),
 		Credentials:     getCredentialsPathInfo(path),

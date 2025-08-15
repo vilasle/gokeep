@@ -2,18 +2,18 @@ package encryption
 
 import "encoding/hex"
 
-type Encryptor interface {
+type Encoder interface {
 	Encrypt(data []byte) ([]byte, error)
 	Decrypt(data []byte) ([]byte, error)
 }
 
 type EncryptedData struct {
-	dek  Encryptor
+	dek  Encoder
 	Data string `json:"data"`
 	Key  string `json:"key"`
 }
 
-func NewEncryptedDataFromReadyData(dek Encryptor, data, key []byte) *EncryptedData {
+func NewEncryptedDataFromReadyData(dek Encoder, data, key []byte) *EncryptedData {
 	return &EncryptedData{
 		dek:  dek,
 		Data: string(data),
@@ -21,7 +21,7 @@ func NewEncryptedDataFromReadyData(dek Encryptor, data, key []byte) *EncryptedDa
 	}
 }
 
-func NewEncryptedData(dek Encryptor) *EncryptedData {
+func NewEncryptedData(dek Encoder) *EncryptedData {
 	return &EncryptedData{dek: dek}
 }
 
@@ -42,7 +42,7 @@ func (ed *EncryptedData) Decrypt() ([]byte, error) {
 	return ed.dek.Decrypt(data)
 }
 
-func (ed *EncryptedData) EncryptKey(enc Encryptor, data []byte) error {
+func (ed *EncryptedData) EncryptKey(enc Encoder, data []byte) error {
 	encData, err := enc.Encrypt(data)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (ed *EncryptedData) EncryptKey(enc Encryptor, data []byte) error {
 	return nil
 }
 
-func (ed *EncryptedData) DecryptKey(enc Encryptor) ([]byte, error) {
+func (ed *EncryptedData) DecryptKey(enc Encoder) ([]byte, error) {
 	data, err := hex.DecodeString(ed.Key)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (ed *EncryptedData) DecryptKey(enc Encryptor) ([]byte, error) {
 	return enc.Decrypt(data)
 }
 
-func (ed *EncryptedData) ReplaceKey(current, new Encryptor) error {
+func (ed *EncryptedData) ReplaceKey(current, new Encoder) error {
 	key, err := ed.DecryptKey(current)
 	if err != nil {
 		return err

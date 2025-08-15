@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/vilasle/gokeep/internal/client"
+	"github.com/vilasle/gokeep/internal/client/cli"
 )
 
 var (
@@ -40,7 +40,7 @@ var initCmd = &cobra.Command{
 			os.Exit(3)
 		}
 
-		err := client.CreateNewConfiguration(customWorkspace, grpcSocket, localDatabasePath)
+		err := cli.CreateNewConfiguration(customWorkspace, grpcSocket, localDatabasePath)
 		if err != nil {
 			fmt.Println("creating new configuration failed:", err)
 			os.Exit(4)
@@ -55,7 +55,7 @@ var reportCmd = &cobra.Command{
 	Short: "report - print current config values",
 	Long:  `report - check and print current config values`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := client.GetCurrentConfiguration(customWorkspace)
+		config, err := cli.GetCurrentConfiguration(customWorkspace)
 		if err != nil {
 			fmt.Println("getting current configuration failed:", err)
 			os.Exit(2)

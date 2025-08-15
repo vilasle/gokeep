@@ -27,8 +27,8 @@ func newUsepass(owner *User, login, password string) *Usepass {
 	}
 }
 
-func (u *Usepass) Save(ctx context.Context, encrypter Encrypter) (err error) {
-	if err := u.prepareEncryptedData(encrypter); err != nil {
+func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
+	if err := u.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
@@ -47,10 +47,10 @@ func (u *Usepass) SetPassword(password string) {
 	u.password = password
 }
 
-func (u *Usepass) prepareEncryptedData(encrypter Encrypter) error {
+func (u *Usepass) prepareEncryptedData(encoder Encoder) error {
 	data := u.dataForEncryption()
 
-	encryptedData, err := encrypter.Encrypt(data)
+	encryptedData, err := encoder.Encrypt(data)
 	if err != nil {
 		return err
 	}
@@ -62,8 +62,8 @@ func (u *Usepass) prepareEncryptedData(encrypter Encrypter) error {
 	return nil
 }
 
-func (u *Usepass) decryptData(encrypter Encrypter) error {
-	data, err := encrypter.Decrypt(*u.encryptedData)
+func (u *Usepass) decryptData(encoder Encoder) error {
+	data, err := encoder.Decrypt(*u.encryptedData)
 	if err != nil {
 		return err
 	}

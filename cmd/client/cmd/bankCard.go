@@ -79,7 +79,7 @@ var bankDeleteCmd = &cobra.Command{
 
 func init() {
 	bankAddCmd.PersistentFlags().StringVarP(&bankAdd.number, "number", "", "", "number")
-	bankAddCmd.PersistentFlags().StringVarP(&bankAdd.expires, "expires", "", "", "expires")
+	bankAddCmd.PersistentFlags().StringVarP(&bankAdd.expires, "expires", "", "", "date of expiration, format $month/$year, e.g 01/2020")
 	bankAddCmd.PersistentFlags().IntVarP(&bankAdd.cvv, "cvv", "", 0, "cvv")
 
 	bankGetCmd.PersistentFlags().IntVarP(&bankGet.id, "id", "", 0, "id")

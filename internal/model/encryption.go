@@ -1,6 +1,6 @@
 package model
 
-type Encrypter interface {
+type Encoder interface {
 	Encrypt([]byte) (*EncryptedData, error)
 	Decrypt(EncryptedData) ([]byte, error)
 }

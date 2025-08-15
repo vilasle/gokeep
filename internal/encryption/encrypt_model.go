@@ -7,12 +7,12 @@ import (
 )
 
 type EncryptionModel struct {
-	kek    Encryptor
-	dek    Encryptor
+	kek    Encoder
+	dek    Encoder
 	dekSrc []byte
 }
 
-func NewEncryptionModel(dekSrc []byte, kek, dek Encryptor) *EncryptionModel {
+func NewEncryptionModel(dekSrc []byte, kek, dek Encoder) *EncryptionModel {
 	return &EncryptionModel{
 		kek:    kek,
 		dek:    dek,

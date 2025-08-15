@@ -12,7 +12,7 @@ var _ service.LoginPasswordService = (*UsepassService)(nil)
 
 type UsepassService struct {
 	//key encryption key
-	kek     encryption.Encryptor
+	kek     encryption.Encoder
 	manager model.ModelManager
 }
 
@@ -90,7 +90,7 @@ func (s *UsepassService) Delete(ctx context.Context, req service.DeletePrivateDa
 	return entity.Delete(ctx)
 }
 
-func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -102,7 +102,7 @@ func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPassword, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPassword, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -120,7 +120,7 @@ func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPass
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *UsepassService) save(ctx context.Context, entity *model.Usepass, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *UsepassService) save(ctx context.Context, entity *model.Usepass, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	//generate new key for data
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {

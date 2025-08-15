@@ -1,4 +1,4 @@
-package client
+package cli
 
 import (
 	"crypto/rsa"
@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	repository "github.com/vilasle/gokeep/internal/repository/client"
+	"github.com/vilasle/gokeep/internal/repository/client/sqlite"
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/internal/service/client/grpc"
 	"gopkg.in/yaml.v3"
@@ -19,6 +21,22 @@ const (
 	privKeyName = "private.key"
 )
 
+type externalServices struct {
+	credentials client.LoginPasswordDataService
+	bankCard    client.BankCardDataService
+	text        client.TextDataDataService
+	binary      client.BinaryDataDataService
+}
+
+func newDataServices(grpcSocket string) *externalServices {
+	return &externalServices{
+		credentials: grpc.NewLoginPasswordDataService(grpcSocket),
+		bankCard:    grpc.NewBankCardService(grpcSocket),
+		text:        grpc.NewTextDataService(grpcSocket),
+		binary:      grpc.NewBinaryDataService(grpcSocket),
+	}
+}
+
 type Client struct {
 	workspace WorkplaceConfig
 	config    Config
@@ -27,7 +45,8 @@ type Client struct {
 	//publicKeyContent - need only bytes for pass it to server
 	publicKeyContent []byte
 	auth             client.AuthService
-	data             client.PrivateDataService
+	externalServices *externalServices
+	localStorage     repository.ClientRepository
 	credential       []byte
 }
 
@@ -49,6 +68,8 @@ func NewClient(workspace WorkplaceConfig) (*Client, error) {
 	}
 
 	client.auth = grpc.NewGRPCAuthService(client.config.ServerSocket)
+	client.externalServices = newDataServices(client.config.ServerSocket)
+	client.localStorage = sqlite.NewSQLiteClient(client.config.DBPath)
 
 	return client, nil
 }
@@ -133,6 +154,8 @@ func (c *Client) saveCredential(account string) error {
 
 	return os.WriteFile(path, c.credential, 0600)
 }
+
+
 
 func findKeysPath(path string) (string, string, error) {
 	var publicPath, privatePath string

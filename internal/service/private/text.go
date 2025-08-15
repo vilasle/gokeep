@@ -12,7 +12,7 @@ var _ service.TextDataService = (*TextService)(nil)
 
 type TextService struct {
 	//key encryption key
-	kek     encryption.Encryptor
+	kek     encryption.Encoder
 	manager model.ModelManager
 }
 
@@ -90,7 +90,7 @@ func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData)
 	return entity.Delete(ctx)
 }
 
-func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -102,7 +102,7 @@ func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKe
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -119,7 +119,7 @@ func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, cl
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *TextService) save(ctx context.Context, usepass *model.PlainText, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *TextService) save(ctx context.Context, usepass *model.PlainText, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	//generate new key for data
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {

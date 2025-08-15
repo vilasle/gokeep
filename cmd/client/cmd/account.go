@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/vilasle/gokeep/internal/client"
+	"github.com/vilasle/gokeep/internal/client/cli"
 )
 
 // accountCmd represents the account command
@@ -29,7 +29,7 @@ var createCmd = &cobra.Command{
 		}
 		accountName := args[0]
 
-		config, err := client.GetCurrentConfiguration(customWorkspace)
+		config, err := cli.GetCurrentConfiguration(customWorkspace)
 		if err != nil {
 			fmt.Println("getting current configuration failed:")
 			fmt.Println(err)
@@ -50,7 +50,7 @@ var createCmd = &cobra.Command{
 
 		pass := "some password"
 
-		app, err := client.NewClient(config)
+		app, err := cli.NewClient(config)
 		if err != nil {
 			fmt.Println("failed to create client")
 			os.Exit(1)
@@ -74,7 +74,7 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		accountName := args[0]
-		config, err := client.GetCurrentConfiguration(customWorkspace)
+		config, err := cli.GetCurrentConfiguration(customWorkspace)
 		if err != nil {
 			fmt.Println("getting current configuration failed:")
 			fmt.Println(err)
@@ -95,7 +95,7 @@ var loginCmd = &cobra.Command{
 
 		pass := "some password"
 
-		app, err := client.NewClient(config)
+		app, err := cli.NewClient(config)
 		if err != nil {
 			fmt.Println("failed to create client")
 			os.Exit(1)

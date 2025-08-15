@@ -1,14 +1,18 @@
-package client
+package cli
 
 func (c *Client) CreateAccount(accountName, password string) error {
-	return c.auth.CreateAccount(accountName, password, c.publicKeyContent)
+	if err := c.auth.CreateAccount(accountName, password, c.publicKeyContent); err != nil {
+		return err
+	}
+
+	return c.localStorage.CreateScheme()
 }
 
 func (c *Client) Login(accountName, password string) (err error) {
 	if len(c.credential) > 0 {
 		return nil
 	}
-	
+
 	c.credential, err = c.auth.Login(accountName, password)
 
 	if err := c.saveCredential(accountName); err != nil {

@@ -14,6 +14,7 @@ var binaryCmd = &cobra.Command{
 
 type binaryAddFlags struct {
 	file string
+	name string
 }
 
 var binaryAdd = binaryAddFlags{}
@@ -75,6 +76,7 @@ var binaryDeleteCmd = &cobra.Command{
 
 func init() {
 	binaryAddCmd.PersistentFlags().StringVarP(&binaryAdd.file, "file", "", "", "file")
+	binaryAddCmd.PersistentFlags().StringVarP(&binaryAdd.name, "name", "", "", "name")
 
 	binaryGetCmd.PersistentFlags().IntVarP(&binaryGet.id, "id", "", 0, "id")
 

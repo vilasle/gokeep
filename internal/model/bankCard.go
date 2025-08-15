@@ -30,8 +30,8 @@ func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) 
 	}
 }
 
-func (bc *BankCard) decryptData(encrypter Encrypter) (err error) {
-	data, err := encrypter.Decrypt(*bc.encryptedData)
+func (bc *BankCard) decryptData(encoder Encoder) (err error) {
+	data, err := encoder.Decrypt(*bc.encryptedData)
 	if err != nil {
 		return err
 	}
@@ -76,18 +76,18 @@ func (u *BankCard) SetExpiration(expiration time.Time) {
 	u.expiration = expiration
 }
 
-func (u *BankCard) Save(ctx context.Context, encrypter Encrypter) (err error) {
-	if err := u.prepareEncryptedData(encrypter); err != nil {
+func (u *BankCard) Save(ctx context.Context, encoder Encoder) (err error) {
+	if err := u.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
 		return err
 	}
 	return u.model.Save(ctx)
 }
 
-func (u *BankCard) prepareEncryptedData(encrypter Encrypter) error {
+func (u *BankCard) prepareEncryptedData(encoder Encoder) error {
 	data := u.dataForEncryption()
 
-	encryptedData, err := encrypter.Encrypt(data)
+	encryptedData, err := encoder.Encrypt(data)
 	if err != nil {
 		return err
 	}

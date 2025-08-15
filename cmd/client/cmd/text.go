@@ -15,6 +15,7 @@ var textCmd = &cobra.Command{
 type textAddFlags struct {
 	data string
 	file string
+	name string
 }
 
 var textAdd = textAddFlags{}
@@ -78,6 +79,7 @@ var textDeleteCmd = &cobra.Command{
 func init() {
 	textAddCmd.PersistentFlags().StringVarP(&textAdd.data, "data", "", "", "data")
 	textAddCmd.PersistentFlags().StringVarP(&textAdd.file, "file", "", "", "file")
+	textAddCmd.PersistentFlags().StringVarP(&textAdd.name, "name", "", "", "name")
 
 	textGetCmd.PersistentFlags().IntVarP(&textGet.id, "id", "", 0, "id")
 

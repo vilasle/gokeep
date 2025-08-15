@@ -12,7 +12,7 @@ var _ service.LoginPasswordService = (*UsepassService)(nil)
 
 type BinaryDataService struct {
 	//key encryption key
-	kek     encryption.Encryptor
+	kek     encryption.Encoder
 	manager model.ModelManager
 }
 
@@ -90,7 +90,7 @@ func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivat
 	return entity.Delete(ctx)
 }
 
-func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -102,7 +102,7 @@ func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
@@ -120,7 +120,7 @@ func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinary
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BinaryDataService) save(ctx context.Context, entity *model.BinaryData, clientKey encryption.Encryptor) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BinaryDataService) save(ctx context.Context, entity *model.BinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
 	//generate new key for data
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {
