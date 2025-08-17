@@ -12,13 +12,16 @@ const (
 )
 
 type ClientRepository interface {
-	CreateScheme() error
+	CreateScheme(ctx context.Context) error
+	Close() error
 	Save(ctx context.Context, tData PrivateDataType, req SaveRequest) SaveResponse
 	Get(ctx context.Context, tData PrivateDataType, req ...GetRequest) ([]GetResponse, error)
 	Delete(ctx context.Context, tData PrivateDataType, req DeleteRequest) error
 }
 
 type SaveRequest struct {
+	ID         int
+	View       string
 	ExternalID int
 	DEK        []byte
 	Data       []byte

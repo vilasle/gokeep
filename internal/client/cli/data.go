@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -11,10 +12,20 @@ import (
 )
 
 // TODO implement work with local repository
-func (c *Client) SaveLoginPassword(ctx context.Context, login, password string) error {
+func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, id int) error {
 	data := svc.LoginPasswordSaveRequest{
+		ID:       id,
 		Login:    login,
 		Password: password,
+	}
+
+	if id > 0 {
+		result, err := c.localStorage.Get(ctx, repository.TypeLoginPassword, repository.GetRequest{ID: id})
+		if err == nil && len(result) > 0 {
+			data.ID = result[0].ExternalID
+		} else if err != nil {
+			return err
+		}
 	}
 
 	response := c.externalServices.credentials.Save(ctx, data)
@@ -23,9 +34,11 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string) 
 	}
 
 	if result := c.localStorage.Save(ctx, repository.TypeLoginPassword, repository.SaveRequest{
+		ID:         id,
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
+		View:       login,
 	}); result.Error != "" {
 		return fmt.Errorf(result.Error)
 	}
@@ -268,16 +281,37 @@ func (c *Client) GetBinaryData(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) DeleteLoginPassword(ctx context.Context, id int) error {
-	response := c.externalServices.credentials.Delete(ctx, svc.LoginPasswordDeleteRequest{
+	r, err := c.localStorage.Get(ctx, repository.TypeLoginPassword, repository.GetRequest{
 		ID: id,
 	})
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	if err != nil {
+		return err
 	}
 
-	return c.localStorage.Delete(ctx, repository.TypeLoginPassword, repository.DeleteRequest{
-		ID: id,
-	})
+	if len(r) == 0 {
+		return fmt.Errorf("no data found")
+	}
+
+	errs := make([]error, 0)
+	for _, r := range r {
+		if r.ExternalID == 0 {
+			continue
+		}
+
+		response := c.externalServices.credentials.Delete(ctx, svc.LoginPasswordDeleteRequest{
+			ID: r.ExternalID,
+		})
+		if response.Error != "" {
+			errs = append(errs, fmt.Errorf(response.Error))
+			continue
+		}
+
+		errs = append(errs, c.localStorage.Delete(ctx, repository.TypeLoginPassword, repository.DeleteRequest{
+			ID: r.ID,
+		}))
+	}
+
+	return errors.Join(errs...)
 }
 
 // TODO implement work with local repository

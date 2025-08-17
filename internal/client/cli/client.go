@@ -50,28 +50,32 @@ type Client struct {
 	credential       []byte
 }
 
-func NewClient(workspace WorkplaceConfig) (*Client, error) {
-	client := &Client{
+func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
+	client = &Client{
 		workspace: workspace,
 	}
 
-	if err := client.loadConfiguration(); err != nil {
+	if err = client.loadConfiguration(); err != nil {
 		return nil, err
 	}
 
-	if err := client.loadCredentialIfExists(); err != nil {
+	if err = client.loadCredentialIfExists(); err != nil {
 		return nil, err
 	}
 
-	if err := client.loadRSAKeys(); err != nil {
+	if err = client.loadRSAKeys(); err != nil {
 		return nil, err
 	}
 
 	client.auth = grpc.NewGRPCAuthService(client.config.ServerSocket)
 	client.externalServices = newDataServices(client.config.ServerSocket)
-	client.localStorage = sqlite.NewSQLiteClient(client.config.DBPath)
+	client.localStorage, err = sqlite.NewSQLiteClient(client.config.DBPath)
 
-	return client, nil
+	return client, err
+}
+
+func (c *Client) Close() error {
+	return c.localStorage.Close()
 }
 
 func (c *Client) loadConfiguration() error {
@@ -154,8 +158,6 @@ func (c *Client) saveCredential(account string) error {
 
 	return os.WriteFile(path, c.credential, 0600)
 }
-
-
 
 func findKeysPath(path string) (string, string, error) {
 	var publicPath, privatePath string

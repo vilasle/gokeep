@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +26,28 @@ var creadAddCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called cread add")
+		app := initCLIClient()
+		defer app.Close()
+
+		if creadAdd.login == "" {
+			fmt.Println("login is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if creadAdd.password == "" {
+			fmt.Println("password is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveLoginPassword(ctx, creadAdd.login, creadAdd.password, 0); err != nil {
+			fmt.Printf("saving login password failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving login password success")
 	},
 }
 
@@ -40,7 +63,17 @@ var creadGetCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called cread get")
+		app := initCLIClient()
+		defer app.Close()
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.GetLoginPassword(ctx, creadGet.id); err != nil {
+			fmt.Printf("getting login failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 
@@ -57,7 +90,33 @@ var creadEditCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called cread edit")
+		app := initCLIClient()
+		defer app.Close()
+
+		if creadEdit.login == "" {
+			fmt.Println("'login' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if creadEdit.password == "" {
+			fmt.Println("'password' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if creadEdit.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveLoginPassword(ctx, creadEdit.login, creadEdit.password, creadEdit.id); err != nil {
+			fmt.Printf("saving login password failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving login password success")
 	},
 }
 
@@ -72,7 +131,22 @@ var creadDeleteCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called cread delete")
+		app := initCLIClient()
+		defer app.Close()
+
+		if creadDelete.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.DeleteLoginPassword(ctx, creadDelete.id); err != nil {
+			fmt.Printf("deleting login password failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 

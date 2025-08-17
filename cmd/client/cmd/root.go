@@ -8,6 +8,13 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client/cli"
+)
+
+const (
+	reasonWrongConfig         = 1
+	reasonNotFillRequiredArgs = 2
+	reasonInternalError       = 3
 )
 
 var (
@@ -54,4 +61,23 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(accountCmd)
 	rootCmd.AddCommand(dataCmd)
+}
+
+func initCLIClient() *cli.Client {
+	config, err := cli.GetCurrentConfiguration(customWorkspace)
+	if err != nil {
+		fmt.Println("getting current configuration failed:")
+		fmt.Println(err)
+		fmt.Println("\nif you did not initialize configuration try call before creating account:")
+		fmt.Println("\tgokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH")
+		os.Exit(reasonWrongConfig)
+	}
+
+	app, err := cli.NewClient(config)
+	if err != nil {
+		fmt.Println("failed to create client")
+		os.Exit(reasonInternalError)
+	}
+
+	return app
 }

@@ -30,6 +30,7 @@ var binaryAddCmd = &cobra.Command{
 
 type binaryGetFlags struct {
 	id int
+	outfile string
 }
 
 var binaryGet = binaryGetFlags{}
@@ -79,6 +80,7 @@ func init() {
 	binaryAddCmd.PersistentFlags().StringVarP(&binaryAdd.name, "name", "", "", "name")
 
 	binaryGetCmd.PersistentFlags().IntVarP(&binaryGet.id, "id", "", 0, "id")
+	binaryGetCmd.PersistentFlags().StringVarP(&binaryGet.outfile, "output", "", "", "output")
 
 	binaryEditCmd.PersistentFlags().IntVarP(&binaryEdit.id, "id", "", 0, "id")
 	binaryEditCmd.PersistentFlags().StringVarP(&binaryEdit.file, "file", "", "", "file")

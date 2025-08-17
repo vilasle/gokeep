@@ -4,11 +4,11 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/vilasle/gokeep/internal/client/cli"
 )
 
 // accountCmd represents the account command
@@ -25,40 +25,31 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			fmt.Println("does not define account name")
-			os.Exit(1)
+			os.Exit(reasonNotFillRequiredArgs)
 		}
 		accountName := args[0]
 
-		config, err := cli.GetCurrentConfiguration(customWorkspace)
-		if err != nil {
-			fmt.Println("getting current configuration failed:")
-			fmt.Println(err)
-			fmt.Println("\nif you did not initialize configuration try call before creating account:")
-			fmt.Println("\tgokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH")
-			os.Exit(2)
-		}
+		app := initCLIClient()
+		defer app.Close()
 
 		fmt.Println("login:", accountName)
 		fmt.Print("password: ")
 		// bytePwd, err := term.ReadPassword(int(syscall.Stdin))
 		// if err != nil {
 		// 	fmt.Println("failed to read password")
-		// 	os.Exit(1)
+		// 	os.Exit(reasonInternalError)
 		// }
 		// fmt.Print("\n")
 		// pass := string(bytePwd)
 
 		pass := "some password"
 
-		app, err := cli.NewClient(config)
-		if err != nil {
-			fmt.Println("failed to create client")
-			os.Exit(1)
-		}
-
-		if err := app.CreateAccount(accountName, pass); err != nil {
+		//TODO cancel if got signal
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		if err := app.CreateAccount(ctx, accountName, pass); err != nil {
 			fmt.Println("failed to create account")
-			os.Exit(1)
+			os.Exit(reasonInternalError)
 		}
 	},
 }
@@ -71,17 +62,9 @@ var loginCmd = &cobra.Command{
 		fmt.Println("called account login")
 		if len(args) == 0 {
 			fmt.Println("does not define account name")
-			os.Exit(1)
+			os.Exit(reasonNotFillRequiredArgs)
 		}
 		accountName := args[0]
-		config, err := cli.GetCurrentConfiguration(customWorkspace)
-		if err != nil {
-			fmt.Println("getting current configuration failed:")
-			fmt.Println(err)
-			fmt.Println("\nif you did not initialize configuration try call before creating account:")
-			fmt.Println("\tgokeep config init --grpc-socket $GRPC_SOCKET --db-path $DB_PATH")
-			os.Exit(2)
-		}
 
 		fmt.Println("login:", accountName)
 		fmt.Print("password: ")
@@ -95,15 +78,12 @@ var loginCmd = &cobra.Command{
 
 		pass := "some password"
 
-		app, err := cli.NewClient(config)
-		if err != nil {
-			fmt.Println("failed to create client")
-			os.Exit(1)
-		}
+		app := initCLIClient()
+		defer app.Close()
 
 		if err := app.Login(accountName, pass); err != nil {
 			fmt.Println("failed to create account")
-			os.Exit(1)
+			os.Exit(reasonInternalError)
 		}
 	},
 }

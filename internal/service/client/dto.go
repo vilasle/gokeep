@@ -22,6 +22,7 @@ type LoginPasswordView struct {
 
 // requests
 type LoginPasswordSaveRequest struct {
+	ID int
 	Login, Password string
 }
 

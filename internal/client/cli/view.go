@@ -68,7 +68,7 @@ func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDat
 		return err
 	}
 
-	v.View()
+	fmt.Println(v.View())
 
 	return nil
 }

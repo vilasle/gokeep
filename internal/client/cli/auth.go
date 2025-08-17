@@ -1,11 +1,13 @@
 package cli
 
-func (c *Client) CreateAccount(accountName, password string) error {
+import "context"
+
+func (c *Client) CreateAccount(ctx context.Context, accountName, password string) error {
 	if err := c.auth.CreateAccount(accountName, password, c.publicKeyContent); err != nil {
 		return err
 	}
 
-	return c.localStorage.CreateScheme()
+	return c.localStorage.CreateScheme(ctx)
 }
 
 func (c *Client) Login(accountName, password string) (err error) {
