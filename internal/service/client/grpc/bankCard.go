@@ -19,7 +19,14 @@ func NewBankCardService(socket string) *BankCardService {
 }
 
 func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveRequest) client.BankCardSaveResponse {
-	return client.BankCardSaveResponse{}
+	return client.BankCardSaveResponse{
+		ID: 1,
+		Data: client.EncryptedData{
+			View: "some card",
+			DEK:  []byte("dek"),
+			Data: []byte(`{"number": "1234567890123456","expires": "10/31","cvv":123}`),
+		},
+	}
 }
 
 func (s *BankCardService) List(ctx context.Context) client.BankCardListResponse {
@@ -38,7 +45,7 @@ func (s *BankCardService) Get(ctx context.Context, req client.BankCardGetRequest
 		Data: client.EncryptedData{
 			View: "test",
 			DEK:  []byte("dek"),
-			Data: []byte("data"),
+			Data: []byte(`"number": "1234567890123456","expires": "10/31","cvv":123`),
 		},
 	}
 }

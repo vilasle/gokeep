@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vilasle/gokeep/internal/service/client"
 )
@@ -19,7 +18,6 @@ func NewLoginPasswordDataService(socket string) *LoginPasswordService {
 }
 
 func (s *LoginPasswordService) Save(ctx context.Context, req client.LoginPasswordSaveRequest) client.LoginPasswordSaveResponse {
-	fmt.Printf("create login %s and password %s in server\n", req.Login, req.Password)
 	return client.LoginPasswordSaveResponse{
 		Error: "",
 		ID:    1,

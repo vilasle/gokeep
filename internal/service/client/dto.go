@@ -22,7 +22,7 @@ type LoginPasswordView struct {
 
 // requests
 type LoginPasswordSaveRequest struct {
-	ID int
+	ID              int
 	Login, Password string
 }
 
@@ -65,6 +65,7 @@ type BankCardView struct {
 }
 
 type BankCardSaveRequest struct {
+	ID      int
 	Number  string
 	Expires time.Time
 	CVV     int
@@ -80,8 +81,8 @@ type BankCardDeleteRequest struct {
 
 // response
 type BankCardSaveResponse struct {
-	ID int
-	Data EncryptedData
+	ID    int
+	Data  EncryptedData
 	Error string
 }
 
@@ -121,8 +122,8 @@ type TextDataDeleteRequest struct {
 
 // response
 type TextDataSaveResponse struct {
-	ID int
-	Data EncryptedData
+	ID    int
+	Data  EncryptedData
 	Error string
 }
 
@@ -164,7 +165,7 @@ type BinaryDataDeleteRequest struct {
 // response
 type BinaryDataSaveResponse struct {
 	ID    int
-	Data EncryptedData
+	Data  EncryptedData
 	Error string
 }
 

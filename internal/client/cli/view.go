@@ -19,17 +19,17 @@ type loginPasswordView struct {
 }
 
 func (v *loginPasswordView) View() string {
-	return fmt.Sprintf("Login: %s, Password: %s", v.Login, v.Password)
+	return fmt.Sprintf("Login: %s\nPassword: %s\n", v.Login, v.Password)
 }
 
 type bankCardView struct {
 	Number  string `json:"number"`
 	Expires string `json:"expires"`
-	CVV     string `json:"cvv"`
+	CVV     int `json:"cvv"`
 }
 
 func (v *bankCardView) View() string {
-	return fmt.Sprintf("Number: %s, Expires: %s, CVV: %s", v.Number, v.Expires, v.CVV)
+	return fmt.Sprintf("Number: %s\nExpires: %s\nCVV: %d\n", v.Number, v.Expires, v.CVV)
 }
 func (c *Client) showList(ls []client.GetResponse) {
 	layout := "[ %d ] ID: %d, Description: %s\n"

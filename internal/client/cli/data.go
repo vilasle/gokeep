@@ -47,9 +47,8 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, 
 
 }
 
-// TODO implement work with local repository
-func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv int) error {
-	date, err := time.Parse("01/2006", expires)
+func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, id int) error {
+	date, err := time.Parse("01/06", expires)
 	if err != nil {
 		return fmt.Errorf("invalid date format, expected $month/$year, e.g 01/2020")
 	}
@@ -60,12 +59,22 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv i
 		CVV:     cvv,
 	}
 
+	if id > 0 {
+		result, err := c.localStorage.Get(ctx, repository.TypeBankCard, repository.GetRequest{ID: id})
+		if err == nil && len(result) > 0 {
+			data.ID = result[0].ExternalID
+		} else if err != nil {
+			return err
+		}
+	}
+
 	response := c.externalServices.bankCard.Save(ctx, data)
 	if response.Error != "" {
 		return fmt.Errorf(response.Error)
 	}
 
 	if result := c.localStorage.Save(ctx, repository.TypeBankCard, repository.SaveRequest{
+		ID:         id,
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,

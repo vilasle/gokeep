@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
 var bankCmd = &cobra.Command{
-	Use:   "account",
+	Use:   "bank",
 	Short: "",
 	Long:  ``,
 }
@@ -25,7 +27,33 @@ var bankAddCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called bank add")
+		app := initCLIClient()
+		defer app.Close()
+
+		if bankAdd.number == "" {
+			fmt.Println("number is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if bankAdd.cvv == 0 {
+			fmt.Println("cvv is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if bankAdd.expires == "" {
+			fmt.Println("expires is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveBankCard(ctx, bankAdd.number, bankAdd.expires, bankAdd.cvv, 0); err != nil {
+			fmt.Printf("saving bank card failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving bank card success")
 	},
 }
 
@@ -40,7 +68,17 @@ var bankGetCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called bank get")
+		app := initCLIClient()
+		defer app.Close()
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.GetBankCard(ctx, bankGet.id); err != nil {
+			fmt.Printf("getting bank card failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 
@@ -58,7 +96,38 @@ var bankEditCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called bank edit")
+		app := initCLIClient()
+		defer app.Close()
+
+		if bankEdit.number == "" {
+			fmt.Println("'number' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if bankEdit.cvv == 0 {
+			fmt.Println("'cvv' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if bankEdit.expires == "" {
+			fmt.Println("'expires' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if bankEdit.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveBankCard(ctx, bankEdit.number, bankEdit.expires, bankEdit.cvv, bankEdit.id); err != nil {
+			fmt.Printf("saving bank card failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving bank card success")
 	},
 }
 
@@ -73,7 +142,22 @@ var bankDeleteCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called bank delete")
+		app := initCLIClient()
+		defer app.Close()
+
+		if bankDelete.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.DeleteBankCard(ctx, bankDelete.id); err != nil {
+			fmt.Printf("deleting bank card failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 
