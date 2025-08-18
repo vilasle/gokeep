@@ -161,7 +161,7 @@ var textDeleteCmd = &cobra.Command{
 		defer cancel()
 
 		if err := app.DeleteTextData(ctx, textDelete.id); err != nil {
-			fmt.Printf("deleting bank card failed: %s\n", err)
+			fmt.Printf("deleting text data failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
 		fmt.Println("deleting text data is completed")

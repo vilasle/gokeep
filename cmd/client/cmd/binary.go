@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -24,13 +26,33 @@ var binaryAddCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called binary add")
+		app := initCLIClient()
+		defer app.Close()
+
+		if binaryAdd.file == "" {
+			fmt.Println("'file' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if binaryAdd.name == "" {
+			fmt.Println("'name' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveBinaryData(ctx, binaryAdd.file, binaryAdd.name, 0); err != nil {
+			fmt.Printf("saving binary data failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving binary data success")
 	},
 }
 
 type binaryGetFlags struct {
 	id int
-	outfile string
 }
 
 var binaryGet = binaryGetFlags{}
@@ -40,12 +62,23 @@ var binaryGetCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called binary get")
+		app := initCLIClient()
+		defer app.Close()
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.GetBinaryData(ctx, binaryGet.id); err != nil {
+			fmt.Printf("getting binary data failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 
 type binaryEditFlags struct {
 	id   int
+	name string
 	file string
 }
 
@@ -56,7 +89,33 @@ var binaryEditCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called binary edit")
+		app := initCLIClient()
+		defer app.Close()
+
+		if binaryEdit.file == "" {
+			fmt.Println("'file' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if binaryEdit.name == "" {
+			fmt.Println("'name' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if binaryEdit.id == 0 {
+			fmt.Println("id is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.SaveBinaryData(ctx, binaryEdit.file, binaryEdit.name, binaryEdit.id); err != nil {
+			fmt.Printf("saving text failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("saving binary data success")
 	},
 }
 
@@ -71,7 +130,23 @@ var binaryDeleteCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called binary delete")
+		app := initCLIClient()
+		defer app.Close()
+
+		if textDelete.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.DeleteBinaryData(ctx, binaryDelete.id); err != nil {
+			fmt.Printf("deleting binary data failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("deleting binary data is completed")
 	},
 }
 
@@ -80,10 +155,10 @@ func init() {
 	binaryAddCmd.PersistentFlags().StringVarP(&binaryAdd.name, "name", "", "", "name")
 
 	binaryGetCmd.PersistentFlags().IntVarP(&binaryGet.id, "id", "", 0, "id")
-	binaryGetCmd.PersistentFlags().StringVarP(&binaryGet.outfile, "output", "", "", "output")
 
 	binaryEditCmd.PersistentFlags().IntVarP(&binaryEdit.id, "id", "", 0, "id")
 	binaryEditCmd.PersistentFlags().StringVarP(&binaryEdit.file, "file", "", "", "file")
+	binaryEditCmd.PersistentFlags().StringVarP(&binaryEdit.name, "name", "", "", "name")
 
 	binaryDeleteCmd.PersistentFlags().IntVarP(&binaryDelete.id, "id", "", 0, "id")
 

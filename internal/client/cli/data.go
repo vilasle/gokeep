@@ -161,7 +161,7 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 }
 
 // TODO implement work with local repository
-func (c *Client) SaveBinaryData(ctx context.Context, path string, name string) error {
+func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, id int) error {
 	if name == "" {
 		stat, err := os.Stat(path)
 		if err != nil {
@@ -178,6 +178,15 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string) e
 	data := svc.BinaryDataSaveRequest{
 		Data: content,
 		Name: name,
+	}
+	
+	if id > 0 {
+		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		if err == nil && len(result) > 0 {
+			data.ID = result[0].ExternalID
+		} else if err != nil {
+			return err
+		}
 	}
 
 	response := c.externalServices.binary.Save(ctx, data)

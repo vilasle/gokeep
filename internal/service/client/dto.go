@@ -151,6 +151,7 @@ type BinaryDataView struct {
 //requests
 
 type BinaryDataSaveRequest struct {
+	ID   int
 	Name string
 	Data []byte
 }
