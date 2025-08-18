@@ -147,6 +147,7 @@ var creadDeleteCmd = &cobra.Command{
 			fmt.Printf("deleting login password failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
+		fmt.Println("deleting login password is completed")
 	},
 }
 

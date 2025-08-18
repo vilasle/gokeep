@@ -14,28 +14,24 @@ type view interface {
 }
 
 type loginPasswordView struct {
+	ID       int    `json:"-"`
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
 func (v *loginPasswordView) View() string {
-	return fmt.Sprintf("Login: %s\nPassword: %s\n", v.Login, v.Password)
+	return fmt.Sprintf("ID: %d\nLogin: %s\nPassword: %s\n", v.ID, v.Login, v.Password)
 }
 
 type bankCardView struct {
+	ID      int    `json:"-"`
 	Number  string `json:"number"`
 	Expires string `json:"expires"`
-	CVV     int `json:"cvv"`
+	CVV     int    `json:"cvv"`
 }
 
 func (v *bankCardView) View() string {
-	return fmt.Sprintf("Number: %s\nExpires: %s\nCVV: %d\n", v.Number, v.Expires, v.CVV)
-}
-func (c *Client) showList(ls []client.GetResponse) {
-	layout := "[ %d ] ID: %d, Description: %s\n"
-	for i, data := range ls {
-		fmt.Printf(layout, i+1, data.ID, data.View)
-	}
+	return fmt.Sprintf("ID: %d\nNumber: %s\nExpires: %s\nCVV: %d\n", v.ID, v.Number, v.Expires, v.CVV)
 }
 
 func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDataType) error {
@@ -47,9 +43,15 @@ func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDat
 	if tData == client.TypeTextData ||
 		tData == client.TypeBinaryData {
 		path := filepath.Join(c.workspace.UploadDirectory.Path, data.View)
-		if err := os.WriteFile(path, content, 0644); err != nil {
+		fd, err := os.Create(path)
+		if err != nil {
 			return err
 		}
+		defer fd.Close()
+		if _, err := fd.Write(content); err != nil {
+			return err
+		}
+
 		fmt.Printf("File %s saved to %s\n", data.View, path)
 		return nil
 	}
@@ -57,9 +59,9 @@ func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDat
 	var v view
 	switch tData {
 	case client.TypeLoginPassword:
-		v = &loginPasswordView{}
+		v = &loginPasswordView{ID: data.ID}
 	case client.TypeBankCard:
-		v = &bankCardView{}
+		v = &bankCardView{ID: data.ID}
 	default:
 		return fmt.Errorf("unknown type of data: %s", tData)
 	}

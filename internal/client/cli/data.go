@@ -85,10 +85,19 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 }
 
 // TODO implement work with local repository
-func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string) error {
+func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string, id int) error {
 	data := svc.TextDataSaveRequest{
 		Text: []byte(text),
 		Name: name,
+	}
+
+	if id > 0 {
+		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		if err == nil && len(result) > 0 {
+			data.ID = result[0].ExternalID
+		} else if err != nil {
+			return err
+		}
 	}
 
 	response := c.externalServices.text.Save(ctx, data)
@@ -107,7 +116,7 @@ func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string)
 }
 
 // TODO implement work with local repository
-func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name string) error {
+func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name string, id int) error {
 	if name == "" {
 		stat, err := os.Stat(path)
 		if err != nil {
@@ -126,6 +135,15 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		Name: name,
 	}
 
+	if id > 0 {
+		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		if err == nil && len(result) > 0 {
+			data.ID = result[0].ExternalID
+		} else if err != nil {
+			return err
+		}
+	}
+
 	response := c.externalServices.text.Save(ctx, data)
 	if response.Error != "" {
 		return fmt.Errorf(response.Error)
@@ -135,6 +153,7 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
+		View:       response.Data.View,
 	}); result.Error != "" {
 		return fmt.Errorf(result.Error)
 	}
@@ -170,48 +189,9 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string) e
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
+		View:       response.Data.View,
 	}); result.Error != "" {
 		return fmt.Errorf(result.Error)
-	}
-	return nil
-}
-
-func (c *Client) ListLoginPassword(ctx context.Context) error {
-	if response, err := c.localStorage.Get(ctx, repository.TypeLoginPassword); err == nil {
-		c.showList(response)
-	} else {
-		return err
-	}
-	return nil
-}
-
-// TODO implement work with local repository
-func (c *Client) ListBankCard(ctx context.Context) error {
-	if response, err := c.localStorage.Get(ctx, repository.TypeBankCard); err == nil {
-		c.showList(response)
-	} else {
-		return err
-	}
-	return nil
-
-}
-
-// TODO implement work with local repository
-func (c *Client) ListTextData(ctx context.Context) error {
-	if response, err := c.localStorage.Get(ctx, repository.TypeTextData); err == nil {
-		c.showList(response)
-	} else {
-		return err
-	}
-	return nil
-}
-
-// TODO implement work with local repository
-func (c *Client) ListBinaryData(ctx context.Context) error {
-	if response, err := c.localStorage.Get(ctx, repository.TypeBinaryData); err == nil {
-		c.showList(response)
-	} else {
-		return err
 	}
 	return nil
 }

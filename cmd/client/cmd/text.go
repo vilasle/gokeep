@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -25,7 +27,36 @@ var textAddCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called text add")
+		app := initCLIClient()
+		defer app.Close()
+
+		if textAdd.name == "" {
+			fmt.Println("name is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if textAdd.data == "" && textAdd.file == "" {
+			fmt.Println("'data' or 'file' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if textAdd.data != "" {
+			if err := app.SaveTextDataAsIs(ctx, textAdd.data, textAdd.name, 0); err != nil {
+				fmt.Printf("saving text failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+			fmt.Println("saving text success")
+		} else {
+			if err := app.SaveTextDataFromFile(ctx, textAdd.file, textAdd.name, 0); err != nil {
+				fmt.Printf("saving text failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+			fmt.Println("saving text success")
+		}
 	},
 }
 
@@ -40,7 +71,17 @@ var textGetCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called text get")
+		app := initCLIClient()
+		defer app.Close()
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.GetTextData(ctx, textGet.id); err != nil {
+			fmt.Printf("getting text data failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
 	},
 }
 
@@ -48,6 +89,7 @@ type textEditFlags struct {
 	id   int
 	data string
 	file string
+	name string
 }
 
 var textEdit = textEditFlags{}
@@ -57,7 +99,41 @@ var textEditCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called text edit")
+		app := initCLIClient()
+		defer app.Close()
+
+		if textEdit.name == "" {
+			fmt.Println("name is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if textEdit.data == "" && textEdit.file == "" {
+			fmt.Println("'data' or 'file' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		if textEdit.id == 0 {
+			fmt.Println("id is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if textAdd.data != "" {
+			if err := app.SaveTextDataAsIs(ctx, textEdit.data, textEdit.name, textEdit.id); err != nil {
+				fmt.Printf("saving text failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+			fmt.Println("saving text success")
+		} else {
+			if err := app.SaveTextDataFromFile(ctx, textEdit.file, textEdit.name, textEdit.id); err != nil {
+				fmt.Printf("saving text failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+			fmt.Println("saving text success")
+		}
 	},
 }
 
@@ -72,7 +148,23 @@ var textDeleteCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called text delete")
+		app := initCLIClient()
+		defer app.Close()
+
+		if textDelete.id == 0 {
+			fmt.Println("'id' is required")
+			os.Exit(reasonNotFillRequiredArgs)
+		}
+
+		//TODO add waiting SIGNAL and cancel if got it
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.DeleteTextData(ctx, textDelete.id); err != nil {
+			fmt.Printf("deleting bank card failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+		fmt.Println("deleting text data is completed")
 	},
 }
 
@@ -85,6 +177,7 @@ func init() {
 
 	textEditCmd.PersistentFlags().IntVarP(&textEdit.id, "id", "", 0, "id")
 	textEditCmd.PersistentFlags().StringVarP(&textEdit.data, "data", "", "", "data")
+	textEditCmd.PersistentFlags().StringVarP(&textEdit.name, "name", "", "", "name")
 	textEditCmd.PersistentFlags().StringVarP(&textEdit.file, "file", "", "", "file")
 
 	textDeleteCmd.PersistentFlags().IntVarP(&textDelete.id, "id", "", 0, "id")

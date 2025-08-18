@@ -18,7 +18,14 @@ func NewTextDataService(socket string) *TextDataService {
 }
 
 func (s *TextDataService) Save(ctx context.Context, req client.TextDataSaveRequest) client.TextDataSaveResponse {
-	return client.TextDataSaveResponse{}
+	return client.TextDataSaveResponse{
+		ID: 1,
+		Data: client.EncryptedData{
+			View: req.Name,
+			DEK:  []byte("dek"),
+			Data: req.Text,
+		},
+	}
 }
 
 func (s *TextDataService) List(ctx context.Context) client.TextDataListResponse {
@@ -35,7 +42,7 @@ func (s *TextDataService) Get(ctx context.Context, req client.TextDataGetRequest
 	return client.TextDataGetResponse{
 		Data: client.EncryptedData{
 			View: "test",
-			DEK: []byte("dek"),
+			DEK:  []byte("dek"),
 			Data: []byte("data"),
 		},
 	}

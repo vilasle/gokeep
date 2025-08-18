@@ -70,7 +70,7 @@ func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error)
 		workplaceConfig = defaultConfiguration()
 	}
 
-	if err := createDirectories(workplaceConfig.ConfigDirectory, workplaceConfig.Certificate); err != nil {
+	if err := createDirectories(workplaceConfig.ConfigDirectory, workplaceConfig.Certificate, workplaceConfig.UploadDirectory); err != nil {
 		return err
 	}
 

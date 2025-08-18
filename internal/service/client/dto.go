@@ -108,6 +108,7 @@ type TextDataView struct {
 
 // requests
 type TextDataSaveRequest struct {
+	ID   int
 	Name string
 	Text []byte
 }

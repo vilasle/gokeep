@@ -158,6 +158,7 @@ var bankDeleteCmd = &cobra.Command{
 			fmt.Printf("deleting bank card failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
+		fmt.Println("deleting band card is completed")
 	},
 }
 
