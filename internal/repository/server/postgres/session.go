@@ -42,10 +42,10 @@ func (r *SessionRepository) Get(ctx context.Context, id int) (repository.Credent
 func (r *SessionRepository) initSchema() error {
 	txt := `
 	CREATE TABLE IF NOT EXISTS session (
-		id bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
-		user_id NOT NULL,
+		id bigint GENERATED ALWAYS AS IDENTITY,
+		user_id bigint NOT NULL,
 		public_key BYTEA NOT NULL,
-		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 		FOREIGN KEY (user_id) REFERENCES users (id)
 	);
 	CREATE INDEX IF NOT EXISTS session_user_idx ON users (id);

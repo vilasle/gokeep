@@ -27,19 +27,19 @@ func (s *UsepassService) List(ctx context.Context, userID int) (service.ListPriv
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
 		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "user not found"}, err
+		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.Usepass.List(ctx, user)
 
 	if err != nil {
 		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "error listing usepass"}, err
+		return service.ListPrivateDataResponse{}, err
 	}
 
 	if len(result) == 0 {
 		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "there are not any logins"}, nil
+		return service.ListPrivateDataResponse{}, nil
 	}
 
 	response := service.ListPrivateDataResponse{
@@ -60,13 +60,13 @@ func (s *UsepassService) Get(ctx context.Context, req service.GetPrivateData) (r
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
-		return service.PrivateDataResponse{Error: "user not found"}, err
+		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.Usepass.Get(ctx, user, req.ID)
 	if err != nil {
 		//TODO change error, and if not found user, message about it
-		return service.PrivateDataResponse{Error: "error getting usepass"}, err
+		return service.PrivateDataResponse{}, err
 	}
 
 	response.Fields = map[string]any{

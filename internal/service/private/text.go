@@ -1,147 +1,156 @@
 package private
 
-// var _ service.TextDataService = (*TextService)(nil)
+import (
+	"context"
 
-// type TextService struct {
-// 	//key encryption key
-// 	kek     encryption.Encoder
-// 	manager model.ModelManager
-// }
+	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/model"
+	"github.com/vilasle/gokeep/internal/service"
+)
 
-// func NewTextService(manager model.ModelManager) *TextService {
-// 	return &TextService{
-// 		manager: manager,
-// 	}
-// }
+var _ service.TextDataService = (*TextService)(nil)
 
-// func (s *TextService) List(ctx context.Context, userID int64) (service.ListPrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, userID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "user not found"}, err
-// 	}
+type TextService struct {
+	//key encryption key
+	kek     encryption.Encoder
+	manager model.ModelManager
+}
 
-// 	result, err := s.manager.PlainTexts.List(ctx, user)
+func NewTextService(manager model.ModelManager, masterKey encryption.Encoder) *TextService {
+	return &TextService{
+		manager: manager,
+		kek: masterKey,
+	}
+}
 
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "error listing text data"}, err
-// 	}
+func (s *TextService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, userID)
+	if err != nil {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, err
+	}
 
-// 	if len(result) == 0 {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "there are not any text data"}, nil
-// 	}
+	result, err := s.manager.PlainTexts.List(ctx, user)
 
-// 	response := service.ListPrivateDataResponse{
-// 		Data: make([]map[string]any, len(result)),
-// 	}
+	if err != nil {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, err
+	}
 
-// 	for i, pv := range result {
-// 		response.Data[i] = map[string]any{
-// 			"id":   pv.ID(),
-// 			"text": pv.String(),
-// 		}
-// 	}
+	if len(result) == 0 {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, nil
+	}
 
-// 	return response, nil
-// }
+	response := service.ListPrivateDataResponse{
+		Data: make([]map[string]any, len(result)),
+	}
 
-// func (s *TextService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.PrivateDataResponse{Error: "user not found"}, err
-// 	}
+	for i, pv := range result {
+		response.Data[i] = map[string]any{
+			"id":   pv.ID(),
+			"text": pv.String(),
+		}
+	}
 
-// 	result, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		//TODO change error, and if not found user, message about it
-// 		return service.PrivateDataResponse{Error: "error getting text data"}, err
-// 	}
+	return response, nil
+}
 
-// 	response.Fields = map[string]any{
-// 		"id":   result.ID(),
-// 		"text": result.String(),
-// 	}
+func (s *TextService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.PrivateDataResponse{}, err
+	}
 
-// 	return
-// }
+	result, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
+	if err != nil {
+		//TODO change error, and if not found user, message about it
+		return service.PrivateDataResponse{}, err
+	}
 
-// func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData) error {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		return err
-// 	}
+	response.Fields = map[string]any{
+		"id":   result.ID(),
+		"text": result.String(),
+	}
 
-// 	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	//TODO wrap error
-// 	return entity.Delete(ctx)
-// }
+	return
+}
 
-// func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-// 	}
+func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		return err
+	}
 
-// 	entity := s.manager.PlainTexts.New(user, req.Text)
+	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
+	if err != nil {
+		return err
+	}
+	//TODO wrap error
+	return entity.Delete(ctx)
+}
 
-// 	return s.save(ctx, entity, clientKey)
-// }
+func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-// 	}
+	entity := s.manager.PlainTexts.New(user, req.Text)
 
-// 	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		return service.AddingUpdatePrivateDataResponse{Error: "text data not found"}, err
-// 	}
+	return s.save(ctx, entity, clientKey)
+}
 
-// 	entity.SetText(req.Text)
+func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	return s.save(ctx, entity, clientKey)
-// }
+	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
+	if err != nil {
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// func (s *TextService) save(ctx context.Context, usepass *model.PlainText, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	//generate new key for data
-// 	dek, err := encryption.GenerateNewAESKey()
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error generating new AES key"}, err
-// 	}
+	entity.SetText(req.Text)
 
-// 	dekSrc := dek.JSON()
-// 	encryptor := encryption.NewEncryptionModel([]byte(dekSrc), s.kek, dek)
+	return s.save(ctx, entity, clientKey)
+}
 
-// 	if err := usepass.Save(ctx, encryptor); err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error saving text data"}, err
-// 	}
+func (s *TextService) save(ctx context.Context, usepass *model.PlainText, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	//generate new key for data
+	dek, err := encryption.GenerateNewAESKey()
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	//replace key to client key
-// 	savedData := usepass.EncryptedData()
+	dekSrc := dek.JSON()
+	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
-// 	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
+	if err := usepass.Save(ctx, encryptor); err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error replacing key"}, err
-// 	}
+	//replace key to client key
+	savedData := usepass.EncryptedData()
 
-// 	response := service.AddingUpdatePrivateDataResponse{
-// 		ID:   usepass.ID(),
-// 		Data: encData.Data,
-// 		Key:  encData.Key,
-// 	}
+	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
 
-// 	return response, nil
-// }
+	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
+
+	response := service.AddingUpdatePrivateDataResponse{
+		ID:   usepass.ID(),
+		Data: encData.Data,
+		Key:  encData.Key,
+	}
+
+	return response, nil
+}

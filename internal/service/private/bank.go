@@ -1,149 +1,158 @@
 package private
 
-// var _ service.BandCardService = (*BankCardService)(nil)
+import (
+	"context"
 
-// type BankCardService struct {
-// 	//key encryption key
-// 	kek     encryption.Encoder
-// 	manager model.ModelManager
-// }
+	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/model"
+	"github.com/vilasle/gokeep/internal/service"
+)
 
-// func NewBankCardService(manager model.ModelManager) *BankCardService {
-// 	return &BankCardService{
-// 		manager: manager,
-// 	}
-// }
+var _ service.BankCardService = (*BankCardService)(nil)
 
-// func (s *BankCardService) List(ctx context.Context, userID int64) (service.ListPrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, userID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "user not found"}, err
-// 	}
+type BankCardService struct {
+	//key encryption key
+	kek     encryption.Encoder
+	manager model.ModelManager
+}
 
-// 	result, err := s.manager.BankCards.List(ctx, user)
+func NewBankCardService(manager model.ModelManager, masterKey encryption.Encoder) *BankCardService {
+	return &BankCardService{
+		manager: manager,
+		kek: 	masterKey,
+	}
+}
 
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "error listing bank card"}, err
-// 	}
+func (s *BankCardService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, userID)
+	if err != nil {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, err
+	}
 
-// 	if len(result) == 0 {
-// 		//TODO improve message
-// 		return service.ListPrivateDataResponse{Error: "there are not any bank cards"}, nil
-// 	}
+	result, err := s.manager.BankCards.List(ctx, user)
 
-// 	response := service.ListPrivateDataResponse{
-// 		Data: make([]map[string]any, len(result)),
-// 	}
+	if err != nil {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, err
+	}
 
-// 	for i, pv := range result {
-// 		response.Data[i] = map[string]any{
-// 			"id":   pv.ID(),
-// 			"card": pv.String(),
-// 		}
-// 	}
+	if len(result) == 0 {
+		//TODO improve message
+		return service.ListPrivateDataResponse{}, nil
+	}
 
-// 	return response, nil
-// }
+	response := service.ListPrivateDataResponse{
+		Data: make([]map[string]any, len(result)),
+	}
 
-// func (s *BankCardService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.PrivateDataResponse{Error: "user not found"}, err
-// 	}
+	for i, pv := range result {
+		response.Data[i] = map[string]any{
+			"id":   pv.ID(),
+			"card": pv.String(),
+		}
+	}
 
-// 	result, err := s.manager.BankCards.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		//TODO change error, and if not found user, message about it
-// 		return service.PrivateDataResponse{Error: "error getting bank card"}, err
-// 	}
+	return response, nil
+}
 
-// 	response.Fields = map[string]any{
-// 		"id":   result.ID(),
-// 		"name": result.String(),
-// 	}
+func (s *BankCardService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.PrivateDataResponse{}, err
+	}
 
-// 	return
-// }
+	result, err := s.manager.BankCards.Get(ctx, user, req.ID)
+	if err != nil {
+		//TODO change error, and if not found user, message about it
+		return service.PrivateDataResponse{}, err
+	}
 
-// func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateData) error {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		return err
-// 	}
+	response.Fields = map[string]any{
+		"id":   result.ID(),
+		"name": result.String(),
+	}
 
-// 	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	//TODO wrap error
-// 	return entity.Delete(ctx)
-// }
+	return
+}
 
-// func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-// 	}
-// 	entity := s.manager.BankCards.New(user, req.Number, req.CVV, req.Expiration)
+func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		return err
+	}
 
-// 	return s.save(ctx, entity, clientKey)
-// }
+	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
+	if err != nil {
+		return err
+	}
+	//TODO wrap error
+	return entity.Delete(ctx)
+}
 
-// func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	user, err := s.manager.Users.Get(ctx, req.UserID)
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-// 	}
+func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
+	entity := s.manager.BankCards.New(user, req.Number, req.CVV, req.Expiration)
 
-// 	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
-// 	if err != nil {
-// 		return service.AddingUpdatePrivateDataResponse{Error: "bank card not found"}, err
-// 	}
+	return s.save(ctx, entity, clientKey)
+}
 
-// 	entity.SetNumber(req.Number)
-// 	entity.SetCVV(req.CVV)
-// 	entity.SetExpiration(req.Expiration)
+func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	user, err := s.manager.Users.Get(ctx, req.UserID)
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	return s.save(ctx, entity, clientKey)
-// }
+	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
+	if err != nil {
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// func (s *BankCardService) save(ctx context.Context, entity *model.BankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-// 	//generate new key for data
-// 	dek, err := encryption.GenerateNewAESKey()
-// 	if err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error generating new AES key"}, err
-// 	}
+	entity.SetNumber(req.Number)
+	entity.SetCVV(req.CVV)
+	entity.SetExpiration(req.Expiration)
 
-// 	dekSrc := dek.JSON()
-// 	encryptor := encryption.NewEncryptionModel([]byte(dekSrc), s.kek, dek)
+	return s.save(ctx, entity, clientKey)
+}
 
-// 	if err := entity.Save(ctx, encryptor); err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error saving bank card"}, err
-// 	}
+func (s *BankCardService) save(ctx context.Context, entity *model.BankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+	//generate new key for data
+	dek, err := encryption.GenerateNewAESKey()
+	if err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	//replace key to client key
-// 	savedData := entity.EncryptedData()
+	dekSrc := dek.JSON()
+	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
-// 	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
+	if err := entity.Save(ctx, encryptor); err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
 
-// 	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-// 		//TODO improve message
-// 		return service.AddingUpdatePrivateDataResponse{Error: "error replacing key"}, err
-// 	}
+	//replace key to client key
+	savedData := entity.EncryptedData()
 
-// 	response := service.AddingUpdatePrivateDataResponse{
-// 		ID:   entity.ID(),
-// 		Data: encData.Data,
-// 		Key:  encData.Key,
-//		View: entity.String(),
-// 	}
+	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
 
-// 	return response, nil
-// }
+	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
+		//TODO improve message
+		return service.AddingUpdatePrivateDataResponse{}, err
+	}
+
+	response := service.AddingUpdatePrivateDataResponse{
+		ID:   entity.ID(),
+		Data: encData.Data,
+		Key:  encData.Key,
+		View: entity.String(),
+	}
+
+	return response, nil
+}

@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/vilasle/gokeep/internal/logger"
 )
@@ -98,79 +99,73 @@ type bankCardManager struct {
 	pvRepository PrivateDataRepository
 }
 
-// func (c *bankCardManager) New(owner *User, number string, cvv int, expirationDate time.Time) *BankCard {
-// 	bankCard := newBankCard(owner, number, cvv, expirationDate)
-// 	bankCard.dataRepository = c.pvRepository
-// 	bankCard.encryptionRepository = c.encRepository
-// 	return bankCard
-// }
+func (c *bankCardManager) New(owner *User, number string, cvv int, expirationDate time.Time) *BankCard {
+	bankCard := newBankCard(owner, number, cvv, expirationDate)
+	bankCard.dataRepository = c.pvRepository
+	return bankCard
+}
 
-// func (c *bankCardManager) Get(ctx context.Context, owner *User, id int64) (*BankCard, error) {
-// 	//TODO add logger
-// 	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	usepass.dataRepository = c.pvRepository
-// 	usepass.encryptionRepository = c.encRepository
-// 	return usepass, nil
-// }
+func (c *bankCardManager) Get(ctx context.Context, owner *User, id int) (*BankCard, error) {
+	//TODO add logger
+	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	usepass.dataRepository = c.pvRepository
+	return usepass, nil
+}
 
-// func (c *bankCardManager) List(ctx context.Context, owner *User) ([]*BankCard, error) {
-// 	return fillListOfPrivateData[*BankCard](ctx, owner, ModelTypeBankCard, c.pvRepository)
-// }
+func (c *bankCardManager) List(ctx context.Context, owner *User) ([]*BankCard, error) {
+	return fillListOfPrivateData[*BankCard](ctx, owner, TypeBankCard, c.pvRepository)
+}
 
 type plainTextManager struct {
 	pvRepository PrivateDataRepository
 }
 
-// func (c *plainTextManager) New(owner *User, text []byte) *PlainText {
-// 	plainText := newPlainText(owner, text)
-// 	plainText.dataRepository = c.pvRepository
-// 	plainText.encryptionRepository = c.encRepository
-// 	return plainText
-// }
+func (c *plainTextManager) New(owner *User, text []byte) *PlainText {
+	plainText := newPlainText(owner, text)
+	plainText.dataRepository = c.pvRepository
+	return plainText
+}
 
-// func (c *plainTextManager) Get(ctx context.Context, owner *User, id int64) (*PlainText, error) {
-// 	//TODO add logger
-// 	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	plainText.dataRepository = c.pvRepository
-// 	plainText.encryptionRepository = c.encRepository
-// 	return plainText, nil
-// }
+func (c *plainTextManager) Get(ctx context.Context, owner *User, id int) (*PlainText, error) {
+	//TODO add logger
+	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	plainText.dataRepository = c.pvRepository
+	return plainText, nil
+}
 
-// func (c *plainTextManager) List(ctx context.Context, owner *User) ([]*PlainText, error) {
-// 	return fillListOfPrivateData[*PlainText](ctx, owner, ModelTypePlainText, c.pvRepository)
-// }
+func (c *plainTextManager) List(ctx context.Context, owner *User) ([]*PlainText, error) {
+	return fillListOfPrivateData[*PlainText](ctx, owner, TypePlainText, c.pvRepository)
+}
 
 type binaryDataManager struct {
 	pvRepository PrivateDataRepository
 }
 
-// func (c *binaryDataManager) New(owner *User, name string, data []byte) *BinaryData {
-// 	binaryData := newBinaryData(owner, data, name)
-// 	binaryData.dataRepository = c.pvRepository
-// 	binaryData.encryptionRepository = c.encRepository
-// 	return binaryData
-// }
+func (c *binaryDataManager) New(owner *User, name string, data []byte) *BinaryData {
+	binaryData := newBinaryData(owner, data, name)
+	binaryData.dataRepository = c.pvRepository
+	return binaryData
+}
 
-// func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int64) (*BinaryData, error) {
-// 	//TODO add logger
-// 	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	binaryData.dataRepository = c.pvRepository
-// 	binaryData.encryptionRepository = c.encRepository
-// 	return binaryData, nil
-// }
+func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int) (*BinaryData, error) {
+	//TODO add logger
+	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
+	if err != nil {
+		return nil, err
+	}
+	binaryData.dataRepository = c.pvRepository
+	return binaryData, nil
+}
 
-// func (c *binaryDataManager) List(ctx context.Context, owner *User) ([]*BinaryData, error) {
-// 	return fillListOfPrivateData[*BinaryData](ctx, owner, ModelTypeBinaryData, c.pvRepository)
-// }
+func (c *binaryDataManager) List(ctx context.Context, owner *User) ([]*BinaryData, error) {
+	return fillListOfPrivateData[*BinaryData](ctx, owner, TypeBinaryData, c.pvRepository)
+}
 
 func fillListOfPrivateData[T *Usepass | *BankCard | *PlainText | *BinaryData](
 	ctx context.Context,

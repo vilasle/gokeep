@@ -66,7 +66,6 @@ type AddingUpdatePrivateDataResponse struct {
 
 type ListPrivateDataResponse struct {
 	Data  []map[string]any
-	Error string
 }
 
 type GetPrivateData struct {
@@ -76,7 +75,6 @@ type GetPrivateData struct {
 
 type PrivateDataResponse struct {
 	Fields map[string]any
-	Error  string
 }
 
 type DeletePrivateData struct {
