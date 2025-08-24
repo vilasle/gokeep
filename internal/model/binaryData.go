@@ -2,7 +2,6 @@ package model
 
 import (
 	"context"
-	"fmt"
 )
 
 var _ PrivateData = (*BinaryData)(nil)
@@ -16,7 +15,8 @@ type BinaryData struct {
 func newBinaryData(owner *User, data []byte, name string) *BinaryData {
 	return &BinaryData{
 		model: model{
-			owner: owner,
+			owner:     owner,
+			modelType: TypeBinaryData,
 		},
 		name: name,
 		data: data,
@@ -43,16 +43,9 @@ func (bd *BinaryData) SetData(data []byte) {
 	bd.data = data
 }
 
-func (bd *BinaryData) prepareEncryptedData(encoder Encoder) error {
-	encryptedData, err := encoder.Encrypt(bd.data)
-	if err != nil {
-		return err
-	}
-	encryptedData.Owner = bd
-
-	bd.encryptedData = encryptedData
-
-	return nil
+func (bd *BinaryData) prepareEncryptedData(encoder Encoder) (err error) {
+	bd.encryptedData, err = encoder.Encrypt(bd.data)
+	return err
 }
 
 func (bd *BinaryData) decryptData(encoder Encoder) (err error) {
@@ -61,16 +54,22 @@ func (bd *BinaryData) decryptData(encoder Encoder) (err error) {
 }
 
 // FIXME add getting binary data by id and check that owner was right id
-func findBinaryDataByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*BinaryData, error) {
+func findBinaryDataByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*BinaryData, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	u, ok := data.(*BinaryData)
-	if !ok {
-		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*BinaryData'", id)
+	model := model{
+		id:             id,
+		owner:          owner,
+		modelType:      TypeUsepass,
+		dataRepository: r,
+		encryptedData: &EncryptedData{
+			Data: data.Data,
+			Key:  data.DEK,
+		},
 	}
 
-	return u, nil
+	return &BinaryData{model: model}, nil
 }

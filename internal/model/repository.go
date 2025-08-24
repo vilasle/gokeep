@@ -4,37 +4,30 @@ import "context"
 
 type RepositoryCollector interface {
 	User() UserRepository
-	Private() (PrivateDataRepository)
-	Encryption() (EncryptedDataRepository)
-	 
+	Private() PrivateDataRepository
 }
 
 type UserRepository interface {
-	Add(context.Context, *User) error
-	Update(context.Context, *User) error
-	Delete(context.Context, *User) error
-	Find(context.Context, string) (*User, error)
-	Get(context.Context, int64) (*User, error)
+	Add(context.Context, UserAdd) (id int, err error)
+	Update(context.Context, UserUpdate) error
+	Delete(context.Context, int) error
+	Find(context.Context, string) (UserInfo, error)
+	Get(context.Context, int) (UserInfo, error)
 }
 
 type PrivateData interface {
-	ID() int64
+	ID() int
+	Type() int
 	Owner() *User
 	String() string
 	EncryptedData() EncryptedData
 }
 
 type PrivateDataRepository interface {
-	Add(context.Context, PrivateData) error
-	Update(context.Context, PrivateData) error
-	Delete(context.Context, PrivateData) error
-	Get(context.Context, int64) (PrivateData, error)
-	List(ctx context.Context, modelType int8, owner *User) ([]PrivateData, error)
-}
-
-type EncryptedDataRepository interface {
-	Add(context.Context, *EncryptedData) error
-	Update(context.Context, *EncryptedData) error
-	Delete(context.Context, *EncryptedData) error
-	Get(context.Context, int64) (*EncryptedData, error)
+	Add(ctx context.Context, data PrivateDataSave) (int, error)
+	//return id and error, but id return only for having same signature with Add method
+	Update(ctx context.Context, data PrivateDataSave) (int, error)
+	Delete(ctx context.Context, id int) error
+	Get(context.Context, int) (PrivateDataInfo, error)
+	List(ctx context.Context, modelType Type, owner *User) ([]PrivateDataInfo, error)
 }

@@ -1,22 +1,21 @@
 package client
 
-import "context"
+import (
+	"context"
 
-type PrivateDataType int
-
-const (
-	TypeLoginPassword PrivateDataType = iota + 1
-	TypeBankCard
-	TypeTextData
-	TypeBinaryData
+	"github.com/vilasle/gokeep/internal/model"
 )
+
+
+
+
 
 type ClientRepository interface {
 	CreateScheme(ctx context.Context) error
 	Close() error
-	Save(ctx context.Context, tData PrivateDataType, req SaveRequest) SaveResponse
-	Get(ctx context.Context, tData PrivateDataType, req ...GetRequest) ([]GetResponse, error)
-	Delete(ctx context.Context, tData PrivateDataType, req DeleteRequest) error
+	Save(ctx context.Context, tData model.Type, req SaveRequest) SaveResponse
+	Get(ctx context.Context, tData model.Type, req ...GetRequest) ([]GetResponse, error)
+	Delete(ctx context.Context, tData model.Type, req DeleteRequest) error
 }
 
 type SaveRequest struct {

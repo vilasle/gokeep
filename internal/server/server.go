@@ -1,0 +1,301 @@
+package server
+
+import (
+	"context"
+	"errors"
+	"net"
+	"time"
+
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/logger"
+	"github.com/vilasle/gokeep/internal/model"
+	"github.com/vilasle/gokeep/internal/service"
+	pb "github.com/vilasle/gokeep/proto"
+	"google.golang.org/grpc"
+)
+
+type Option func(*Server) error
+
+func WithLogger(s *Server) error {
+	s.opts = append(s.opts, grpc.UnaryInterceptor(
+		logging.UnaryServerInterceptor(logger.InterceptorLogger()),
+	))
+	return nil
+}
+
+type Config struct {
+	Addr string
+	service.AuthService
+	service.LoginPasswordService
+	service.BankCardService
+	service.TextDataService
+	service.BinaryDataService
+}
+
+type Server struct {
+	auth service.AuthService
+	//data services
+	cread  service.LoginPasswordService
+	bank   service.BankCardService
+	text   service.TextDataService
+	binary service.BinaryDataService
+	//grpc fields
+	conn net.Listener
+	srv  *grpc.Server
+	opts []grpc.ServerOption
+	pb.UnimplementedPrivateDataServiceServer
+	pb.UnimplementedAccountServiceServer
+}
+
+func NewServer(config Config, opts ...Option) (*Server, error) {
+	conn, err := net.Listen("tcp", config.Addr)
+	if err != nil {
+		return nil, err
+	}
+
+	s := &Server{
+		conn: conn,
+		opts: make([]grpc.ServerOption, 0, 2),
+		auth: config.AuthService,
+		cread: config.LoginPasswordService,
+		bank:  config.BankCardService,
+		text:  config.TextDataService,
+		binary: config.BinaryDataService,
+	}
+
+	for _, opt := range opts {
+		if err := opt(s); err != nil {
+			return nil, err
+		}
+	}
+
+	s.srv = grpc.NewServer(s.opts...)
+	return s, nil
+}
+
+func (s *Server) Listen() error {
+	pb.RegisterPrivateDataServiceServer(s.srv, s)
+	pb.RegisterAccountServiceServer(s.srv, s)
+	return s.srv.Serve(s.conn)
+}
+
+func (s *Server) Stop() {
+	s.srv.GracefulStop()
+	s.conn.Close()
+}
+
+// CreateAccount - add new account via service.AuthService
+func (s *Server) CreateAccount(ctx context.Context, req *pb.CreateAccountRequest) (*pb.CreateAccountResponse, error) {
+	resp := &pb.CreateAccountResponse{}
+	dto := service.RegisterLoginUser{
+		Username: req.Login,
+		Password: req.Password,
+	}
+
+	if err := s.auth.Register(ctx, dto); err != nil {
+		resp.Error = err.Error()
+	}
+
+	return resp, nil
+}
+
+// Login - login via service.AuthService, create new session and save current public key for session which will be used for encrypting data
+func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+	resp := &pb.LoginResponse{}
+
+	dto := service.RegisterLoginUser{
+		Username:  req.Login,
+		Password:  req.Password,
+		PublicKey: req.PublicKey,
+	}
+
+	if result, err := s.auth.Login(ctx, dto); err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Token = result
+	}
+
+	return resp, nil
+}
+
+func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswordRequest) (*pb.EncryptedDataResponse, error) {
+	resp := &pb.EncryptedDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	dto := service.AddLoginPassword{
+		UserID:   ses.userID,
+		Username: req.Login,
+		Password: req.Password,
+	}
+
+	if result, err := s.cread.Add(ctx, dto, ses.encoder); err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Id = int64(result.ID)
+		resp.Data = &pb.EncryptedData{
+			Data: []byte(result.Data),
+			Dek:  []byte(result.Key),
+			View: result.View,
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) (*pb.EncryptedDataResponse, error) {
+	resp := &pb.EncryptedDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	expiration, err := time.Parse("01/06", req.Expires)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	dto := service.AddBankCard{
+		UserID:     ses.userID,
+		Number:     req.Number,
+		CVV:        int(req.Cvv),
+		Expiration: expiration,
+	}
+
+	if result, err := s.bank.Add(ctx, dto, ses.encoder); err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Id = int64(result.ID)
+		resp.Data = &pb.EncryptedData{
+			Data: []byte(result.Data),
+			Dek:  []byte(result.Key),
+			View: result.View,
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) (*pb.EncryptedDataResponse, error) {
+	resp := &pb.EncryptedDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	dto := service.AddTextData{
+		UserID: ses.userID,
+		Name:   req.Name,
+		Text:   req.Data,
+	}
+
+	if result, err := s.text.Add(ctx, dto, ses.encoder); err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Id = int64(result.ID)
+		resp.Data = &pb.EncryptedData{
+			Data: []byte(result.Data),
+			Dek:  []byte(result.Key),
+			View: result.View,
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataRequest) (*pb.EncryptedDataResponse, error) {
+	resp := &pb.EncryptedDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	dto := service.AddBinaryData{
+		UserID: ses.userID,
+		Name:   req.Name,
+		Data:   req.Data,
+	}
+
+	if result, err := s.binary.Add(ctx, dto, ses.encoder); err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Id = int64(result.ID)
+		resp.Data = &pb.EncryptedData{
+			Data: []byte(result.Data),
+			Dek:  []byte(result.Key),
+			View: result.View,
+		}
+	}
+
+	return resp, nil
+}
+
+func (s *Server) Delete(ctx context.Context, req *pb.DeleteDataRequest) (resp *pb.DeleteDataResponse, err error) {
+	resp = &pb.DeleteDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	dto := service.DeletePrivateData{
+		UserID: ses.userID,
+		ID:     int(req.Id),
+	}
+	switch req.Type {
+	case int32(model.TypeUsepass):
+		err = s.cread.Delete(ctx, dto)
+	case int32(model.TypeBankCard):
+		err = s.bank.Delete(ctx, dto)
+	case int32(model.TypePlainText):
+		err = s.text.Delete(ctx, dto)
+	case int32(model.TypeBinaryData):
+		err = s.binary.Delete(ctx, dto)
+	default:
+		err = errors.New("unknown type")
+	}
+
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	return resp, nil
+}
+
+type session struct {
+	userID  int
+	encoder encryption.Encoder
+}
+
+func (s *Server) getSessionByToken(ctx context.Context, token string) (session, error) {
+	ses, err := s.auth.GetSessionByCredentialToken(ctx, token)
+	if err != nil {
+		return session{}, err
+	}
+	//create encoder from session public key
+	encoder, err := encryption.NewRSACipherFroRawPublicKey(ses.PublicKey)
+	return session{ses.UserID, encoder}, err
+}

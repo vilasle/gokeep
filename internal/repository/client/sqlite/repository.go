@@ -7,6 +7,7 @@ import (
 
 	"github.com/huandu/go-sqlbuilder"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/repository/client"
 )
 
@@ -66,7 +67,7 @@ func (r *ClientRepository) Close() error {
 	return r.db.Close()
 }
 
-func (r *ClientRepository) Save(ctx context.Context, tData client.PrivateDataType, req client.SaveRequest) (response client.SaveResponse) {
+func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req client.SaveRequest) (response client.SaveResponse) {
 	if req.ID > 0 {
 		return r.update(ctx, tData, req, req.ID)
 	}
@@ -85,7 +86,7 @@ func (r *ClientRepository) Save(ctx context.Context, tData client.PrivateDataTyp
 	}
 }
 
-func (r *ClientRepository) add(ctx context.Context, tData client.PrivateDataType, req client.SaveRequest) (response client.SaveResponse) {
+func (r *ClientRepository) add(ctx context.Context, tData model.Type, req client.SaveRequest) (response client.SaveResponse) {
 	iq := sqlbuilder.InsertInto("private_data").
 		Cols("external_id", "type", "dek", "data", "view").
 		Values(req.ExternalID, tData, req.DEK, req.Data, req.View).
@@ -109,7 +110,7 @@ func (r *ClientRepository) add(ctx context.Context, tData client.PrivateDataType
 	return response
 }
 
-func (r *ClientRepository) update(ctx context.Context, tData client.PrivateDataType, req client.SaveRequest, id int) (response client.SaveResponse) {
+func (r *ClientRepository) update(ctx context.Context, tData model.Type, req client.SaveRequest, id int) (response client.SaveResponse) {
 	response.ID = id
 
 	uq := sqlbuilder.Update("private_data")
@@ -148,7 +149,7 @@ func (r *ClientRepository) searchByExternalID(externalID int) (int, error) {
 	return id, nil
 }
 
-func (r *ClientRepository) Get(ctx context.Context, tData client.PrivateDataType, req ...client.GetRequest) ([]client.GetResponse, error) {
+func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req ...client.GetRequest) ([]client.GetResponse, error) {
 	sq := sqlbuilder.Select("id", "external_id", "dek", "data", "view").From("private_data")
 	sq = sq.Where(sq.Equal("type", tData))
 
@@ -179,7 +180,7 @@ func (r *ClientRepository) Get(ctx context.Context, tData client.PrivateDataType
 	return result, nil
 }
 
-func (r *ClientRepository) Delete(ctx context.Context, tData client.PrivateDataType, req client.DeleteRequest) error {
+func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req client.DeleteRequest) error {
 	dq := sqlbuilder.DeleteFrom("private_data")
 	dq = dq.Where(dq.Equal("type", tData))
 

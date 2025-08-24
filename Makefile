@@ -20,6 +20,7 @@ generate-mock:
 	mockgen -package=auth -destination=internal/service/auth/repository_mock_test.go -source=internal/model/repository.go
 	mockgen -package=private -destination=internal/service/private/repository_mock_test.go -source=internal/model/repository.go
 	mockgen -package=private -destination=internal/service/private/encryption_mock_test.go -source=internal/encryption/encryption.go
+	mockgen -package=server -destination=internal/server/service_mock_test.go -source=internal/service/service.go
 
 test:
 	go test ./...

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +21,8 @@ type BankCard struct {
 func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) *BankCard {
 	return &BankCard{
 		model: model{
-			owner: owner,
+			owner:     owner,
+			modelType: TypeBankCard,
 		},
 		number:     cardNumber,
 		expiration: expiration,
@@ -84,19 +84,11 @@ func (u *BankCard) Save(ctx context.Context, encoder Encoder) (err error) {
 	return u.model.Save(ctx)
 }
 
-func (u *BankCard) prepareEncryptedData(encoder Encoder) error {
+func (u *BankCard) prepareEncryptedData(encoder Encoder) (err error) {
 	data := u.dataForEncryption()
 
-	encryptedData, err := encoder.Encrypt(data)
-	if err != nil {
-		return err
-	}
-
-	u.encryptedData = encryptedData
-
-	u.encryptedData.Owner = u
-
-	return nil
+	u.encryptedData, err = encoder.Encrypt(data)
+	return err
 }
 
 func (bc BankCard) dataForEncryption() []byte {
@@ -111,16 +103,22 @@ func (bc BankCard) dataForEncryption() []byte {
 }
 
 // FIXME add getting band card by id and check that owner was right id
-func findBankCardByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*BankCard, error) {
+func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*BankCard, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	u, ok := data.(*BankCard)
-	if !ok {
-		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*BankCard'", id)
+	model := model{
+		id:             id,
+		owner:          owner,
+		modelType:      TypeUsepass,
+		dataRepository: r,
+		encryptedData: &EncryptedData{
+			Data: data.Data,
+			Key:  data.DEK,
+		},
 	}
 
-	return u, nil
+	return &BankCard{model: model}, nil
 }

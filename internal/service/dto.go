@@ -3,68 +3,65 @@ package service
 import "time"
 
 type RegisterLoginUser struct {
-	Username string
-	Password string
-}
-
-type RegisterLoginResponse struct {
-	Error      string
-	Credential string
+	Username  string
+	Password  string
+	PublicKey []byte
 }
 
 type AddLoginPassword struct {
-	UserID   int64
+	UserID   int
 	Username string
 	Password string
 }
 
 type UpdateLoginPassword struct {
-	UserID int64
-	ID     int64
+	UserID int
+	ID     int
 	AddLoginPassword
 }
 
 type AddBankCard struct {
-	UserID     int64
+	UserID     int
 	Number     string
 	CVV        int
 	Expiration time.Time
 }
 
 type UpdateBankCard struct {
-	ID int64
+	ID int
 	AddBankCard
 }
 
 type AddTextData struct {
-	UserID int64
+	UserID int
 	Name   string
 	Text   []byte
 }
 
 type UpdateTextData struct {
-	ID int64
+	ID int
 	AddTextData
 }
 
 type AddBinaryData struct {
-	UserID int64
+	UserID int
 	Name   string
 	Data   []byte
 }
 
 type UpdateBinaryData struct {
-	ID int64
+	ID int
 	AddBinaryData
 }
 
 type AddingUpdatePrivateDataResponse struct {
-	ID int64
+	ID int
+	//opened presentation of data
+	View string
 	//encrypted data
 	Data string
 	//encrypted DEK key
 	Key   string
-	Error string
 }
 
 type ListPrivateDataResponse struct {
@@ -73,8 +70,8 @@ type ListPrivateDataResponse struct {
 }
 
 type GetPrivateData struct {
-	UserID int64
-	ID     int64
+	UserID int
+	ID     int
 }
 
 type PrivateDataResponse struct {
@@ -83,6 +80,12 @@ type PrivateDataResponse struct {
 }
 
 type DeletePrivateData struct {
-	UserID int64
-	ID     int64
+	UserID int
+	ID     int
+}
+
+type SessionInfo struct {
+	UserID int
+	SessionID int
+	PublicKey []byte
 }

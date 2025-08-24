@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/vilasle/gokeep/internal/model"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
@@ -20,7 +21,7 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, 
 	}
 
 	if id > 0 {
-		result, err := c.localStorage.Get(ctx, repository.TypeLoginPassword, repository.GetRequest{ID: id})
+		result, err := c.localStorage.Get(ctx, model.TypeUsepass, repository.GetRequest{ID: id})
 		if err == nil && len(result) > 0 {
 			data.ID = result[0].ExternalID
 		} else if err != nil {
@@ -33,7 +34,7 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, 
 		return fmt.Errorf(response.Error)
 	}
 
-	if result := c.localStorage.Save(ctx, repository.TypeLoginPassword, repository.SaveRequest{
+	if result := c.localStorage.Save(ctx, model.TypeUsepass, repository.SaveRequest{
 		ID:         id,
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
@@ -60,7 +61,7 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 	}
 
 	if id > 0 {
-		result, err := c.localStorage.Get(ctx, repository.TypeBankCard, repository.GetRequest{ID: id})
+		result, err := c.localStorage.Get(ctx, model.TypeBankCard, repository.GetRequest{ID: id})
 		if err == nil && len(result) > 0 {
 			data.ID = result[0].ExternalID
 		} else if err != nil {
@@ -73,7 +74,7 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 		return fmt.Errorf(response.Error)
 	}
 
-	if result := c.localStorage.Save(ctx, repository.TypeBankCard, repository.SaveRequest{
+	if result := c.localStorage.Save(ctx, model.TypeBankCard, repository.SaveRequest{
 		ID:         id,
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
@@ -92,7 +93,7 @@ func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string,
 	}
 
 	if id > 0 {
-		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		result, err := c.localStorage.Get(ctx, model.TypePlainText, repository.GetRequest{ID: id})
 		if err == nil && len(result) > 0 {
 			data.ID = result[0].ExternalID
 		} else if err != nil {
@@ -105,7 +106,7 @@ func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string,
 		return fmt.Errorf(response.Error)
 	}
 
-	if result := c.localStorage.Save(ctx, repository.TypeTextData, repository.SaveRequest{
+	if result := c.localStorage.Save(ctx, model.TypePlainText, repository.SaveRequest{
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
@@ -136,7 +137,7 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 	}
 
 	if id > 0 {
-		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		result, err := c.localStorage.Get(ctx, model.TypePlainText, repository.GetRequest{ID: id})
 		if err == nil && len(result) > 0 {
 			data.ID = result[0].ExternalID
 		} else if err != nil {
@@ -149,7 +150,7 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		return fmt.Errorf(response.Error)
 	}
 
-	if result := c.localStorage.Save(ctx, repository.TypeTextData, repository.SaveRequest{
+	if result := c.localStorage.Save(ctx, model.TypeUsepass, repository.SaveRequest{
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
@@ -179,9 +180,9 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 		Data: content,
 		Name: name,
 	}
-	
+
 	if id > 0 {
-		result, err := c.localStorage.Get(ctx, repository.TypeTextData, repository.GetRequest{ID: id})
+		result, err := c.localStorage.Get(ctx, model.TypeUsepass, repository.GetRequest{ID: id})
 		if err == nil && len(result) > 0 {
 			data.ID = result[0].ExternalID
 		} else if err != nil {
@@ -194,7 +195,7 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 		return fmt.Errorf(response.Error)
 	}
 
-	if result := c.localStorage.Save(ctx, repository.TypeBinaryData, repository.SaveRequest{
+	if result := c.localStorage.Save(ctx, model.TypeBinaryData, repository.SaveRequest{
 		ExternalID: response.ID,
 		DEK:        response.Data.DEK,
 		Data:       response.Data.Data,
@@ -207,7 +208,7 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 
 // TODO implement work with local repository
 func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
-	t := repository.TypeLoginPassword
+	t := model.TypeUsepass
 	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
 		ID: id,
 	})
@@ -225,7 +226,7 @@ func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) GetBankCard(ctx context.Context, id int) error {
-	t := repository.TypeBankCard
+	t := model.TypeBankCard
 	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
 		ID: id,
 	})
@@ -243,7 +244,7 @@ func (c *Client) GetBankCard(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) GetTextData(ctx context.Context, id int) error {
-	t := repository.TypeTextData
+	t := model.TypePlainText
 	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
 		ID: id,
 	})
@@ -261,7 +262,7 @@ func (c *Client) GetTextData(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) GetBinaryData(ctx context.Context, id int) error {
-	t := repository.TypeBinaryData
+	t := model.TypeBinaryData
 	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
 		ID: id,
 	})
@@ -279,7 +280,7 @@ func (c *Client) GetBinaryData(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) DeleteLoginPassword(ctx context.Context, id int) error {
-	r, err := c.localStorage.Get(ctx, repository.TypeLoginPassword, repository.GetRequest{
+	r, err := c.localStorage.Get(ctx, model.TypeUsepass, repository.GetRequest{
 		ID: id,
 	})
 	if err != nil {
@@ -304,7 +305,7 @@ func (c *Client) DeleteLoginPassword(ctx context.Context, id int) error {
 			continue
 		}
 
-		errs = append(errs, c.localStorage.Delete(ctx, repository.TypeLoginPassword, repository.DeleteRequest{
+		errs = append(errs, c.localStorage.Delete(ctx, model.TypeUsepass, repository.DeleteRequest{
 			ID: r.ID,
 		}))
 	}
@@ -321,7 +322,7 @@ func (c *Client) DeleteBankCard(ctx context.Context, id int) error {
 		return fmt.Errorf(response.Error)
 	}
 
-	return c.localStorage.Delete(ctx, repository.TypeBankCard, repository.DeleteRequest{
+	return c.localStorage.Delete(ctx, model.TypeBankCard, repository.DeleteRequest{
 		ID: id,
 	})
 }
@@ -335,7 +336,7 @@ func (c *Client) DeleteTextData(ctx context.Context, id int) error {
 		return fmt.Errorf(response.Error)
 	}
 
-	return c.localStorage.Delete(ctx, repository.TypeTextData, repository.DeleteRequest{
+	return c.localStorage.Delete(ctx, model.TypePlainText, repository.DeleteRequest{
 		ID: id,
 	})
 }
@@ -349,7 +350,7 @@ func (c *Client) DeleteBinaryData(ctx context.Context, id int) error {
 		return fmt.Errorf(response.Error)
 	}
 
-	return c.localStorage.Delete(ctx, repository.TypeBinaryData, repository.DeleteRequest{
+	return c.localStorage.Delete(ctx, model.TypeBinaryData, repository.DeleteRequest{
 		ID: id,
 	})
 }

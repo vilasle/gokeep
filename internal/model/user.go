@@ -8,7 +8,7 @@ import (
 
 // User - presentation user in storage, keep login by creating user and checking password
 type User struct {
-	id    int64
+	id    int
 	login string
 	//hashed password
 	password string
@@ -29,7 +29,7 @@ func (u *User) PasswordIsValid(password string) bool {
 	return u.password == hash256(password)
 }
 
-func (u *User) ID() int64 {
+func (u *User) ID() int {
 	return u.id
 }
 
@@ -56,8 +56,10 @@ func (u *User) isExists() bool {
 
 // add - add new user to storage
 func (u *User) add(ctx context.Context) error {
-	if err := u.r.Add(ctx, u); err != nil {
+	if id, err := u.r.Add(ctx, UserAdd{Login: u.login, Password: u.password}); err != nil {
 		return err
+	} else {
+		u.id = id
 	}
 	return nil
 
@@ -65,7 +67,7 @@ func (u *User) add(ctx context.Context) error {
 
 // update - update user in storage
 func (u *User) update(ctx context.Context) error {
-	if err := u.r.Update(ctx, u); err != nil {
+	if err := u.r.Update(ctx, UserUpdate{ID: u.id, Login: u.login, Password: u.password}); err != nil {
 		return err
 	}
 	return nil
@@ -73,7 +75,7 @@ func (u *User) update(ctx context.Context) error {
 
 // delete - delete user from storage
 func (u *User) delete(ctx context.Context) error {
-	if err := u.r.Delete(ctx, u); err != nil {
+	if err := u.r.Delete(ctx, u.id); err != nil {
 		return err
 	}
 	return nil
@@ -91,9 +93,27 @@ func hash256(v string) string {
 }
 
 func findUserByLogin(ctx context.Context, login string, r UserRepository) (*User, error) {
-	return r.Find(ctx, login)
+	if info, err := r.Find(ctx, login); err == nil {
+		return &User{
+			id:       info.ID,
+			login:    info.Login,
+			password: info.Password,
+			r:        r,
+		}, nil
+	} else {
+		return nil, err
+	}
 }
 
-func getUserByID(ctx context.Context, id int64, r UserRepository) (*User, error) {
-	return r.Get(ctx, id)
+func getUserByID(ctx context.Context, id int, r UserRepository) (*User, error) {
+	if info, err := r.Get(ctx, id); err == nil {
+		return &User{
+			id:       info.ID,
+			login:    info.Login,
+			password: info.Password,
+			r:        r,
+		}, nil
+	} else {
+		return nil, err
+	}
 }

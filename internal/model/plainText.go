@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"fmt"
 	"io"
 )
 
@@ -18,7 +17,8 @@ type PlainText struct {
 func newPlainText(owner *User, text []byte) *PlainText {
 	return &PlainText{
 		model: model{
-			owner: owner,
+			owner:     owner,
+			modelType: TypePlainText,
 		},
 		text: text,
 	}
@@ -39,18 +39,14 @@ func (tp *PlainText) prepareEncryptedData(encoder Encoder) error {
 		return err
 	}
 
-	encryptedData, err := encoder.Encrypt(data)
-	if err != nil {
-		return err
-	}
-	encryptedData.Owner = tp
-
-	tp.encryptedData = encryptedData
-
-	return nil
+	tp.encryptedData, err = encoder.Encrypt(data)
+	return err
 }
 
-func (tp *PlainText) String() (string) {
+func (tp *PlainText) String() string {
+	if len(tp.text) < 20 {
+		return string(tp.text)
+	}
 	view := tp.text[:20]
 	return string(view)
 }
@@ -84,17 +80,22 @@ func (tp PlainText) dataForEncryption() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-//FIXME add getting plain text by id and check that owner was right id
-func findPlainTextByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*PlainText, error) {
+// FIXME add getting plain text by id and check that owner was right id
+func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*PlainText, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	u, ok := data.(*PlainText)
-	if !ok {
-		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*PlainText'", id)
+	model := model{
+		id:             id,
+		owner:          owner,
+		modelType:      TypeUsepass,
+		dataRepository: r,
+		encryptedData: &EncryptedData{
+			Data: data.Data,
+			Key:  data.DEK,
+		},
 	}
-
-	return u, nil
+	return &PlainText{model: model}, nil
 }

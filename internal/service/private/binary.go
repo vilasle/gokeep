@@ -1,156 +1,148 @@
 package private
 
-import (
-	"context"
+// var _ service.LoginPasswordService = (*UsepassService)(nil)
 
-	"github.com/vilasle/gokeep/internal/encryption"
-	"github.com/vilasle/gokeep/internal/model"
-	"github.com/vilasle/gokeep/internal/service"
-)
+// type BinaryDataService struct {
+// 	//key encryption key
+// 	kek     encryption.Encoder
+// 	manager model.ModelManager
+// }
 
-var _ service.LoginPasswordService = (*UsepassService)(nil)
+// func NewBinaryDataService(manager model.ModelManager) *BinaryDataService {
+// 	return &BinaryDataService{
+// 		manager: manager,
+// 	}
+// }
 
-type BinaryDataService struct {
-	//key encryption key
-	kek     encryption.Encoder
-	manager model.ModelManager
-}
+// func (s *BinaryDataService) List(ctx context.Context, userID int64) (service.ListPrivateDataResponse, error) {
+// 	user, err := s.manager.Users.Get(ctx, userID)
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.ListPrivateDataResponse{Error: "user not found"}, err
+// 	}
 
-func NewBinaryDataService(manager model.ModelManager) *BinaryDataService {
-	return &BinaryDataService{
-		manager: manager,
-	}
-}
+// 	result, err := s.manager.BinaryData.List(ctx, user)
 
-func (s *BinaryDataService) List(ctx context.Context, userID int64) (service.ListPrivateDataResponse, error) {
-	user, err := s.manager.Users.Get(ctx, userID)
-	if err != nil {
-		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "user not found"}, err
-	}
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.ListPrivateDataResponse{Error: "error listing binary data"}, err
+// 	}
 
-	result, err := s.manager.BinaryData.List(ctx, user)
+// 	if len(result) == 0 {
+// 		//TODO improve message
+// 		return service.ListPrivateDataResponse{Error: "there are not any binary data"}, nil
+// 	}
 
-	if err != nil {
-		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "error listing binary data"}, err
-	}
+// 	response := service.ListPrivateDataResponse{
+// 		Data: make([]map[string]any, len(result)),
+// 	}
 
-	if len(result) == 0 {
-		//TODO improve message
-		return service.ListPrivateDataResponse{Error: "there are not any binary data"}, nil
-	}
+// 	for i, pv := range result {
+// 		response.Data[i] = map[string]any{
+// 			"id":    pv.ID(),
+// 			"name": pv.String(),
+// 		}
+// 	}
 
-	response := service.ListPrivateDataResponse{
-		Data: make([]map[string]any, len(result)),
-	}
+// 	return response, nil
+// }
 
-	for i, pv := range result {
-		response.Data[i] = map[string]any{
-			"id":    pv.ID(),
-			"name": pv.String(),
-		}
-	}
+// func (s *BinaryDataService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+// 	user, err := s.manager.Users.Get(ctx, req.UserID)
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.PrivateDataResponse{Error: "user not found"}, err
+// 	}
 
-	return response, nil
-}
+// 	result, err := s.manager.BinaryData.Get(ctx, user, req.ID)
+// 	if err != nil {
+// 		//TODO change error, and if not found user, message about it
+// 		return service.PrivateDataResponse{Error: "error getting binary data"}, err
+// 	}
 
-func (s *BinaryDataService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
-	user, err := s.manager.Users.Get(ctx, req.UserID)
-	if err != nil {
-		//TODO improve message
-		return service.PrivateDataResponse{Error: "user not found"}, err
-	}
+// 	response.Fields = map[string]any{
+// 		"id":    result.ID(),
+// 		"name": result.String(),
+// 	}
 
-	result, err := s.manager.BinaryData.Get(ctx, user, req.ID)
-	if err != nil {
-		//TODO change error, and if not found user, message about it
-		return service.PrivateDataResponse{Error: "error getting binary data"}, err
-	}
+// 	return
+// }
 
-	response.Fields = map[string]any{
-		"id":    result.ID(),
-		"name": result.String(),
-	}
+// func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+// 	user, err := s.manager.Users.Get(ctx, req.UserID)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return
-}
+// 	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	//TODO wrap error
+// 	return entity.Delete(ctx)
+// }
 
-func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivateData) error {
-	user, err := s.manager.Users.Get(ctx, req.UserID)
-	if err != nil {
-		return err
-	}
+// func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+// 	user, err := s.manager.Users.Get(ctx, req.UserID)
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
+// 	}
 
-	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
-	if err != nil {
-		return err
-	}
-	//TODO wrap error
-	return entity.Delete(ctx)
-}
+// 	entity := s.manager.BinaryData.New(user, req.Name, req.Data)
 
-func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	user, err := s.manager.Users.Get(ctx, req.UserID)
-	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-	}
+// 	return s.save(ctx, entity, clientKey)
+// }
 
-	entity := s.manager.BinaryData.New(user, req.Name, req.Data)
+// func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+// 	user, err := s.manager.Users.Get(ctx, req.UserID)
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
+// 	}
 
-	return s.save(ctx, entity, clientKey)
-}
+// 	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
+// 	if err != nil {
+// 		return service.AddingUpdatePrivateDataResponse{Error: "binary data not found"}, err
+// 	}
 
-func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	user, err := s.manager.Users.Get(ctx, req.UserID)
-	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
-	}
+// 	entity.SetName(req.Name)
+// 	entity.SetData(req.Data)
 
-	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
-	if err != nil {
-		return service.AddingUpdatePrivateDataResponse{Error: "binary data not found"}, err
-	}
+// 	return s.save(ctx, entity, clientKey)
+// }
 
-	entity.SetName(req.Name)
-	entity.SetData(req.Data)
+// func (s *BinaryDataService) save(ctx context.Context, entity *model.BinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+// 	//generate new key for data
+// 	dek, err := encryption.GenerateNewAESKey()
+// 	if err != nil {
+// 		//TODO improve message
+// 		return service.AddingUpdatePrivateDataResponse{Error: "error generating new AES key"}, err
+// 	}
 
-	return s.save(ctx, entity, clientKey)
-}
+// 	dekSrc := dek.JSON()
+// 	encryptor := encryption.NewEncryptionModel([]byte(dekSrc), s.kek, dek)
 
-func (s *BinaryDataService) save(ctx context.Context, entity *model.BinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	//generate new key for data
-	dek, err := encryption.GenerateNewAESKey()
-	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error generating new AES key"}, err
-	}
+// 	if err := entity.Save(ctx, encryptor); err != nil {
+// 		//TODO improve message
+// 		return service.AddingUpdatePrivateDataResponse{Error: "error saving binary data"}, err
+// 	}
 
-	dekSrc := dek.JSON()
-	encryptor := encryption.NewEncryptionModel([]byte(dekSrc), s.kek, dek)
+// 	//replace key to client key
+// 	savedData := entity.EncryptedData()
 
-	if err := entity.Save(ctx, encryptor); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error saving binary data"}, err
-	}
+// 	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
 
-	//replace key to client key
-	savedData := entity.EncryptedData()
+// 	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
+// 		//TODO improve message
+// 		return service.AddingUpdatePrivateDataResponse{Error: "error replacing key"}, err
+// 	}
 
-	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
+// 	response := service.AddingUpdatePrivateDataResponse{
+// 		ID:   entity.ID	(),
+// 		Data: encData.Data,
+// 		Key:  encData.Key,
+// 	}
 
-	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error replacing key"}, err
-	}
-
-	response := service.AddingUpdatePrivateDataResponse{
-		ID:   entity.ID	(),
-		Data: encData.Data,
-		Key:  encData.Key,
-	}
-
-	return response, nil
-}
+// 	return response, nil
+// }

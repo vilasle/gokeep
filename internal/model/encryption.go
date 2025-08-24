@@ -6,8 +6,6 @@ type Encoder interface {
 }
 
 type EncryptedData struct {
-	ID    int64
-	Owner PrivateData
 	Data  []byte
 	Key   []byte
 }

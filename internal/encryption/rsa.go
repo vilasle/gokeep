@@ -4,6 +4,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
 
 	"errors"
 )
@@ -25,6 +27,23 @@ import (
 type RSACipher struct {
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
+}
+
+func NewRSACipherFroRawPublicKey(publicKey []byte) (*RSACipher, error) {
+	spkiBlock, _ := pem.Decode(publicKey)
+	if spkiBlock == nil {
+		return nil, errors.New("public key is not valid")
+	}
+	pubInterface, err := x509.ParsePKIXPublicKey(spkiBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	key := pubInterface.(*rsa.PublicKey)
+
+	return &RSACipher{
+		publicKey:  key,
+		privateKey: nil,
+	}, nil
 }
 
 func NewRSACipher(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) *RSACipher {

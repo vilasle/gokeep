@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -20,7 +19,8 @@ type Usepass struct {
 func newUsepass(owner *User, login, password string) *Usepass {
 	return &Usepass{
 		model: model{
-			owner: owner,
+			owner:     owner,
+			modelType: TypeUsepass,
 		},
 		login:    login,
 		password: password,
@@ -35,7 +35,7 @@ func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
 	return u.model.Save(ctx)
 }
 
-func (u *Usepass) String() (string) {
+func (u *Usepass) String() string {
 	return u.login
 }
 
@@ -47,19 +47,11 @@ func (u *Usepass) SetPassword(password string) {
 	u.password = password
 }
 
-func (u *Usepass) prepareEncryptedData(encoder Encoder) error {
+func (u *Usepass) prepareEncryptedData(encoder Encoder) (err error) {
 	data := u.dataForEncryption()
 
-	encryptedData, err := encoder.Encrypt(data)
-	if err != nil {
-		return err
-	}
-
-	u.encryptedData = encryptedData
-
-	u.encryptedData.Owner = u
-
-	return nil
+	u.encryptedData, err = encoder.Encrypt(data)
+	return err
 }
 
 func (u *Usepass) decryptData(encoder Encoder) error {
@@ -87,17 +79,23 @@ func (u Usepass) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-//FIXME add getting usepass by id and check that owner was right id
-func findUsepassByID(ctx context.Context, id int64, owner *User, r PrivateDataRepository) (*Usepass, error) {
+// FIXME add getting usepass by id and check that owner was right id
+func findUsepassByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*Usepass, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	u, ok := data.(*Usepass)
-	if !ok {
-		return nil, fmt.Errorf("invalid data. private data(id=%d) does not have type '*Usepass'", id)
+	model := model{
+		id:             id,
+		owner:          owner,
+		modelType:      TypeUsepass,
+		dataRepository: r,
+		encryptedData: &EncryptedData{
+			Data: data.Data,
+			Key:  data.DEK,
+		},
 	}
 
-	return u, nil
+	return &Usepass{model: model}, nil
 }

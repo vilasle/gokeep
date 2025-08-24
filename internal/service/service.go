@@ -11,12 +11,12 @@ type AuthService interface {
 	//Login check user's login and password and return credential token
 	Login(ctx context.Context, req RegisterLoginUser) (string, error)
 	//Register create user if it does not exist	and return credential token
-	Register(ctx context.Context, req RegisterLoginUser) (string, error)
-	Valid(ctx context.Context, token string) error
+	Register(ctx context.Context, req RegisterLoginUser) (error)
+	GetSessionByCredentialToken(ctx context.Context, token string) (SessionInfo, error)
 }
 
 type PrivateDataService interface {
-	List(ctx context.Context, userID int64) (ListPrivateDataResponse, error)
+	List(ctx context.Context, userID int) (ListPrivateDataResponse, error)
 	Get(ctx context.Context, req GetPrivateData) (PrivateDataResponse, error)
 	Delete(ctx context.Context, req DeletePrivateData) error
 }
@@ -32,7 +32,7 @@ type LoginPasswordService interface {
 	Update(ctx context.Context, req UpdateLoginPassword, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
 }
 
-type BandCardService interface {
+type BankCardService interface {
 	PrivateDataService
 	Add(ctx context.Context, req AddBankCard, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
 	Update(ctx context.Context, req UpdateBankCard, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)

@@ -8,32 +8,37 @@ import (
 var _ PrivateData = (*model)(nil)
 
 type model struct {
-	id                   int64
-	owner                *User
-	encryptedData        *EncryptedData
-	dataRepository       PrivateDataRepository
-	encryptionRepository EncryptedDataRepository
+	id             int
+	modelType      Type
+	owner          *User
+	encryptedData  *EncryptedData
+	dataRepository PrivateDataRepository
 }
 
 func (m *model) Save(ctx context.Context) (err error) {
-	var saveFn func(context.Context, PrivateData) error
-	var saveEncryptedDataFn func(context.Context, *EncryptedData) error
+	var saveFn func(context.Context, PrivateDataSave) (int, error)
 
 	isExists := m.isExists()
 
 	if isExists {
 		saveFn = m.dataRepository.Update
-		saveEncryptedDataFn = m.encryptionRepository.Update
 	} else {
 		saveFn = m.dataRepository.Add
-		saveEncryptedDataFn = m.encryptionRepository.Add
 	}
 
-	if err := saveFn(ctx, m); err == nil {
-		return saveEncryptedDataFn(ctx, m.encryptedData)
+	dto := PrivateDataSave{
+		ID:     m.id,
+		Type:   m.modelType,
+		UserID: m.owner.id,
+		Data:   m.encryptedData.Data,
+		DEK:    m.encryptedData.Key,
+	}
+	if id, err := saveFn(ctx, dto); err == nil {
+		m.id = id
 	} else {
 		return err
 	}
+	return nil
 }
 
 func (m *model) String() string {
@@ -47,13 +52,7 @@ func (m *model) Delete(ctx context.Context) (err error) {
 		//TODO use package error
 		return errors.New("entity is not exists")
 	}
-
-	errs := make([]error, 0, 2)
-
-	errs = append(errs, m.dataRepository.Delete(ctx, m))
-	errs = append(errs, m.encryptionRepository.Delete(ctx, m.encryptedData))
-
-	return errors.Join(errs...)
+	return m.dataRepository.Delete(ctx, m.id)
 }
 
 // isExists - return false if user does not exists in storage
@@ -61,7 +60,7 @@ func (m model) isExists() bool {
 	return m.id > 0
 }
 
-func (m model) ID() int64 {
+func (m model) ID() int {
 	return m.id
 }
 
@@ -71,4 +70,8 @@ func (m model) Owner() *User {
 
 func (m model) EncryptedData() EncryptedData {
 	return *m.encryptedData
+}
+
+func (m model) Type() int {
+	return int(m.modelType)
 }

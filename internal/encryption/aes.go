@@ -38,6 +38,7 @@ func GenerateNewAESKey() (*AESKey, error) {
 		return nil, errors.Join(errors.New("error generating random nonce"), err)
 	}
 	aesKey.Nonce = hex.EncodeToString(nonce)
+	aesKey.nonce = nonce
 	return aesKey, nil
 }
 

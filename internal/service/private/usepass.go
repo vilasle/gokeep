@@ -16,13 +16,14 @@ type UsepassService struct {
 	manager model.ModelManager
 }
 
-func NewUsepassService(manager model.ModelManager) *UsepassService {
+func NewUsepassService(manager model.ModelManager, masterKey encryption.Encoder) *UsepassService {
 	return &UsepassService{
 		manager: manager,
+		kek: masterKey,
 	}
 }
 
-func (s *UsepassService) List(ctx context.Context, userID int64) (service.ListPrivateDataResponse, error) {
+func (s *UsepassService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
 		//TODO improve message
@@ -94,7 +95,7 @@ func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, 
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	entity := s.manager.Usepass.New(user, req.Username, req.Password)
@@ -106,12 +107,12 @@ func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPass
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
 		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "user not found"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	entity, err := s.manager.Usepass.Get(ctx, user, req.ID)
 	if err != nil {
-		return service.AddingUpdatePrivateDataResponse{Error: "usepass not found"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	entity.SetUsername(req.Username)
@@ -125,15 +126,15 @@ func (s *UsepassService) save(ctx context.Context, entity *model.Usepass, client
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {
 		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error generating new AES key"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	dekSrc := dek.JSON()
-	encryptor := encryption.NewEncryptionModel([]byte(dekSrc), s.kek, dek)
+	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
 	if err := entity.Save(ctx, encryptor); err != nil {
 		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error saving usepass"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	//replace key to client key
@@ -143,13 +144,14 @@ func (s *UsepassService) save(ctx context.Context, entity *model.Usepass, client
 
 	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
 		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{Error: "error replacing key"}, err
+		return service.AddingUpdatePrivateDataResponse{}, err
 	}
 
 	response := service.AddingUpdatePrivateDataResponse{
-		ID:   entity.ID	(),
+		ID:   entity.ID(),
 		Data: encData.Data,
 		Key:  encData.Key,
+		View: entity.String(),
 	}
 
 	return response, nil

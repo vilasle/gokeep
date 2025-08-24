@@ -6,21 +6,21 @@ import (
 	"github.com/vilasle/gokeep/internal/model"
 )
 
-type EncryptionModel struct {
+type ModelEncoding struct {
 	kek    Encoder
 	dek    Encoder
 	dekSrc []byte
 }
 
-func NewEncryptionModel(dekSrc []byte, kek, dek Encoder) *EncryptionModel {
-	return &EncryptionModel{
+func NewModelEncoding(dekSrc []byte, kek, dek Encoder) *ModelEncoding {
+	return &ModelEncoding{
 		kek:    kek,
 		dek:    dek,
 		dekSrc: dekSrc,
 	}
 }
 
-func (em EncryptionModel) Encrypt(data []byte) (*model.EncryptedData, error) {
+func (em ModelEncoding) Encrypt(data []byte) (*model.EncryptedData, error) {
 	ed := &EncryptedData{
 		dek: em.dek,
 	}
@@ -36,6 +36,6 @@ func (em EncryptionModel) Encrypt(data []byte) (*model.EncryptedData, error) {
 }
 
 // Decrypt - decrypts data with DEK
-func (em EncryptionModel) Decrypt(data model.EncryptedData) ([]byte, error) {
+func (em ModelEncoding) Decrypt(data model.EncryptedData) ([]byte, error) {
 	return (&EncryptedData{dek: em.dek, Data: string(data.Data)}).Decrypt()
 }

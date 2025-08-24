@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/repository/client"
 )
 
@@ -34,14 +35,14 @@ func (v *bankCardView) View() string {
 	return fmt.Sprintf("ID: %d\nNumber: %s\nExpires: %s\nCVV: %d\n", v.ID, v.Number, v.Expires, v.CVV)
 }
 
-func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDataType) error {
+func (c *Client) showFullEntity(data client.GetResponse, tData model.Type) error {
 	content, err := c.decrypt(data.DEK, data.Data)
 	if err != nil {
 		return err
 	}
 
-	if tData == client.TypeTextData ||
-		tData == client.TypeBinaryData {
+	if tData == model.TypePlainText ||
+		tData == model.TypeBinaryData {
 		path := filepath.Join(c.workspace.UploadDirectory.Path, data.View)
 		fd, err := os.Create(path)
 		if err != nil {
@@ -58,9 +59,9 @@ func (c *Client) showFullEntity(data client.GetResponse, tData client.PrivateDat
 
 	var v view
 	switch tData {
-	case client.TypeLoginPassword:
+	case model.TypeUsepass:
 		v = &loginPasswordView{ID: data.ID}
-	case client.TypeBankCard:
+	case model.TypeBankCard:
 		v = &bankCardView{ID: data.ID}
 	default:
 		return fmt.Errorf("unknown type of data: %s", tData)
