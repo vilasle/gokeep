@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	"github.com/vilasle/gokeep/proto"
 	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
@@ -19,27 +20,22 @@ func NewBankCardService(socket *grpc.ClientConn) *BankCardService {
 	}
 }
 
-func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveRequest) client.BankCardSaveResponse {
-	return client.BankCardSaveResponse{
-		ID: 1,
-		Data: client.EncryptedData{
-			View: "some card",
-			DEK:  []byte("dek"),
-			Data: []byte(`{"number": "1234567890123456","expires": "10/31","cvv":123}`),
-		},
+func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveRequest) (client.SaveResponse, error) {
+	dto := proto.SaveBankCardRequest{
+		Number:     req.Number,
+		Cvv:        int64(req.CVV),
+		Expires:    req.Expires,
+		Credential: &pb.ConfirmAssess{Token: req.JWT},
 	}
+
+	resp, err := s.client.SaveBankCard(ctx, &dto)
+	return handleSaveResponse(resp, err)
 }
 
-func (s *BankCardService) Get(ctx context.Context, req client.BankCardGetRequest) client.BankCardGetResponse {
-	return client.BankCardGetResponse{
-		Data: client.EncryptedData{
-			View: "test",
-			DEK:  []byte("dek"),
-			Data: []byte(`"number": "1234567890123456","expires": "10/31","cvv":123`),
-		},
-	}
+func (s *BankCardService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedData, error) {
+	return get(ctx, s.client, req)
 }
 
-func (s *BankCardService) Delete(ctx context.Context, req client.BankCardDeleteRequest) client.BankCardDeleteResponse {
-	return client.BankCardDeleteResponse{}
+func (s *BankCardService) Delete(ctx context.Context, req client.DeleteRequest) error {
+	return delete(ctx, s.client, req)
 }

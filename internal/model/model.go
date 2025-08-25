@@ -33,6 +33,7 @@ func (m *model) Save(ctx context.Context) (err error) {
 		UserID: m.owner.id,
 		Data:   m.encryptedData.Data,
 		DEK:    m.encryptedData.Key,
+		View:   m.view,
 	}
 	if id, err := saveFn(ctx, dto); err == nil {
 		m.id = id

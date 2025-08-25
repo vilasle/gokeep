@@ -14,6 +14,8 @@ import (
 	"github.com/vilasle/gokeep/internal/service/private"
 )
 
+//TODO getting args from ENV of yaml config
+
 func main() {
 
 	logger.Make(os.Stdout, logger.DebugLevel)
@@ -103,7 +105,6 @@ func main() {
 		logger.Error("can not create server", "err", err)
 		os.Exit(1)
 	}
-
 	if err := srv.Listen(); err != nil {
 		logger.Error("can not start server", "err", err)
 		os.Exit(1)

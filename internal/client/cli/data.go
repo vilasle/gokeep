@@ -5,19 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/vilasle/gokeep/internal/model"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
 
-// TODO implement work with local repository
 func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, id int) error {
 	data := svc.LoginPasswordSaveRequest{
 		ID:       id,
 		Login:    login,
 		Password: password,
+		JWT:      string(c.credential),
 	}
 
 	if id > 0 {
@@ -29,35 +28,26 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, 
 		}
 	}
 
-	response := c.externalServices.credentials.Save(ctx, data)
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	response, err := c.externalServices.credentials.Save(ctx, data)
+	if err != nil {
+		return err
 	}
 
-	if result := c.localStorage.Save(ctx, model.TypeUsepass, repository.SaveRequest{
+	return c.localStorage.Save(ctx, model.TypeUsepass, repository.SaveRequest{
 		ID:         id,
 		ExternalID: response.ID,
-		DEK:        response.Data.DEK,
-		Data:       response.Data.Data,
+		DEK:        string(response.Data.DEK),
+		Data:       string(response.Data.Data),
 		View:       login,
-	}); result.Error != "" {
-		return fmt.Errorf(result.Error)
-	}
-
-	return nil
-
+	})
 }
 
 func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, id int) error {
-	date, err := time.Parse("01/06", expires)
-	if err != nil {
-		return fmt.Errorf("invalid date format, expected $month/$year, e.g 01/2020")
-	}
-
 	data := svc.BankCardSaveRequest{
 		Number:  number,
-		Expires: date,
+		Expires: expires,
 		CVV:     cvv,
+		JWT:     string(c.credential),
 	}
 
 	if id > 0 {
@@ -69,27 +59,24 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 		}
 	}
 
-	response := c.externalServices.bankCard.Save(ctx, data)
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	response, err := c.externalServices.bankCard.Save(ctx, data)
+	if err != nil {
+		return err
 	}
 
-	if result := c.localStorage.Save(ctx, model.TypeBankCard, repository.SaveRequest{
+	return c.localStorage.Save(ctx, model.TypeBankCard, repository.SaveRequest{
 		ID:         id,
 		ExternalID: response.ID,
-		DEK:        response.Data.DEK,
-		Data:       response.Data.Data,
-	}); result.Error != "" {
-		return fmt.Errorf(result.Error)
-	}
-	return nil
+		DEK:        string(response.Data.DEK),
+		Data:       string(response.Data.Data),
+	})
 }
 
-// TODO implement work with local repository
 func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string, id int) error {
 	data := svc.TextDataSaveRequest{
 		Text: []byte(text),
 		Name: name,
+		JWT:  string(c.credential),
 	}
 
 	if id > 0 {
@@ -101,22 +88,19 @@ func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string,
 		}
 	}
 
-	response := c.externalServices.text.Save(ctx, data)
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	response, err := c.externalServices.text.Save(ctx, data)
+	if err != nil {
+		return err
 	}
 
-	if result := c.localStorage.Save(ctx, model.TypePlainText, repository.SaveRequest{
+	return c.localStorage.Save(ctx, model.TypePlainText, repository.SaveRequest{
 		ExternalID: response.ID,
-		DEK:        response.Data.DEK,
-		Data:       response.Data.Data,
-	}); result.Error != "" {
-		return fmt.Errorf(result.Error)
-	}
-	return nil
+		DEK:        string(response.Data.DEK),
+		Data:       string(response.Data.Data),
+		View:       response.Data.View,
+	})
 }
 
-// TODO implement work with local repository
 func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name string, id int) error {
 	if name == "" {
 		stat, err := os.Stat(path)
@@ -134,6 +118,7 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 	data := svc.TextDataSaveRequest{
 		Text: content,
 		Name: name,
+		JWT:  string(c.credential),
 	}
 
 	if id > 0 {
@@ -145,23 +130,19 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		}
 	}
 
-	response := c.externalServices.text.Save(ctx, data)
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	response, err := c.externalServices.text.Save(ctx, data)
+	if err != nil {
+		return err
 	}
 
-	if result := c.localStorage.Save(ctx, model.TypeUsepass, repository.SaveRequest{
+	return c.localStorage.Save(ctx, model.TypePlainText, repository.SaveRequest{
 		ExternalID: response.ID,
-		DEK:        response.Data.DEK,
-		Data:       response.Data.Data,
+		DEK:        string(response.Data.DEK),
+		Data:       string(response.Data.Data),
 		View:       response.Data.View,
-	}); result.Error != "" {
-		return fmt.Errorf(result.Error)
-	}
-	return nil
+	})
 }
 
-// TODO implement work with local repository
 func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, id int) error {
 	if name == "" {
 		stat, err := os.Stat(path)
@@ -179,6 +160,7 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 	data := svc.BinaryDataSaveRequest{
 		Data: content,
 		Name: name,
+		JWT:  string(c.credential),
 	}
 
 	if id > 0 {
@@ -190,23 +172,19 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 		}
 	}
 
-	response := c.externalServices.binary.Save(ctx, data)
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	response, err := c.externalServices.binary.Save(ctx, data)
+	if err != nil {
+		return err
 	}
 
-	if result := c.localStorage.Save(ctx, model.TypeBinaryData, repository.SaveRequest{
+	return c.localStorage.Save(ctx, model.TypeBinaryData, repository.SaveRequest{
 		ExternalID: response.ID,
-		DEK:        response.Data.DEK,
-		Data:       response.Data.Data,
+		DEK:        string(response.Data.DEK),
+		Data:       string(response.Data.Data),
 		View:       response.Data.View,
-	}); result.Error != "" {
-		return fmt.Errorf(result.Error)
-	}
-	return nil
+	})
 }
 
-// TODO implement work with local repository
 func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
 	t := model.TypeUsepass
 	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
@@ -221,7 +199,7 @@ func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
 		return fmt.Errorf("no data found")
 	}
 
-	return c.showFullEntity(response[0], t)
+	return c.showFullEntities(t, response...)
 }
 
 // TODO implement work with local repository
@@ -239,7 +217,7 @@ func (c *Client) GetBankCard(ctx context.Context, id int) error {
 		return fmt.Errorf("no data found")
 	}
 
-	return c.showFullEntity(response[0], t)
+	return c.showFullEntities(t, response...)
 }
 
 // TODO implement work with local repository
@@ -257,7 +235,7 @@ func (c *Client) GetTextData(ctx context.Context, id int) error {
 		return fmt.Errorf("no data found")
 	}
 
-	return c.showFullEntity(response[0], t)
+	return c.showFullEntities(t, response...)
 }
 
 // TODO implement work with local repository
@@ -275,7 +253,7 @@ func (c *Client) GetBinaryData(ctx context.Context, id int) error {
 		return fmt.Errorf("no data found")
 	}
 
-	return c.showFullEntity(response[0], t)
+	return c.showFullEntities(t, response...)
 }
 
 // TODO implement work with local repository
@@ -297,11 +275,12 @@ func (c *Client) DeleteLoginPassword(ctx context.Context, id int) error {
 			continue
 		}
 
-		response := c.externalServices.credentials.Delete(ctx, svc.LoginPasswordDeleteRequest{
-			ID: r.ExternalID,
+		err := c.externalServices.credentials.Delete(ctx, svc.DeleteRequest{
+			ID:  r.ExternalID,
+			JWT: string(c.credential),
 		})
-		if response.Error != "" {
-			errs = append(errs, fmt.Errorf(response.Error))
+		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 
@@ -315,42 +294,25 @@ func (c *Client) DeleteLoginPassword(ctx context.Context, id int) error {
 
 // TODO implement work with local repository
 func (c *Client) DeleteBankCard(ctx context.Context, id int) error {
-	response := c.externalServices.bankCard.Delete(ctx, svc.BankCardDeleteRequest{
-		ID: id,
-	})
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	if err := c.externalServices.bankCard.Delete(ctx, svc.DeleteRequest{ID: id, JWT: string(c.credential)}); err != nil {
+		return err
 	}
 
-	return c.localStorage.Delete(ctx, model.TypeBankCard, repository.DeleteRequest{
-		ID: id,
-	})
+	return c.localStorage.Delete(ctx, model.TypeBankCard, repository.DeleteRequest{ID: id})
 }
 
 // TODO implement work with local repository
 func (c *Client) DeleteTextData(ctx context.Context, id int) error {
-	response := c.externalServices.text.Delete(ctx, svc.TextDataDeleteRequest{
-		ID: id,
-	})
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	if err := c.externalServices.text.Delete(ctx, svc.DeleteRequest{ID: id, JWT: string(c.credential)}); err != nil {
+		return err
 	}
-
-	return c.localStorage.Delete(ctx, model.TypePlainText, repository.DeleteRequest{
-		ID: id,
-	})
+	return c.localStorage.Delete(ctx, model.TypePlainText, repository.DeleteRequest{ID: id})
 }
 
 // TODO implement work with local repository
 func (c *Client) DeleteBinaryData(ctx context.Context, id int) error {
-	response := c.externalServices.binary.Delete(ctx, svc.BinaryDataDeleteRequest{
-		ID: id,
-	})
-	if response.Error != "" {
-		return fmt.Errorf(response.Error)
+	if err := c.externalServices.binary.Delete(ctx, svc.DeleteRequest{ID: id, JWT: string(c.credential)}); err != nil {
+		return err
 	}
-
-	return c.localStorage.Delete(ctx, model.TypeBinaryData, repository.DeleteRequest{
-		ID: id,
-	})
+	return c.localStorage.Delete(ctx, model.TypeBinaryData, repository.DeleteRequest{ID: id})
 }

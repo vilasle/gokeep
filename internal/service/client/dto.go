@@ -13,6 +13,16 @@ type EncryptedData struct {
 	Data []byte
 }
 
+type GetRequest struct {
+	ID  int
+	JWT string
+}
+
+type DeleteRequest struct {
+	ID  int
+	JWT string
+}
+
 // login-password
 type LoginPasswordView struct {
 	ID       int
@@ -24,35 +34,16 @@ type LoginPasswordView struct {
 type LoginPasswordSaveRequest struct {
 	ID              int
 	Login, Password string
+	JWT             string
 }
 
-type LoginPasswordGetRequest struct {
-	ID int
-}
-
-type LoginPasswordDeleteRequest struct {
-	ID int
-}
-
-// response
-type LoginPasswordSaveResponse struct {
-	ID    int
-	Data  EncryptedData
-	Error string
+type SaveResponse struct {
+	ID   int
+	Data EncryptedData
 }
 
 type LoginPasswordListResponse struct {
 	Result []LoginPasswordView
-	Error  string
-}
-
-type LoginPasswordGetResponse struct {
-	Data  EncryptedData
-	Error string
-}
-
-type LoginPasswordDeleteResponse struct {
-	Error string
 }
 
 //band cards
@@ -67,37 +58,19 @@ type BankCardView struct {
 type BankCardSaveRequest struct {
 	ID      int
 	Number  string
-	Expires time.Time
+	Expires string
 	CVV     int
-}
-
-type BankCardGetRequest struct {
-	ID int
-}
-
-type BankCardDeleteRequest struct {
-	ID int
+	JWT     string
 }
 
 // response
 type BankCardSaveResponse struct {
-	ID    int
-	Data  EncryptedData
-	Error string
+	ID   int
+	Data EncryptedData
 }
 
 type BankCardListResponse struct {
 	Result []BankCardView
-	Error  string
-}
-
-type BankCardGetResponse struct {
-	Data  EncryptedData
-	Error string
-}
-
-type BankCardDeleteResponse struct {
-	Error string
 }
 
 // text data
@@ -111,35 +84,17 @@ type TextDataSaveRequest struct {
 	ID   int
 	Name string
 	Text []byte
-}
-
-type TextDataGetRequest struct {
-	ID int
-}
-
-type TextDataDeleteRequest struct {
-	ID int
+	JWT  string
 }
 
 // response
 type TextDataSaveResponse struct {
-	ID    int
-	Data  EncryptedData
-	Error string
+	ID   int
+	Data EncryptedData
 }
 
 type TextDataListResponse struct {
 	Result []TextDataView
-	Error  string
-}
-
-type TextDataGetResponse struct {
-	Data  EncryptedData
-	Error string
-}
-
-type TextDataDeleteResponse struct {
-	Error string
 }
 
 // binary data
@@ -154,33 +109,15 @@ type BinaryDataSaveRequest struct {
 	ID   int
 	Name string
 	Data []byte
-}
-
-type BinaryDataGetRequest struct {
-	ID int
-}
-
-type BinaryDataDeleteRequest struct {
-	ID int
+	JWT  string
 }
 
 // response
 type BinaryDataSaveResponse struct {
-	ID    int
-	Data  EncryptedData
-	Error string
+	ID   int
+	Data EncryptedData
 }
 
 type BinaryDataListResponse struct {
 	Result []BinaryDataView
-	Error  string
-}
-
-type BinaryDataGetResponse struct {
-	Data  EncryptedData
-	Error string
-}
-
-type BinaryDataDeleteResponse struct {
-	Error string
 }

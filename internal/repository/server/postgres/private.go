@@ -32,7 +32,7 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 	}
 	defer tx.Rollback()
 
-	id, err := r.addEntity(ctx, tx, data.UserID, data.Type)
+	id, err := r.addEntity(ctx, tx, data)
 	if err != nil {
 		return 0, err
 	}
@@ -47,11 +47,11 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 	return id, err
 }
 
-func (r *PrivateDataRepository) addEntity(ctx context.Context, tx *sql.Tx, userId, modelType int) (int, error) {
-	txt := `INSERT INTO entity (user_id, "type") VALUES ($1, $2) RETURNING id`
+func (r *PrivateDataRepository) addEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) (int, error) {
+	txt := `INSERT INTO entity (user_id, "type", view) VALUES ($1, $2, $3) RETURNING id`
 	var id int
 	err := tx.
-		QueryRowContext(ctx, txt, userId, modelType).
+		QueryRowContext(ctx, txt, data.UserID, data.Type, data.View).
 		Scan(&id)
 
 	return id, err
@@ -74,7 +74,7 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 	}
 	defer tx.Rollback()
 
-	if err := r.updateEntity(ctx, tx, data.ID, data.UserID, data.Type); err != nil {
+	if err := r.updateEntity(ctx, tx, data); err != nil {
 		return 0, err
 	}
 
@@ -87,9 +87,9 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 	return data.ID, err
 }
 
-func (r *PrivateDataRepository) updateEntity(ctx context.Context, tx *sql.Tx, id, userId, modelType int) error {
-	txt := `UPDATE entity SET user_id = $1, "type" = $2, updated_at = NOW() WHERE id = $3`
-	_, err := tx.ExecContext(ctx, txt, userId, modelType, id)
+func (r *PrivateDataRepository) updateEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) error {
+	txt := `UPDATE entity SET user_id = $1, "type" = $2, view = $3, updated_at = NOW() WHERE id = $4`
+	_, err := tx.ExecContext(ctx, txt, data.UserID, data.Type, data.View, data.ID)
 	return err
 }
 
@@ -125,17 +125,17 @@ func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 }
 
 func (r *PrivateDataRepository) Get(ctx context.Context, id int) (model.PrivateDataInfo, error) {
-	txt := `SELECT id, user_id, "type" FROM entity WHERE id = $1`
+	txt := `SELECT id, user_id, "type", view FROM entity WHERE id = $1`
 	var data model.PrivateDataInfo
 	err := r.db.
 		QueryRowContext(ctx, txt, id).
-		Scan(&data.ID, &data.UserID, &data.Type)
+		Scan(&data.ID, &data.UserID, &data.Type, &data.View)
 
 	return data, err
 }
 
 func (r *PrivateDataRepository) List(ctx context.Context, modelType model.Type, owner *model.User) ([]model.PrivateDataInfo, error) {
-	txt := `SELECT id, user_id, "type" FROM entity WHERE "type" = $1 AND user_id = $2`
+	txt := `SELECT id, user_id, "type", view FROM entity WHERE "type" = $1 AND user_id = $2`
 	rows, err := r.db.QueryContext(ctx, txt, modelType, owner.ID)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func (r *PrivateDataRepository) List(ctx context.Context, modelType model.Type, 
 	var data []model.PrivateDataInfo
 	for rows.Next() {
 		var d model.PrivateDataInfo
-		err := rows.Scan(&d.ID, &d.UserID, &d.Type)
+		err := rows.Scan(&d.ID, &d.UserID, &d.Type, &d.View)
 		if err != nil {
 			return nil, err
 		}
@@ -161,6 +161,7 @@ func (r *PrivateDataRepository) initSchema() error {
 		id bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
 		user_id bigint NOT NULL,
 		"type" int NOT NULL,	
+		view TEXT NOT NULL DEFAULT '',
 		created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 		FOREIGN KEY (user_id) REFERENCES users (id)

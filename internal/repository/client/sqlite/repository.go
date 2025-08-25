@@ -11,7 +11,6 @@ import (
 	"github.com/vilasle/gokeep/internal/repository/client"
 )
 
-// TODO implement it
 type ClientRepository struct {
 	db *sql.DB
 }
@@ -39,18 +38,18 @@ func (r *ClientRepository) CreateScheme(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := r.db.ExecContext(ctx, `CREATE TABLE private_data ( 
+	if _, err := r.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS private_data ( 
 		id INTEGER PRIMARY KEY AUTOINCREMENT, 
 		external_id INTEGER, 
 		type INTEGER, 
-		dek BLOB, 
-		data BLOB, 
+		dek TEXT, 
+		data TEXT, 
 		view TEXT
 	);`); err != nil {
 		return err
 	}
 
-	if _, err := r.db.ExecContext(ctx, `CREATE TABLE metadata (
+	if _, err := r.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT, 
 		owner_id INTEGER, 
 		key TEXT, 
@@ -67,16 +66,14 @@ func (r *ClientRepository) Close() error {
 	return r.db.Close()
 }
 
-func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req client.SaveRequest) (response client.SaveResponse) {
+func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req client.SaveRequest) error {
 	if req.ID > 0 {
 		return r.update(ctx, tData, req, req.ID)
 	}
 	//search by external id and if there is record then update that
 	id, err := r.searchByExternalID(req.ExternalID)
 	if err != nil {
-		return client.SaveResponse{
-			Error: err.Error(),
-		}
+		return err
 	}
 
 	if id == 0 {
@@ -86,7 +83,9 @@ func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req clien
 	}
 }
 
-func (r *ClientRepository) add(ctx context.Context, tData model.Type, req client.SaveRequest) (response client.SaveResponse) {
+func (r *ClientRepository) add(ctx context.Context,
+	tData model.Type, req client.SaveRequest) error {
+
 	iq := sqlbuilder.InsertInto("private_data").
 		Cols("external_id", "type", "dek", "data", "view").
 		Values(req.ExternalID, tData, req.DEK, req.Data, req.View).
@@ -95,23 +94,12 @@ func (r *ClientRepository) add(ctx context.Context, tData model.Type, req client
 
 	q, args := iq.Build()
 
-	result, err := r.db.ExecContext(ctx, q, args...)
-	if err != nil {
-		response.Error = err.Error()
-		return
-	}
-
-	if id, err := result.LastInsertId(); err != nil {
-		response.Error = err.Error()
-	} else {
-		response.ID = int(id)
-	}
-
-	return response
+	_, err := r.db.ExecContext(ctx, q, args...)
+	return err
 }
 
-func (r *ClientRepository) update(ctx context.Context, tData model.Type, req client.SaveRequest, id int) (response client.SaveResponse) {
-	response.ID = id
+func (r *ClientRepository) update(ctx context.Context,
+	tData model.Type, req client.SaveRequest, id int) error {
 
 	uq := sqlbuilder.Update("private_data")
 	uq.Set(
@@ -124,10 +112,8 @@ func (r *ClientRepository) update(ctx context.Context, tData model.Type, req cli
 
 	q, args := uq.Where(uq.Equal("id", id)).Build()
 
-	if _, err := r.db.ExecContext(ctx, q, args...); err != nil {
-		response.Error = err.Error()
-	}
-	return response
+	_, err := r.db.ExecContext(ctx, q, args...)
+	return err
 }
 
 func (r *ClientRepository) searchByExternalID(externalID int) (int, error) {

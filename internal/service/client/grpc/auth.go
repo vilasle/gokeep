@@ -1,29 +1,56 @@
 package grpc
 
 import (
-	"fmt"
+	"context"
+	"errors"
 
+	"github.com/vilasle/gokeep/proto"
 	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
 
 type GRPCAuthService struct {
-	socket pb.AccountServiceClient
+	client pb.AccountServiceClient
 }
 
-// TODO implement me
 func NewGRPCAuthService(socket *grpc.ClientConn) *GRPCAuthService {
 	return &GRPCAuthService{
-		socket: pb.NewAccountServiceClient(socket),
+		client: pb.NewAccountServiceClient(socket),
 	}
 }
 
-func (s *GRPCAuthService) CreateAccount(accountName, password string, publicKey []byte) error {
-	fmt.Println("created account")
+func (s *GRPCAuthService) CreateAccount(ctx context.Context, accountName, password string) error {
+	dto := &proto.CreateAccountRequest{
+		Login:    accountName,
+		Password: password,
+	}
+
+	resp, err := s.client.CreateAccount(ctx, dto)
+	if err != nil {
+		return err
+	}
+
+	if resp.Error != "" {
+		return errors.New(resp.Error)
+	}
 	return nil
 }
 
-func (s *GRPCAuthService) Login(accountName, password string) ([]byte, error) {
-	fmt.Printf("%s login\n", accountName)
-	return []byte("creadData"), nil
+func (s *GRPCAuthService) Login(ctx context.Context, accountName, password string, publicKey []byte) ([]byte, error) {
+	dto := proto.LoginRequest{
+		Login:     accountName,
+		Password:  password,
+		PublicKey: publicKey,
+	}
+
+	resp, err := s.client.Login(ctx, &dto)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Error != "" {
+		return nil, errors.New(resp.Error)
+	}
+
+	return []byte(resp.Token), nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	"github.com/vilasle/gokeep/proto"
 	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
@@ -19,31 +20,23 @@ func NewLoginPasswordDataService(socket *grpc.ClientConn) *LoginPasswordService 
 	}
 }
 
-func (s *LoginPasswordService) Save(ctx context.Context, req client.LoginPasswordSaveRequest) client.LoginPasswordSaveResponse {
-	return client.LoginPasswordSaveResponse{
-		Error: "",
-		ID:    1,
-		Data: client.EncryptedData{
-			View: "test",
-			DEK:  []byte("dek1"),
-			Data: []byte(`{"login": "test_account", "password": "test_password"}`),
-		},
+func (s *LoginPasswordService) Save(ctx context.Context,
+	req client.LoginPasswordSaveRequest) (client.SaveResponse, error) {
+
+	dto := proto.SaveLoginPasswordRequest{
+		Login:      req.Login,
+		Password:   req.Password,
+		Credential: &pb.ConfirmAssess{Token: req.JWT},
 	}
+
+	resp, err := s.client.SaveLoginPassword(ctx, &dto)
+	return handleSaveResponse(resp, err)
 }
 
-func (s *LoginPasswordService) Get(ctx context.Context, req client.LoginPasswordGetRequest) client.LoginPasswordGetResponse {
-	return client.LoginPasswordGetResponse{
-		Data: client.EncryptedData{
-			View: "test",
-			DEK:  []byte("dek"),
-			Data: []byte("data"),
-		},
-		Error: "",
-	}
+func (s *LoginPasswordService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedData, error) {
+	return get(ctx, s.client, req)
 }
 
-func (s *LoginPasswordService) Delete(ctx context.Context, req client.LoginPasswordDeleteRequest) client.LoginPasswordDeleteResponse {
-	return client.LoginPasswordDeleteResponse{
-		Error: "",
-	}
+func (s *LoginPasswordService) Delete(ctx context.Context, req client.DeleteRequest) error {
+	return delete(ctx, s.client, req)
 }

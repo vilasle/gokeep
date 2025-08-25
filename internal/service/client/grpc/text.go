@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	"github.com/vilasle/gokeep/proto"
 	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
@@ -19,27 +20,23 @@ func NewTextDataService(socket *grpc.ClientConn) *TextDataService {
 	}
 }
 
-func (s *TextDataService) Save(ctx context.Context, req client.TextDataSaveRequest) client.TextDataSaveResponse {
-	return client.TextDataSaveResponse{
-		ID: 1,
-		Data: client.EncryptedData{
-			View: req.Name,
-			DEK:  []byte("dek"),
-			Data: req.Text,
-		},
+func (s *TextDataService) Save(ctx context.Context,
+	req client.TextDataSaveRequest) (client.SaveResponse, error) {
+
+	dto := proto.SaveTextDataRequest{
+		Name:       req.Name,
+		Data:       req.Text,
+		Credential: &pb.ConfirmAssess{Token: req.JWT},
 	}
+
+	resp, err := s.client.SaveTextData(ctx, &dto)
+	return handleSaveResponse(resp, err)
 }
 
-func (s *TextDataService) Get(ctx context.Context, req client.TextDataGetRequest) client.TextDataGetResponse {
-	return client.TextDataGetResponse{
-		Data: client.EncryptedData{
-			View: "test",
-			DEK:  []byte("dek"),
-			Data: []byte("data"),
-		},
-	}
+func (s *TextDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedData, error) {
+	return get(ctx, s.client, req)
 }
 
-func (s *TextDataService) Delete(ctx context.Context, req client.TextDataDeleteRequest) client.TextDataDeleteResponse {
-	return client.TextDataDeleteResponse{}
+func (s *TextDataService) Delete(ctx context.Context, req client.DeleteRequest) error {
+	return delete(ctx, s.client, req)
 }

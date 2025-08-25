@@ -3,30 +3,30 @@ package client
 import "context"
 
 type AuthService interface {
-	CreateAccount(accountName, password string, publicKey []byte) error
-	Login(accountName, password string) (credential []byte, err error)
+	CreateAccount(ctx context.Context, accountName, password string) error
+	Login(ctx context.Context, accountName, password string, publicKey []byte) (credential []byte, err error)
 }
 
 type LoginPasswordDataService interface {
-	Save(context.Context, LoginPasswordSaveRequest) LoginPasswordSaveResponse
-	Get(context.Context, LoginPasswordGetRequest) LoginPasswordGetResponse
-	Delete(context.Context, LoginPasswordDeleteRequest) LoginPasswordDeleteResponse
+	Save(context.Context, LoginPasswordSaveRequest) (SaveResponse, error)
+	Get(context.Context, GetRequest) ([]EncryptedData, error)
+	Delete(context.Context, DeleteRequest) error
 }
 
 type BankCardDataService interface {
-	Save(context.Context, BankCardSaveRequest) BankCardSaveResponse
-	Get(context.Context, BankCardGetRequest) BankCardGetResponse
-	Delete(context.Context, BankCardDeleteRequest) BankCardDeleteResponse
+	Save(context.Context, BankCardSaveRequest) (SaveResponse, error)
+	Get(context.Context, GetRequest) ([]EncryptedData, error)
+	Delete(context.Context, DeleteRequest) error
 }
 
 type TextDataDataService interface {
-	Save(context.Context, TextDataSaveRequest) TextDataSaveResponse
-	Get(context.Context, TextDataGetRequest) TextDataGetResponse
-	Delete(context.Context, TextDataDeleteRequest) TextDataDeleteResponse
+	Save(context.Context, TextDataSaveRequest) (SaveResponse, error)
+	Get(context.Context, GetRequest) ([]EncryptedData, error)
+	Delete(context.Context, DeleteRequest) error
 }
 
 type BinaryDataDataService interface {
-	Save(context.Context, BinaryDataSaveRequest) BinaryDataSaveResponse
-	Get(context.Context, BinaryDataGetRequest) BinaryDataGetResponse
-	Delete(context.Context, BinaryDataDeleteRequest) BinaryDataDeleteResponse
+	Save(context.Context, BinaryDataSaveRequest) (SaveResponse, error)
+	Get(context.Context, GetRequest) ([]EncryptedData, error)
+	Delete(context.Context, DeleteRequest) error
 }

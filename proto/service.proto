@@ -37,12 +37,18 @@ message EncryptedData {
     string view = 1;
     bytes data = 2;
     bytes dek = 3;
+    repeated Metadata metadata = 4;
+}
+
+message Metadata {
+    string key = 1;
+    string value = 2;
 }
 
 message EncryptedDataResponse {
     int64 id = 1;
     EncryptedData data = 2;
-    string error = 3;
+    string error = 4;
 }
 
 message DeleteDataRequest {
@@ -88,7 +94,6 @@ message SaveTextDataRequest {
     bytes data = 3;
     ConfirmAssess credential = 4;
 }
-
 
 message SaveBinaryDataRequest {
     int64 id = 1;

@@ -21,6 +21,7 @@ type PrivateDataSave struct {
 	ID     int
 	UserID int
 	Type   int
+	View   string
 	Data   []byte
 	DEK    []byte
 }
@@ -29,6 +30,7 @@ type PrivateDataInfo struct {
 	ID     int
 	UserID int
 	Type   int
+	View   string
 	Data   []byte
 	DEK    []byte
 }

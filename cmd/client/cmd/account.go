@@ -7,14 +7,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"syscall"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "",
+	Short: "create or login account",
 	Long:  ``,
 }
 
@@ -34,15 +36,13 @@ var createCmd = &cobra.Command{
 
 		fmt.Println("login:", accountName)
 		fmt.Print("password: ")
-		// bytePwd, err := term.ReadPassword(int(syscall.Stdin))
-		// if err != nil {
-		// 	fmt.Println("failed to read password")
-		// 	os.Exit(reasonInternalError)
-		// }
-		// fmt.Print("\n")
-		// pass := string(bytePwd)
-
-		pass := "some password"
+		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			fmt.Println("failed to read password")
+			os.Exit(reasonInternalError)
+		}
+		fmt.Print("\n")
+		pass := string(bytePwd)
 
 		//TODO cancel if got signal
 		ctx, cancel := context.WithCancel(context.Background())
@@ -68,20 +68,22 @@ var loginCmd = &cobra.Command{
 
 		fmt.Println("login:", accountName)
 		fmt.Print("password: ")
-		// bytePwd, err := term.ReadPassword(int(syscall.Stdin))
-		// if err != nil {
-		// 	fmt.Println("failed to read password")
-		// 	os.Exit(1)
-		// }
-		// fmt.Print("\n")
-		// pass := string(bytePwd)
-
-		pass := "some password"
+		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			fmt.Println("failed to read password")
+			os.Exit(1)
+		}
+		fmt.Print("\n")
+		pass := string(bytePwd)
 
 		app := initCLIClient()
 		defer app.Close()
 
-		if err := app.Login(accountName, pass); err != nil {
+		//TODO cancel if got signal
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		if err := app.Login(ctx, accountName, pass); err != nil {
 			fmt.Println("failed to create account")
 			os.Exit(reasonInternalError)
 		}

@@ -3,23 +3,20 @@ package cli
 import "context"
 
 func (c *Client) CreateAccount(ctx context.Context, accountName, password string) error {
-	if err := c.auth.CreateAccount(accountName, password, c.publicKeyContent); err != nil {
-		return err
-	}
-
-	return c.localStorage.CreateScheme(ctx)
+	return c.auth.CreateAccount(ctx, accountName, password)
 }
 
-func (c *Client) Login(accountName, password string) (err error) {
+func (c *Client) Login(ctx context.Context, accountName, password string) (err error) {
 	if len(c.credential) > 0 {
 		return nil
 	}
 
-	c.credential, err = c.auth.Login(accountName, password)
-
-	if err := c.saveCredential(accountName); err != nil {
+	if err := c.localStorage.CreateScheme(ctx); err != nil {
 		return err
 	}
 
-	return err
+	if c.credential, err = c.auth.Login(ctx, accountName, password, c.publicKeyContent); err != nil {
+		return err
+	}
+	return c.saveCredential(accountName)
 }

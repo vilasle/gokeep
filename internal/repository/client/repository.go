@@ -13,7 +13,7 @@ import (
 type ClientRepository interface {
 	CreateScheme(ctx context.Context) error
 	Close() error
-	Save(ctx context.Context, tData model.Type, req SaveRequest) SaveResponse
+	Save(ctx context.Context, tData model.Type, req SaveRequest) error
 	Get(ctx context.Context, tData model.Type, req ...GetRequest) ([]GetResponse, error)
 	Delete(ctx context.Context, tData model.Type, req DeleteRequest) error
 }
@@ -22,13 +22,12 @@ type SaveRequest struct {
 	ID         int
 	View       string
 	ExternalID int
-	DEK        []byte
-	Data       []byte
+	DEK        string
+	Data       string
 }
 
 type SaveResponse struct {
 	ID    int
-	Error string
 }
 
 type GetRequest struct {

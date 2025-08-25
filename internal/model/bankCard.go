@@ -94,7 +94,7 @@ func (bc BankCard) dataForEncryption() []byte {
 	buf.WriteString("\n")
 	buf.WriteString(strconv.Itoa(bc.cvv))
 	buf.WriteString("\n")
-	buf.WriteString(bc.expiration.Format(time.DateOnly))
+	buf.WriteString(bc.expiration.Format("01/06"))
 
 	return buf.Bytes()
 }

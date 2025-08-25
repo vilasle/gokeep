@@ -1,8 +1,6 @@
 package model
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 )
 
@@ -34,44 +32,13 @@ func (tp *PlainText) Save(ctx context.Context, encoder Encoder) (err error) {
 	return tp.model.Save(ctx)
 }
 
-func (tp *PlainText) prepareEncryptedData(encoder Encoder) error {
-	data, err := tp.dataForEncryption()
-	if err != nil {
-		//TODO wrap error with package error
-		return err
-	}
-
-	tp.encryptedData, err = encoder.Encrypt(data)
+func (tp *PlainText) prepareEncryptedData(encoder Encoder) (err error) {
+	tp.encryptedData, err = encoder.Encrypt(tp.text)
 	return err
 }
 
 func (tp *PlainText) SetText(text []byte) {
 	tp.text = text
-}
-
-// func (tp *PlainText) decryptData(encoder Encoder) (err error) {
-// 	data, err := encoder.Decrypt(*tp.encryptedData)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	//if NewReader or ReadAll got error we can same error on Close
-// 	rd, _ := gzip.NewReader(bytes.NewReader(data))
-// 	tp.text, _ = io.ReadAll(rd)
-
-// 	return rd.Close()
-// }
-
-func (tp PlainText) dataForEncryption() ([]byte, error) {
-	buf := bytes.Buffer{}
-
-	//if NewWriterLevel or Write got error we can same error on Close
-	wrt, _ := gzip.NewWriterLevel(&buf, gzip.BestCompression)
-	wrt.Write(tp.text)
-
-	//if Write got error we can same on Close
-	err := wrt.Close()
-	return buf.Bytes(), err
 }
 
 // FIXME add getting plain text by id and check that owner was right id

@@ -278,6 +278,7 @@ type EncryptedData struct {
 	View          string                 `protobuf:"bytes,1,opt,name=view,proto3" json:"view,omitempty"`
 	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	Dek           []byte                 `protobuf:"bytes,3,opt,name=dek,proto3" json:"dek,omitempty"`
+	Metadata      []*Metadata            `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -333,18 +334,77 @@ func (x *EncryptedData) GetDek() []byte {
 	return nil
 }
 
+func (x *EncryptedData) GetMetadata() []*Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+type Metadata struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Metadata) Reset() {
+	*x = Metadata{}
+	mi := &file_proto_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Metadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Metadata) ProtoMessage() {}
+
+func (x *Metadata) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Metadata.ProtoReflect.Descriptor instead.
+func (*Metadata) Descriptor() ([]byte, []int) {
+	return file_proto_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Metadata) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *Metadata) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 type EncryptedDataResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Data          *EncryptedData         `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	Error         string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *EncryptedDataResponse) Reset() {
 	*x = EncryptedDataResponse{}
-	mi := &file_proto_service_proto_msgTypes[6]
+	mi := &file_proto_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -356,7 +416,7 @@ func (x *EncryptedDataResponse) String() string {
 func (*EncryptedDataResponse) ProtoMessage() {}
 
 func (x *EncryptedDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[6]
+	mi := &file_proto_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -369,7 +429,7 @@ func (x *EncryptedDataResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EncryptedDataResponse.ProtoReflect.Descriptor instead.
 func (*EncryptedDataResponse) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{6}
+	return file_proto_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *EncryptedDataResponse) GetId() int64 {
@@ -404,7 +464,7 @@ type DeleteDataRequest struct {
 
 func (x *DeleteDataRequest) Reset() {
 	*x = DeleteDataRequest{}
-	mi := &file_proto_service_proto_msgTypes[7]
+	mi := &file_proto_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -416,7 +476,7 @@ func (x *DeleteDataRequest) String() string {
 func (*DeleteDataRequest) ProtoMessage() {}
 
 func (x *DeleteDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[7]
+	mi := &file_proto_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -429,7 +489,7 @@ func (x *DeleteDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDataRequest.ProtoReflect.Descriptor instead.
 func (*DeleteDataRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{7}
+	return file_proto_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeleteDataRequest) GetId() int64 {
@@ -462,7 +522,7 @@ type DeleteDataResponse struct {
 
 func (x *DeleteDataResponse) Reset() {
 	*x = DeleteDataResponse{}
-	mi := &file_proto_service_proto_msgTypes[8]
+	mi := &file_proto_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -474,7 +534,7 @@ func (x *DeleteDataResponse) String() string {
 func (*DeleteDataResponse) ProtoMessage() {}
 
 func (x *DeleteDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[8]
+	mi := &file_proto_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -487,7 +547,7 @@ func (x *DeleteDataResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDataResponse.ProtoReflect.Descriptor instead.
 func (*DeleteDataResponse) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{8}
+	return file_proto_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteDataResponse) GetError() string {
@@ -508,7 +568,7 @@ type GetDataRequest struct {
 
 func (x *GetDataRequest) Reset() {
 	*x = GetDataRequest{}
-	mi := &file_proto_service_proto_msgTypes[9]
+	mi := &file_proto_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -520,7 +580,7 @@ func (x *GetDataRequest) String() string {
 func (*GetDataRequest) ProtoMessage() {}
 
 func (x *GetDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[9]
+	mi := &file_proto_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -533,7 +593,7 @@ func (x *GetDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataRequest.ProtoReflect.Descriptor instead.
 func (*GetDataRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{9}
+	return file_proto_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetDataRequest) GetId() int64 {
@@ -567,7 +627,7 @@ type GetDataResponse struct {
 
 func (x *GetDataResponse) Reset() {
 	*x = GetDataResponse{}
-	mi := &file_proto_service_proto_msgTypes[10]
+	mi := &file_proto_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -579,7 +639,7 @@ func (x *GetDataResponse) String() string {
 func (*GetDataResponse) ProtoMessage() {}
 
 func (x *GetDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[10]
+	mi := &file_proto_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -592,7 +652,7 @@ func (x *GetDataResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataResponse.ProtoReflect.Descriptor instead.
 func (*GetDataResponse) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{10}
+	return file_proto_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetDataResponse) GetData() []*EncryptedData {
@@ -621,7 +681,7 @@ type SaveLoginPasswordRequest struct {
 
 func (x *SaveLoginPasswordRequest) Reset() {
 	*x = SaveLoginPasswordRequest{}
-	mi := &file_proto_service_proto_msgTypes[11]
+	mi := &file_proto_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -633,7 +693,7 @@ func (x *SaveLoginPasswordRequest) String() string {
 func (*SaveLoginPasswordRequest) ProtoMessage() {}
 
 func (x *SaveLoginPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[11]
+	mi := &file_proto_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -646,7 +706,7 @@ func (x *SaveLoginPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveLoginPasswordRequest.ProtoReflect.Descriptor instead.
 func (*SaveLoginPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{11}
+	return file_proto_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SaveLoginPasswordRequest) GetId() int64 {
@@ -690,7 +750,7 @@ type SaveBankCardRequest struct {
 
 func (x *SaveBankCardRequest) Reset() {
 	*x = SaveBankCardRequest{}
-	mi := &file_proto_service_proto_msgTypes[12]
+	mi := &file_proto_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -702,7 +762,7 @@ func (x *SaveBankCardRequest) String() string {
 func (*SaveBankCardRequest) ProtoMessage() {}
 
 func (x *SaveBankCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[12]
+	mi := &file_proto_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -715,7 +775,7 @@ func (x *SaveBankCardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveBankCardRequest.ProtoReflect.Descriptor instead.
 func (*SaveBankCardRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{12}
+	return file_proto_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SaveBankCardRequest) GetId() int64 {
@@ -765,7 +825,7 @@ type SaveTextDataRequest struct {
 
 func (x *SaveTextDataRequest) Reset() {
 	*x = SaveTextDataRequest{}
-	mi := &file_proto_service_proto_msgTypes[13]
+	mi := &file_proto_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -777,7 +837,7 @@ func (x *SaveTextDataRequest) String() string {
 func (*SaveTextDataRequest) ProtoMessage() {}
 
 func (x *SaveTextDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[13]
+	mi := &file_proto_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -790,7 +850,7 @@ func (x *SaveTextDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveTextDataRequest.ProtoReflect.Descriptor instead.
 func (*SaveTextDataRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{13}
+	return file_proto_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SaveTextDataRequest) GetId() int64 {
@@ -833,7 +893,7 @@ type SaveBinaryDataRequest struct {
 
 func (x *SaveBinaryDataRequest) Reset() {
 	*x = SaveBinaryDataRequest{}
-	mi := &file_proto_service_proto_msgTypes[14]
+	mi := &file_proto_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +905,7 @@ func (x *SaveBinaryDataRequest) String() string {
 func (*SaveBinaryDataRequest) ProtoMessage() {}
 
 func (x *SaveBinaryDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_service_proto_msgTypes[14]
+	mi := &file_proto_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +918,7 @@ func (x *SaveBinaryDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveBinaryDataRequest.ProtoReflect.Descriptor instead.
 func (*SaveBinaryDataRequest) Descriptor() ([]byte, []int) {
-	return file_proto_service_proto_rawDescGZIP(), []int{14}
+	return file_proto_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SaveBinaryDataRequest) GetId() int64 {
@@ -908,15 +968,19 @@ const file_proto_service_proto_rawDesc = "" +
 	"public_key\x18\x03 \x01(\fR\tpublicKey\";\n" +
 	"\rLoginResponse\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\"I\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"v\n" +
 	"\rEncryptedData\x12\x12\n" +
 	"\x04view\x18\x01 \x01(\tR\x04view\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\fR\x04data\x12\x10\n" +
-	"\x03dek\x18\x03 \x01(\fR\x03dek\"g\n" +
+	"\x03dek\x18\x03 \x01(\fR\x03dek\x12+\n" +
+	"\bmetadata\x18\x04 \x03(\v2\x0f.proto.MetadataR\bmetadata\"2\n" +
+	"\bMetadata\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"g\n" +
 	"\x15EncryptedDataResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12(\n" +
 	"\x04data\x18\x02 \x01(\v2\x14.proto.EncryptedDataR\x04data\x12\x14\n" +
-	"\x05error\x18\x03 \x01(\tR\x05error\"m\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\"m\n" +
 	"\x11DeleteDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\x05R\x04type\x124\n" +
@@ -986,7 +1050,7 @@ func file_proto_service_proto_rawDescGZIP() []byte {
 	return file_proto_service_proto_rawDescData
 }
 
-var file_proto_service_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_proto_service_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_proto_service_proto_goTypes = []any{
 	(*CreateAccountRequest)(nil),     // 0: proto.CreateAccountRequest
 	(*ConfirmAssess)(nil),            // 1: proto.ConfirmAssess
@@ -994,46 +1058,48 @@ var file_proto_service_proto_goTypes = []any{
 	(*LoginRequest)(nil),             // 3: proto.LoginRequest
 	(*LoginResponse)(nil),            // 4: proto.LoginResponse
 	(*EncryptedData)(nil),            // 5: proto.EncryptedData
-	(*EncryptedDataResponse)(nil),    // 6: proto.EncryptedDataResponse
-	(*DeleteDataRequest)(nil),        // 7: proto.DeleteDataRequest
-	(*DeleteDataResponse)(nil),       // 8: proto.DeleteDataResponse
-	(*GetDataRequest)(nil),           // 9: proto.GetDataRequest
-	(*GetDataResponse)(nil),          // 10: proto.GetDataResponse
-	(*SaveLoginPasswordRequest)(nil), // 11: proto.SaveLoginPasswordRequest
-	(*SaveBankCardRequest)(nil),      // 12: proto.SaveBankCardRequest
-	(*SaveTextDataRequest)(nil),      // 13: proto.SaveTextDataRequest
-	(*SaveBinaryDataRequest)(nil),    // 14: proto.SaveBinaryDataRequest
+	(*Metadata)(nil),                 // 6: proto.Metadata
+	(*EncryptedDataResponse)(nil),    // 7: proto.EncryptedDataResponse
+	(*DeleteDataRequest)(nil),        // 8: proto.DeleteDataRequest
+	(*DeleteDataResponse)(nil),       // 9: proto.DeleteDataResponse
+	(*GetDataRequest)(nil),           // 10: proto.GetDataRequest
+	(*GetDataResponse)(nil),          // 11: proto.GetDataResponse
+	(*SaveLoginPasswordRequest)(nil), // 12: proto.SaveLoginPasswordRequest
+	(*SaveBankCardRequest)(nil),      // 13: proto.SaveBankCardRequest
+	(*SaveTextDataRequest)(nil),      // 14: proto.SaveTextDataRequest
+	(*SaveBinaryDataRequest)(nil),    // 15: proto.SaveBinaryDataRequest
 }
 var file_proto_service_proto_depIdxs = []int32{
-	5,  // 0: proto.EncryptedDataResponse.data:type_name -> proto.EncryptedData
-	1,  // 1: proto.DeleteDataRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 2: proto.GetDataRequest.credential:type_name -> proto.ConfirmAssess
-	5,  // 3: proto.GetDataResponse.data:type_name -> proto.EncryptedData
-	1,  // 4: proto.SaveLoginPasswordRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 5: proto.SaveBankCardRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 6: proto.SaveTextDataRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 7: proto.SaveBinaryDataRequest.credential:type_name -> proto.ConfirmAssess
-	0,  // 8: proto.AccountService.CreateAccount:input_type -> proto.CreateAccountRequest
-	3,  // 9: proto.AccountService.Login:input_type -> proto.LoginRequest
-	11, // 10: proto.PrivateDataService.SaveLoginPassword:input_type -> proto.SaveLoginPasswordRequest
-	12, // 11: proto.PrivateDataService.SaveBankCard:input_type -> proto.SaveBankCardRequest
-	13, // 12: proto.PrivateDataService.SaveTextData:input_type -> proto.SaveTextDataRequest
-	14, // 13: proto.PrivateDataService.SaveBinaryData:input_type -> proto.SaveBinaryDataRequest
-	9,  // 14: proto.PrivateDataService.Get:input_type -> proto.GetDataRequest
-	7,  // 15: proto.PrivateDataService.Delete:input_type -> proto.DeleteDataRequest
-	2,  // 16: proto.AccountService.CreateAccount:output_type -> proto.CreateAccountResponse
-	4,  // 17: proto.AccountService.Login:output_type -> proto.LoginResponse
-	6,  // 18: proto.PrivateDataService.SaveLoginPassword:output_type -> proto.EncryptedDataResponse
-	6,  // 19: proto.PrivateDataService.SaveBankCard:output_type -> proto.EncryptedDataResponse
-	6,  // 20: proto.PrivateDataService.SaveTextData:output_type -> proto.EncryptedDataResponse
-	6,  // 21: proto.PrivateDataService.SaveBinaryData:output_type -> proto.EncryptedDataResponse
-	10, // 22: proto.PrivateDataService.Get:output_type -> proto.GetDataResponse
-	8,  // 23: proto.PrivateDataService.Delete:output_type -> proto.DeleteDataResponse
-	16, // [16:24] is the sub-list for method output_type
-	8,  // [8:16] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	6,  // 0: proto.EncryptedData.metadata:type_name -> proto.Metadata
+	5,  // 1: proto.EncryptedDataResponse.data:type_name -> proto.EncryptedData
+	1,  // 2: proto.DeleteDataRequest.credential:type_name -> proto.ConfirmAssess
+	1,  // 3: proto.GetDataRequest.credential:type_name -> proto.ConfirmAssess
+	5,  // 4: proto.GetDataResponse.data:type_name -> proto.EncryptedData
+	1,  // 5: proto.SaveLoginPasswordRequest.credential:type_name -> proto.ConfirmAssess
+	1,  // 6: proto.SaveBankCardRequest.credential:type_name -> proto.ConfirmAssess
+	1,  // 7: proto.SaveTextDataRequest.credential:type_name -> proto.ConfirmAssess
+	1,  // 8: proto.SaveBinaryDataRequest.credential:type_name -> proto.ConfirmAssess
+	0,  // 9: proto.AccountService.CreateAccount:input_type -> proto.CreateAccountRequest
+	3,  // 10: proto.AccountService.Login:input_type -> proto.LoginRequest
+	12, // 11: proto.PrivateDataService.SaveLoginPassword:input_type -> proto.SaveLoginPasswordRequest
+	13, // 12: proto.PrivateDataService.SaveBankCard:input_type -> proto.SaveBankCardRequest
+	14, // 13: proto.PrivateDataService.SaveTextData:input_type -> proto.SaveTextDataRequest
+	15, // 14: proto.PrivateDataService.SaveBinaryData:input_type -> proto.SaveBinaryDataRequest
+	10, // 15: proto.PrivateDataService.Get:input_type -> proto.GetDataRequest
+	8,  // 16: proto.PrivateDataService.Delete:input_type -> proto.DeleteDataRequest
+	2,  // 17: proto.AccountService.CreateAccount:output_type -> proto.CreateAccountResponse
+	4,  // 18: proto.AccountService.Login:output_type -> proto.LoginResponse
+	7,  // 19: proto.PrivateDataService.SaveLoginPassword:output_type -> proto.EncryptedDataResponse
+	7,  // 20: proto.PrivateDataService.SaveBankCard:output_type -> proto.EncryptedDataResponse
+	7,  // 21: proto.PrivateDataService.SaveTextData:output_type -> proto.EncryptedDataResponse
+	7,  // 22: proto.PrivateDataService.SaveBinaryData:output_type -> proto.EncryptedDataResponse
+	11, // 23: proto.PrivateDataService.Get:output_type -> proto.GetDataResponse
+	9,  // 24: proto.PrivateDataService.Delete:output_type -> proto.DeleteDataResponse
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_proto_service_proto_init() }
@@ -1047,7 +1113,7 @@ func file_proto_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_service_proto_rawDesc), len(file_proto_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

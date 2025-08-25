@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -9,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/vilasle/gokeep/internal/encryption"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 	"github.com/vilasle/gokeep/internal/repository/client/sqlite"
 	"github.com/vilasle/gokeep/internal/service/client"
@@ -43,7 +43,7 @@ type Client struct {
 	workspace WorkplaceConfig
 	config    Config
 	//private key use for decryption messages from server
-	privateKey *rsa.PrivateKey
+	encoder encryption.Encoder
 	//publicKeyContent - need only bytes for pass it to server
 	publicKeyContent []byte
 	auth             client.AuthService
@@ -71,6 +71,9 @@ func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
 	}
 
 	conn, err := grpc.NewClient(client.config.ServerSocket, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
 
 	client.conn = conn
 
@@ -106,6 +109,10 @@ func (c *Client) loadConfiguration() error {
 
 func (c *Client) loadRSAKeys() error {
 	publicPath, privatePath, err := findKeysPath(c.workspace.Certificate.Path)
+	if err != nil {
+		return err
+	}
+
 	if publicPath == "" || privatePath == "" {
 		//TODO add error context
 		return fmt.Errorf("public and private keys not found")
@@ -129,11 +136,13 @@ func (c *Client) loadRSAKeys() error {
 		return fmt.Errorf("failed to decode private key")
 	}
 
-	c.privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		//TODO add error context
 		return err
 	}
+
+	c.encoder = encryption.NewRSACipher(&privateKey.PublicKey, privateKey)
 	return nil
 }
 
