@@ -55,12 +55,12 @@ func NewServer(config Config, opts ...Option) (*Server, error) {
 	}
 
 	s := &Server{
-		conn: conn,
-		opts: make([]grpc.ServerOption, 0, 2),
-		auth: config.AuthService,
-		cread: config.LoginPasswordService,
-		bank:  config.BankCardService,
-		text:  config.TextDataService,
+		conn:   conn,
+		opts:   make([]grpc.ServerOption, 0, 2),
+		auth:   config.AuthService,
+		cread:  config.LoginPasswordService,
+		bank:   config.BankCardService,
+		text:   config.TextDataService,
 		binary: config.BinaryDataService,
 	}
 
@@ -283,6 +283,100 @@ func (s *Server) Delete(ctx context.Context, req *pb.DeleteDataRequest) (resp *p
 	}
 
 	return resp, nil
+}
+
+func (s *Server) Get(ctx context.Context, req *pb.GetDataRequest) (resp *pb.GetDataResponse, err error) {
+	resp = &pb.GetDataResponse{}
+	//get session and client key by token
+	credential := req.Credential
+
+	ses, err := s.getSessionByToken(ctx, credential.Token)
+	if err != nil {
+		resp.Error = err.Error()
+		return resp, nil
+	}
+
+	var result []*pb.EncryptedData
+	if req.Id == 0 {
+		result, err = s.list(ctx, req, ses)
+	} else {
+		result, err = s.get(ctx, req, ses)
+	}
+
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Data = result
+	}
+
+	return resp, nil
+}
+
+func (s *Server) get(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedData, error) {
+	var data service.PrivateDataResponse
+	var err error
+
+	dto := service.GetPrivateData{
+		UserID: ses.userID,
+		ID:     int(req.Id),
+	}
+
+	switch req.Type {
+	case int32(model.TypeUsepass):
+		data, err = s.cread.Get(ctx, dto, ses.encoder)
+	case int32(model.TypeBankCard):
+		data, err = s.bank.Get(ctx, dto, ses.encoder)
+	case int32(model.TypePlainText):
+		data, err = s.text.Get(ctx, dto, ses.encoder)
+	case int32(model.TypeBinaryData):
+		data, err = s.binary.Get(ctx, dto, ses.encoder)
+	default:
+		err = errors.New("unknown type")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return []*pb.EncryptedData{
+		{
+			Data: []byte(data.Data),
+			Dek:  []byte(data.Key),
+			View: data.View,
+		},
+	}, err
+}
+
+func (s *Server) list(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedData, error) {
+	var data service.ListPrivateDataResponse
+	var err error
+
+	switch req.Type {
+	case int32(model.TypeUsepass):
+		data, err = s.cread.List(ctx, ses.userID, ses.encoder)
+	case int32(model.TypeBankCard):
+		data, err = s.bank.List(ctx, ses.userID, ses.encoder)
+	case int32(model.TypePlainText):
+		data, err = s.text.List(ctx, ses.userID, ses.encoder)
+	case int32(model.TypeBinaryData):
+		data, err = s.binary.List(ctx, ses.userID, ses.encoder)
+	default:
+		err = errors.New("unknown type")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := make([]*pb.EncryptedData, len(data.Data))
+	for i, d := range data.Data {
+		response[i] = &pb.EncryptedData{
+			Data: []byte(d.Data),
+			Dek:  []byte(d.Key),
+			View: d.View,
+		}
+	}
+	return response, err
 }
 
 type session struct {

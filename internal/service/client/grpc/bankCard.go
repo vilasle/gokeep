@@ -2,19 +2,20 @@ package grpc
 
 import (
 	"context"
-	"time"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	pb "github.com/vilasle/gokeep/proto"
+	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type BankCardService struct {
-	socket string
+	client pb.PrivateDataServiceClient
 }
 
-func NewBankCardService(socket string) *BankCardService {
+func NewBankCardService(socket *grpc.ClientConn) *BankCardService {
 	return &BankCardService{
-		socket: socket,
+		client: pb.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -25,17 +26,6 @@ func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveReque
 			View: "some card",
 			DEK:  []byte("dek"),
 			Data: []byte(`{"number": "1234567890123456","expires": "10/31","cvv":123}`),
-		},
-	}
-}
-
-func (s *BankCardService) List(ctx context.Context) client.BankCardListResponse {
-	return client.BankCardListResponse{
-		Result: []client.BankCardView{
-			{
-				Number:  "1234567890123456",
-				Expires: time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC),
-			},
 		},
 	}
 }

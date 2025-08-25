@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	pb "github.com/vilasle/gokeep/proto"
+	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type BinaryDataService struct {
-	socket string
+	client pb.PrivateDataServiceClient
 }
 
-func NewBinaryDataService(socket string) *BinaryDataService {
+func NewBinaryDataService(socket *grpc.ClientConn) *BinaryDataService {
 	return &BinaryDataService{
-		socket: socket,
+		client: pb.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -21,21 +23,11 @@ func (s *BinaryDataService) Save(ctx context.Context, req client.BinaryDataSaveR
 	return client.BinaryDataSaveResponse{}
 }
 
-func (s *BinaryDataService) List(ctx context.Context) client.BinaryDataListResponse {
-	return client.BinaryDataListResponse{
-		Result: []client.BinaryDataView{
-			{
-				Name: "test",
-			},
-		},
-	}
-}
-
 func (s *BinaryDataService) Get(ctx context.Context, req client.BinaryDataGetRequest) client.BinaryDataGetResponse {
 	return client.BinaryDataGetResponse{
 		Data: client.EncryptedData{
 			View: "test",
-			DEK: []byte("dek"),
+			DEK:  []byte("dek"),
 			Data: []byte("data"),
 		},
 	}

@@ -123,8 +123,8 @@ type plainTextManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *plainTextManager) New(owner *User, text []byte) *PlainText {
-	plainText := newPlainText(owner, text)
+func (c *plainTextManager) New(owner *User, text []byte, view string) *PlainText {
+	plainText := newPlainText(owner, text, view)
 	plainText.dataRepository = c.pvRepository
 	return plainText
 }
@@ -147,7 +147,7 @@ type binaryDataManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *binaryDataManager) New(owner *User, name string, data []byte) *BinaryData {
+func (c *binaryDataManager) New(owner *User, data []byte, name string) *BinaryData {
 	binaryData := newBinaryData(owner, data, name)
 	binaryData.dataRepository = c.pvRepository
 	return binaryData

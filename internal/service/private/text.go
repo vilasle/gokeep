@@ -2,8 +2,10 @@ package private
 
 import (
 	"context"
+	"errors"
 
 	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/logger"
 	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/service"
 )
@@ -12,107 +14,126 @@ var _ service.TextDataService = (*TextService)(nil)
 
 type TextService struct {
 	//key encryption key
-	kek     encryption.Encoder
+	kek encryption.Encoder
+	//manager provide assess to work with models
 	manager model.ModelManager
 }
 
 func NewTextService(manager model.ModelManager, masterKey encryption.Encoder) *TextService {
 	return &TextService{
 		manager: manager,
-		kek: masterKey,
+		kek:     masterKey,
 	}
 }
 
-func (s *TextService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (s *TextService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
+	log := logger.With("operation", "TextService.List")
+
+	log.Info("getting list of data by user", "userId", userID)
+
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.PlainTexts.List(ctx, user)
 
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get list of data", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	if len(result) == 0 {
-		//TODO improve message
+		log.Debug("result is empty")
 		return service.ListPrivateDataResponse{}, nil
 	}
 
-	response := service.ListPrivateDataResponse{
-		Data: make([]map[string]any, len(result)),
+	ls := make([]model.PrivateData, len(result))
+	for i, v := range result {
+		ls[i] = v
 	}
-
-	for i, pv := range result {
-		response.Data[i] = map[string]any{
-			"id":   pv.ID(),
-			"text": pv.String(),
-		}
-	}
-
-	return response, nil
+	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
-func (s *TextService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+func (s *TextService) Get(ctx context.Context,
+	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
+
+	log := logger.With("operation", "TextService.Get")
+	log.Info("getting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
 	if err != nil {
-		//TODO change error, and if not found user, message about it
+		log.Error("failed to get data", err)
 		return service.PrivateDataResponse{}, err
 	}
 
-	response.Fields = map[string]any{
-		"id":   result.ID(),
-		"text": result.String(),
+	keys := replacementKeys{
+		kek:    s.kek,
+		newKek: clientKey,
 	}
-
-	return
+	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
 func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+	log := logger.With("operation", "TextService.Delete")
+	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
+		logger.Error("failed to get user", err)
 		return err
 	}
 
 	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
 	if err != nil {
+		logger.Error("failed to get entity", err)
 		return err
 	}
-	//TODO wrap error
 	return entity.Delete(ctx)
 }
 
-func (s *TextService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *TextService) Add(ctx context.Context,
+	req service.AddTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
+	log := logger.With("operation", "TextService.Add")
+
+	log.Info("add new user's entity", "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		log.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
 
-	entity := s.manager.PlainTexts.New(user, req.Text)
+	entity := s.manager.PlainTexts.New(user, req.Text, req.Name)
 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *TextService) Update(ctx context.Context,
+	req service.UpdateTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
+	log := logger.With("operation", "TextService.Update")
+
+	log.Info("update existed user's entity", "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
 
 	entity, err := s.manager.PlainTexts.Get(ctx, user, req.ID)
 	if err != nil {
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get entity", err)
+		return service.PrivateDataResponse{}, err
 	}
 
 	entity.SetText(req.Text)
@@ -120,37 +141,28 @@ func (s *TextService) Update(ctx context.Context, req service.UpdateTextData, cl
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *TextService) save(ctx context.Context, usepass *model.PlainText, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	//generate new key for data
+func (s *TextService) save(ctx context.Context,
+	entity *model.PlainText, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		return service.PrivateDataResponse{},
+			errors.Join(ErrGenerateDEK, err)
 	}
 
 	dekSrc := dek.JSON()
 	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
-	if err := usepass.Save(ctx, encryptor); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+	if err := entity.Save(ctx, encryptor); err != nil {
+		return service.PrivateDataResponse{},
+			errors.Join(ErrSaveData, err)
 	}
 
-	//replace key to client key
-	savedData := usepass.EncryptedData()
-
-	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
-
-	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+	keys := replacementKeys{
+		kek:    s.kek,
+		dek:    dek,
+		newKek: clientKey,
 	}
 
-	response := service.AddingUpdatePrivateDataResponse{
-		ID:   usepass.ID(),
-		Data: encData.Data,
-		Key:  encData.Key,
-	}
-
-	return response, nil
+	return getResponseFromModel(entity, keys)
 }

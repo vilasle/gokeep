@@ -2,8 +2,10 @@ package private
 
 import (
 	"context"
+	"errors"
 
 	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/logger"
 	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/service"
 )
@@ -19,99 +21,122 @@ type BankCardService struct {
 func NewBankCardService(manager model.ModelManager, masterKey encryption.Encoder) *BankCardService {
 	return &BankCardService{
 		manager: manager,
-		kek: 	masterKey,
+		kek:     masterKey,
 	}
 }
 
-func (s *BankCardService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (s *BankCardService) List(ctx context.Context, 
+	userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
+
+	log := logger.With("operation", "BankCardService.List")
+
+	log.Info("getting list of data by user", "userId", userID)
+
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BankCards.List(ctx, user)
 
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get list of data", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	if len(result) == 0 {
-		//TODO improve message
+		log.Debug("result is empty")
 		return service.ListPrivateDataResponse{}, nil
 	}
 
-	response := service.ListPrivateDataResponse{
-		Data: make([]map[string]any, len(result)),
+	ls := make([]model.PrivateData, len(result))
+	for i, v := range result {
+		ls[i] = v
 	}
-
-	for i, pv := range result {
-		response.Data[i] = map[string]any{
-			"id":   pv.ID(),
-			"card": pv.String(),
-		}
-	}
-
-	return response, nil
+	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
-func (s *BankCardService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+func (s *BankCardService) Get(ctx context.Context,
+	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
+
+	log := logger.With("operation", "BankCardService.Get")
+	log.Info("getting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BankCards.Get(ctx, user, req.ID)
 	if err != nil {
-		//TODO change error, and if not found user, message about it
+		log.Error("failed to get data", err)
 		return service.PrivateDataResponse{}, err
 	}
 
-	response.Fields = map[string]any{
-		"id":   result.ID(),
-		"name": result.String(),
+	keys := replacementKeys{
+		kek:    s.kek,
+		newKek: clientKey,
 	}
-
-	return
+	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
 func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+	log := logger.With("operation", "BankCardService.Delete")
+	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
+		logger.Error("failed to get user", err)
 		return err
 	}
 
 	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
 	if err != nil {
+		logger.Error("failed to get entity", err)
 		return err
 	}
-	//TODO wrap error
 	return entity.Delete(ctx)
 }
 
-func (s *BankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BankCardService) Add(ctx context.Context, 
+	req service.AddBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
+	log := logger.With("operation", "BankCardService.Add")
+
+	log.Info("add new user's entity", "userId", req.UserID)
+	log.Debug("private data", "number", req.Number, "cvv", req.CVV, "expiration", req.Expiration)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		log.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
+
 	entity := s.manager.BankCards.New(user, req.Number, req.CVV, req.Expiration)
 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BankCardService) Update(ctx context.Context, 
+	req service.UpdateBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+		
+	log := logger.With("operation", "BankCardService.Update")
+
+	log.Info("update existed user's entity", "userId", req.UserID)
+	log.Debug("private data", "number", req.Number, "cvv", req.CVV, "expiration", req.Expiration, "id", req.ID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
 
 	entity, err := s.manager.BankCards.Get(ctx, user, req.ID)
 	if err != nil {
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get entity", err)
+		return service.PrivateDataResponse{}, err
 	}
 
 	entity.SetNumber(req.Number)
@@ -121,38 +146,28 @@ func (s *BankCardService) Update(ctx context.Context, req service.UpdateBankCard
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BankCardService) save(ctx context.Context, entity *model.BankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	//generate new key for data
+func (s *BankCardService) save(ctx context.Context,
+	entity *model.BankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		return service.PrivateDataResponse{},
+			errors.Join(ErrGenerateDEK, err)
 	}
 
 	dekSrc := dek.JSON()
 	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
 	if err := entity.Save(ctx, encryptor); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		return service.PrivateDataResponse{},
+			errors.Join(ErrSaveData, err)
 	}
 
-	//replace key to client key
-	savedData := entity.EncryptedData()
-
-	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
-
-	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+	keys := replacementKeys{
+		kek:    s.kek,
+		dek:    dek,
+		newKek: clientKey,
 	}
 
-	response := service.AddingUpdatePrivateDataResponse{
-		ID:   entity.ID(),
-		Data: encData.Data,
-		Key:  encData.Key,
-		View: entity.String(),
-	}
-
-	return response, nil
+	return getResponseFromModel(entity, keys)
 }

@@ -4,22 +4,24 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"io"
 )
 
 var _ PrivateData = (*PlainText)(nil)
 
 type PlainText struct {
 	model
+	name string
 	text []byte
 }
 
-func newPlainText(owner *User, text []byte) *PlainText {
+func newPlainText(owner *User, text []byte, name string) *PlainText {
 	return &PlainText{
 		model: model{
+			view:      name,
 			owner:     owner,
 			modelType: TypePlainText,
 		},
+		name: name,
 		text: text,
 	}
 }
@@ -43,30 +45,22 @@ func (tp *PlainText) prepareEncryptedData(encoder Encoder) error {
 	return err
 }
 
-func (tp *PlainText) String() string {
-	if len(tp.text) < 20 {
-		return string(tp.text)
-	}
-	view := tp.text[:20]
-	return string(view)
-}
-
 func (tp *PlainText) SetText(text []byte) {
 	tp.text = text
 }
 
-func (tp *PlainText) decryptData(encoder Encoder) (err error) {
-	data, err := encoder.Decrypt(*tp.encryptedData)
-	if err != nil {
-		return err
-	}
+// func (tp *PlainText) decryptData(encoder Encoder) (err error) {
+// 	data, err := encoder.Decrypt(*tp.encryptedData)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	//if NewReader or ReadAll got error we can same error on Close
-	rd, _ := gzip.NewReader(bytes.NewReader(data))
-	tp.text, _ = io.ReadAll(rd)
+// 	//if NewReader or ReadAll got error we can same error on Close
+// 	rd, _ := gzip.NewReader(bytes.NewReader(data))
+// 	tp.text, _ = io.ReadAll(rd)
 
-	return rd.Close()
-}
+// 	return rd.Close()
+// }
 
 func (tp PlainText) dataForEncryption() ([]byte, error) {
 	buf := bytes.Buffer{}
@@ -85,6 +79,10 @@ func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRe
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if data.UserID != owner.id {
+		return nil, ErrNotFound
 	}
 
 	model := model{

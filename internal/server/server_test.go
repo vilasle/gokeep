@@ -187,7 +187,7 @@ func TestSaveLoginPassword(t *testing.T) {
 
 	type credMockArgs struct {
 		input  service.AddLoginPassword
-		output service.AddingUpdatePrivateDataResponse
+		output service.PrivateDataResponse
 		err    error
 	}
 
@@ -251,7 +251,7 @@ func TestSaveLoginPassword(t *testing.T) {
 					Username: login,
 					Password: password,
 				},
-				output: service.AddingUpdatePrivateDataResponse{
+				output: service.PrivateDataResponse{
 					ID:   entityID,
 					View: login,
 					Data: "test_data",
@@ -335,7 +335,7 @@ func TestSaveLoginPassword(t *testing.T) {
 					Username: login,
 					Password: password,
 				},
-				output: service.AddingUpdatePrivateDataResponse{},
+				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
 			},
 		},
@@ -385,7 +385,7 @@ func TestBankCard(t *testing.T) {
 
 	type bankMockArgs struct {
 		input  service.AddBankCard
-		output service.AddingUpdatePrivateDataResponse
+		output service.PrivateDataResponse
 		err    error
 	}
 
@@ -455,7 +455,7 @@ func TestBankCard(t *testing.T) {
 					CVV:        int(cvv),
 					Expiration: expiration,
 				},
-				output: service.AddingUpdatePrivateDataResponse{
+				output: service.PrivateDataResponse{
 					ID:   entityID,
 					View: number,
 					Data: "test_data",
@@ -543,7 +543,7 @@ func TestBankCard(t *testing.T) {
 					CVV:        int(cvv),
 					Expiration: expiration,
 				},
-				output: service.AddingUpdatePrivateDataResponse{},
+				output: service.PrivateDataResponse{},
 				err:    errors.New("bank request failed"),
 			},
 		},
@@ -620,7 +620,7 @@ func TestTextData(t *testing.T) {
 
 	type textMockArgs struct {
 		input  service.AddTextData
-		output service.AddingUpdatePrivateDataResponse
+		output service.PrivateDataResponse
 		err    error
 	}
 	name := "test"
@@ -683,7 +683,7 @@ func TestTextData(t *testing.T) {
 					Name:   name,
 					Text:   []byte(text),
 				},
-				output: service.AddingUpdatePrivateDataResponse{
+				output: service.PrivateDataResponse{
 					ID:   entityID,
 					View: name,
 					Data: "test_data",
@@ -767,7 +767,7 @@ func TestTextData(t *testing.T) {
 					Name:   name,
 					Text:   []byte(text),
 				},
-				output: service.AddingUpdatePrivateDataResponse{},
+				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
 			},
 		},
@@ -817,7 +817,7 @@ func TestBinaryData(t *testing.T) {
 
 	type binaryMockArgs struct {
 		input  service.AddBinaryData
-		output service.AddingUpdatePrivateDataResponse
+		output service.PrivateDataResponse
 		err    error
 	}
 	name := "test"
@@ -880,7 +880,7 @@ func TestBinaryData(t *testing.T) {
 					Name:   name,
 					Data:   []byte(text),
 				},
-				output: service.AddingUpdatePrivateDataResponse{
+				output: service.PrivateDataResponse{
 					ID:   entityID,
 					View: name,
 					Data: "test_data",
@@ -964,7 +964,7 @@ func TestBinaryData(t *testing.T) {
 					Name:   name,
 					Data:   []byte(text),
 				},
-				output: service.AddingUpdatePrivateDataResponse{},
+				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
 			},
 		},

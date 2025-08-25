@@ -8,17 +8,16 @@ var _ PrivateData = (*BinaryData)(nil)
 
 type BinaryData struct {
 	model
-	name string
 	data []byte
 }
 
 func newBinaryData(owner *User, data []byte, name string) *BinaryData {
 	return &BinaryData{
 		model: model{
+			view:      name,
 			owner:     owner,
 			modelType: TypeBinaryData,
 		},
-		name: name,
 		data: data,
 	}
 }
@@ -31,12 +30,8 @@ func (bd *BinaryData) Save(ctx context.Context, encoder Encoder) (err error) {
 	return bd.model.Save(ctx)
 }
 
-func (bd *BinaryData) String() string {
-	return bd.name
-}
-
 func (bd *BinaryData) SetName(name string) {
-	bd.name = name
+	bd.model.view = name
 }
 
 func (bd *BinaryData) SetData(data []byte) {
@@ -48,16 +43,14 @@ func (bd *BinaryData) prepareEncryptedData(encoder Encoder) (err error) {
 	return err
 }
 
-func (bd *BinaryData) decryptData(encoder Encoder) (err error) {
-	bd.data, err = encoder.Decrypt(*bd.encryptedData)
-	return err
-}
-
-// FIXME add getting binary data by id and check that owner was right id
 func findBinaryDataByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*BinaryData, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if data.UserID != owner.id {
+		return nil, ErrUserNotFound
 	}
 
 	model := model{

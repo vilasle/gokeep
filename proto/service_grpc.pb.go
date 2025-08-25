@@ -163,6 +163,7 @@ const (
 	PrivateDataService_SaveBankCard_FullMethodName      = "/proto.PrivateDataService/SaveBankCard"
 	PrivateDataService_SaveTextData_FullMethodName      = "/proto.PrivateDataService/SaveTextData"
 	PrivateDataService_SaveBinaryData_FullMethodName    = "/proto.PrivateDataService/SaveBinaryData"
+	PrivateDataService_Get_FullMethodName               = "/proto.PrivateDataService/Get"
 	PrivateDataService_Delete_FullMethodName            = "/proto.PrivateDataService/Delete"
 )
 
@@ -174,6 +175,7 @@ type PrivateDataServiceClient interface {
 	SaveBankCard(ctx context.Context, in *SaveBankCardRequest, opts ...grpc.CallOption) (*EncryptedDataResponse, error)
 	SaveTextData(ctx context.Context, in *SaveTextDataRequest, opts ...grpc.CallOption) (*EncryptedDataResponse, error)
 	SaveBinaryData(ctx context.Context, in *SaveBinaryDataRequest, opts ...grpc.CallOption) (*EncryptedDataResponse, error)
+	Get(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetDataResponse, error)
 	Delete(ctx context.Context, in *DeleteDataRequest, opts ...grpc.CallOption) (*DeleteDataResponse, error)
 }
 
@@ -225,6 +227,16 @@ func (c *privateDataServiceClient) SaveBinaryData(ctx context.Context, in *SaveB
 	return out, nil
 }
 
+func (c *privateDataServiceClient) Get(ctx context.Context, in *GetDataRequest, opts ...grpc.CallOption) (*GetDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetDataResponse)
+	err := c.cc.Invoke(ctx, PrivateDataService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *privateDataServiceClient) Delete(ctx context.Context, in *DeleteDataRequest, opts ...grpc.CallOption) (*DeleteDataResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteDataResponse)
@@ -243,6 +255,7 @@ type PrivateDataServiceServer interface {
 	SaveBankCard(context.Context, *SaveBankCardRequest) (*EncryptedDataResponse, error)
 	SaveTextData(context.Context, *SaveTextDataRequest) (*EncryptedDataResponse, error)
 	SaveBinaryData(context.Context, *SaveBinaryDataRequest) (*EncryptedDataResponse, error)
+	Get(context.Context, *GetDataRequest) (*GetDataResponse, error)
 	Delete(context.Context, *DeleteDataRequest) (*DeleteDataResponse, error)
 	mustEmbedUnimplementedPrivateDataServiceServer()
 }
@@ -265,6 +278,9 @@ func (UnimplementedPrivateDataServiceServer) SaveTextData(context.Context, *Save
 }
 func (UnimplementedPrivateDataServiceServer) SaveBinaryData(context.Context, *SaveBinaryDataRequest) (*EncryptedDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveBinaryData not implemented")
+}
+func (UnimplementedPrivateDataServiceServer) Get(context.Context, *GetDataRequest) (*GetDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedPrivateDataServiceServer) Delete(context.Context, *DeleteDataRequest) (*DeleteDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -362,6 +378,24 @@ func _PrivateDataService_SaveBinaryData_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PrivateDataService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PrivateDataServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PrivateDataService_Get_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PrivateDataServiceServer).Get(ctx, req.(*GetDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PrivateDataService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteDataRequest)
 	if err := dec(in); err != nil {
@@ -402,6 +436,10 @@ var PrivateDataService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SaveBinaryData",
 			Handler:    _PrivateDataService_SaveBinaryData_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _PrivateDataService_Get_Handler,
 		},
 		{
 			MethodName: "Delete",

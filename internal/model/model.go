@@ -9,6 +9,7 @@ var _ PrivateData = (*model)(nil)
 
 type model struct {
 	id             int
+	view           string
 	modelType      Type
 	owner          *User
 	encryptedData  *EncryptedData
@@ -42,7 +43,7 @@ func (m *model) Save(ctx context.Context) (err error) {
 }
 
 func (m *model) String() string {
-	return ""
+	return m.view
 }
 
 func (m *model) Delete(ctx context.Context) (err error) {

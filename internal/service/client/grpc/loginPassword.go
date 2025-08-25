@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	pb "github.com/vilasle/gokeep/proto"
+	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type LoginPasswordService struct {
-	socket string
+	client pb.PrivateDataServiceClient
 }
 
-func NewLoginPasswordDataService(socket string) *LoginPasswordService {
+func NewLoginPasswordDataService(socket *grpc.ClientConn) *LoginPasswordService {
 	return &LoginPasswordService{
-		socket: socket,
+		client: pb.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -26,17 +28,6 @@ func (s *LoginPasswordService) Save(ctx context.Context, req client.LoginPasswor
 			DEK:  []byte("dek1"),
 			Data: []byte(`{"login": "test_account", "password": "test_password"}`),
 		},
-	}
-}
-
-func (s *LoginPasswordService) List(ctx context.Context) client.LoginPasswordListResponse {
-	return client.LoginPasswordListResponse{
-		Result: []client.LoginPasswordView{
-			{
-				Login: "test",
-			},
-		},
-		Error: "",
 	}
 }
 

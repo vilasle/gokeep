@@ -54,7 +54,7 @@ type UpdateBinaryData struct {
 	AddBinaryData
 }
 
-type AddingUpdatePrivateDataResponse struct {
+type PrivateDataResponse struct {
 	ID int
 	//opened presentation of data
 	View string
@@ -65,16 +65,12 @@ type AddingUpdatePrivateDataResponse struct {
 }
 
 type ListPrivateDataResponse struct {
-	Data  []map[string]any
+	Data  []PrivateDataResponse
 }
 
 type GetPrivateData struct {
 	UserID int
 	ID     int
-}
-
-type PrivateDataResponse struct {
-	Fields map[string]any
 }
 
 type DeletePrivateData struct {

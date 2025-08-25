@@ -16,8 +16,8 @@ type AuthService interface {
 }
 
 type PrivateDataService interface {
-	List(ctx context.Context, userID int) (ListPrivateDataResponse, error)
-	Get(ctx context.Context, req GetPrivateData) (PrivateDataResponse, error)
+	List(ctx context.Context, userID int, clientKey encryption.Encoder) (ListPrivateDataResponse, error)
+	Get(ctx context.Context, req GetPrivateData, clientKey encryption.Encoder) (PrivateDataResponse, error)
 	Delete(ctx context.Context, req DeletePrivateData) error
 }
 
@@ -28,24 +28,24 @@ type PrivateDataService interface {
 
 type LoginPasswordService interface {
 	PrivateDataService
-	Add(ctx context.Context, req AddLoginPassword, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
-	Update(ctx context.Context, req UpdateLoginPassword, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
+	Add(ctx context.Context, req AddLoginPassword, clientKey encryption.Encoder) (PrivateDataResponse, error)
+	Update(ctx context.Context, req UpdateLoginPassword, clientKey encryption.Encoder) (PrivateDataResponse, error)
 }
 
 type BankCardService interface {
 	PrivateDataService
-	Add(ctx context.Context, req AddBankCard, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
-	Update(ctx context.Context, req UpdateBankCard, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
+	Add(ctx context.Context, req AddBankCard, clientKey encryption.Encoder) (PrivateDataResponse, error)
+	Update(ctx context.Context, req UpdateBankCard, clientKey encryption.Encoder) (PrivateDataResponse, error)
 }
 
 type TextDataService interface {
 	PrivateDataService
-	Add(ctx context.Context, req AddTextData, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
-	Update(ctx context.Context, req UpdateTextData, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
+	Add(ctx context.Context, req AddTextData, clientKey encryption.Encoder) (PrivateDataResponse, error)
+	Update(ctx context.Context, req UpdateTextData, clientKey encryption.Encoder) (PrivateDataResponse, error)
 }
 
 type BinaryDataService interface {
 	PrivateDataService
-	Add(ctx context.Context, req AddBinaryData, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
-	Update(ctx context.Context, req UpdateBinaryData, clientKey encryption.Encoder) (AddingUpdatePrivateDataResponse, error)
+	Add(ctx context.Context, req AddBinaryData, clientKey encryption.Encoder) (PrivateDataResponse, error)
+	Update(ctx context.Context, req UpdateBinaryData, clientKey encryption.Encoder) (PrivateDataResponse, error)
 }

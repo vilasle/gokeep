@@ -118,33 +118,33 @@ func (mr *MockPrivateDataServiceMockRecorder) Delete(ctx, req interface{}) *gomo
 }
 
 // Get mocks base method.
-func (m *MockPrivateDataService) Get(ctx context.Context, req service.GetPrivateData) (service.PrivateDataResponse, error) {
+func (m *MockPrivateDataService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, req)
+	ret := m.ctrl.Call(m, "Get", ctx, req, clientKey)
 	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockPrivateDataServiceMockRecorder) Get(ctx, req interface{}) *gomock.Call {
+func (mr *MockPrivateDataServiceMockRecorder) Get(ctx, req, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPrivateDataService)(nil).Get), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPrivateDataService)(nil).Get), ctx, req, clientKey)
 }
 
 // List mocks base method.
-func (m *MockPrivateDataService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (m *MockPrivateDataService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, clientKey)
 	ret0, _ := ret[0].(service.ListPrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockPrivateDataServiceMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockPrivateDataServiceMockRecorder) List(ctx, userID, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPrivateDataService)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockPrivateDataService)(nil).List), ctx, userID, clientKey)
 }
 
 // MockLoginPasswordService is a mock of LoginPasswordService interface.
@@ -171,10 +171,10 @@ func (m *MockLoginPasswordService) EXPECT() *MockLoginPasswordServiceMockRecorde
 }
 
 // Add mocks base method.
-func (m *MockLoginPasswordService) Add(ctx context.Context, req service.AddLoginPassword, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockLoginPasswordService) Add(ctx context.Context, req service.AddLoginPassword, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -200,40 +200,40 @@ func (mr *MockLoginPasswordServiceMockRecorder) Delete(ctx, req interface{}) *go
 }
 
 // Get mocks base method.
-func (m *MockLoginPasswordService) Get(ctx context.Context, req service.GetPrivateData) (service.PrivateDataResponse, error) {
+func (m *MockLoginPasswordService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, req)
+	ret := m.ctrl.Call(m, "Get", ctx, req, clientKey)
 	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockLoginPasswordServiceMockRecorder) Get(ctx, req interface{}) *gomock.Call {
+func (mr *MockLoginPasswordServiceMockRecorder) Get(ctx, req, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockLoginPasswordService)(nil).Get), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockLoginPasswordService)(nil).Get), ctx, req, clientKey)
 }
 
 // List mocks base method.
-func (m *MockLoginPasswordService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (m *MockLoginPasswordService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, clientKey)
 	ret0, _ := ret[0].(service.ListPrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockLoginPasswordServiceMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockLoginPasswordServiceMockRecorder) List(ctx, userID, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockLoginPasswordService)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockLoginPasswordService)(nil).List), ctx, userID, clientKey)
 }
 
 // Update mocks base method.
-func (m *MockLoginPasswordService) Update(ctx context.Context, req service.UpdateLoginPassword, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockLoginPasswordService) Update(ctx context.Context, req service.UpdateLoginPassword, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -268,10 +268,10 @@ func (m *MockBankCardService) EXPECT() *MockBankCardServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockBankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockBankCardService) Add(ctx context.Context, req service.AddBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -297,40 +297,40 @@ func (mr *MockBankCardServiceMockRecorder) Delete(ctx, req interface{}) *gomock.
 }
 
 // Get mocks base method.
-func (m *MockBankCardService) Get(ctx context.Context, req service.GetPrivateData) (service.PrivateDataResponse, error) {
+func (m *MockBankCardService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, req)
+	ret := m.ctrl.Call(m, "Get", ctx, req, clientKey)
 	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockBankCardServiceMockRecorder) Get(ctx, req interface{}) *gomock.Call {
+func (mr *MockBankCardServiceMockRecorder) Get(ctx, req, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBankCardService)(nil).Get), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBankCardService)(nil).Get), ctx, req, clientKey)
 }
 
 // List mocks base method.
-func (m *MockBankCardService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (m *MockBankCardService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, clientKey)
 	ret0, _ := ret[0].(service.ListPrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockBankCardServiceMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockBankCardServiceMockRecorder) List(ctx, userID, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockBankCardService)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockBankCardService)(nil).List), ctx, userID, clientKey)
 }
 
 // Update mocks base method.
-func (m *MockBankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockBankCardService) Update(ctx context.Context, req service.UpdateBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -365,10 +365,10 @@ func (m *MockTextDataService) EXPECT() *MockTextDataServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockTextDataService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockTextDataService) Add(ctx context.Context, req service.AddTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -394,40 +394,40 @@ func (mr *MockTextDataServiceMockRecorder) Delete(ctx, req interface{}) *gomock.
 }
 
 // Get mocks base method.
-func (m *MockTextDataService) Get(ctx context.Context, req service.GetPrivateData) (service.PrivateDataResponse, error) {
+func (m *MockTextDataService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, req)
+	ret := m.ctrl.Call(m, "Get", ctx, req, clientKey)
 	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockTextDataServiceMockRecorder) Get(ctx, req interface{}) *gomock.Call {
+func (mr *MockTextDataServiceMockRecorder) Get(ctx, req, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTextDataService)(nil).Get), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTextDataService)(nil).Get), ctx, req, clientKey)
 }
 
 // List mocks base method.
-func (m *MockTextDataService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (m *MockTextDataService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, clientKey)
 	ret0, _ := ret[0].(service.ListPrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockTextDataServiceMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockTextDataServiceMockRecorder) List(ctx, userID, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTextDataService)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockTextDataService)(nil).List), ctx, userID, clientKey)
 }
 
 // Update mocks base method.
-func (m *MockTextDataService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockTextDataService) Update(ctx context.Context, req service.UpdateTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -462,10 +462,10 @@ func (m *MockBinaryDataService) EXPECT() *MockBinaryDataServiceMockRecorder {
 }
 
 // Add mocks base method.
-func (m *MockBinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockBinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -491,40 +491,40 @@ func (mr *MockBinaryDataServiceMockRecorder) Delete(ctx, req interface{}) *gomoc
 }
 
 // Get mocks base method.
-func (m *MockBinaryDataService) Get(ctx context.Context, req service.GetPrivateData) (service.PrivateDataResponse, error) {
+func (m *MockBinaryDataService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, req)
+	ret := m.ctrl.Call(m, "Get", ctx, req, clientKey)
 	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockBinaryDataServiceMockRecorder) Get(ctx, req interface{}) *gomock.Call {
+func (mr *MockBinaryDataServiceMockRecorder) Get(ctx, req, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBinaryDataService)(nil).Get), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockBinaryDataService)(nil).Get), ctx, req, clientKey)
 }
 
 // List mocks base method.
-func (m *MockBinaryDataService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (m *MockBinaryDataService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, userID)
+	ret := m.ctrl.Call(m, "List", ctx, userID, clientKey)
 	ret0, _ := ret[0].(service.ListPrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockBinaryDataServiceMockRecorder) List(ctx, userID interface{}) *gomock.Call {
+func (mr *MockBinaryDataServiceMockRecorder) List(ctx, userID, clientKey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockBinaryDataService)(nil).List), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockBinaryDataService)(nil).List), ctx, userID, clientKey)
 }
 
 // Update mocks base method.
-func (m *MockBinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (m *MockBinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, req, clientKey)
-	ret0, _ := ret[0].(service.AddingUpdatePrivateDataResponse)
+	ret0, _ := ret[0].(service.PrivateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

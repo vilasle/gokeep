@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/vilasle/gokeep/internal/service/client"
+	pb "github.com/vilasle/gokeep/proto"
+	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type TextDataService struct {
-	socket string
+	client pb.PrivateDataServiceClient
 }
 
-func NewTextDataService(socket string) *TextDataService {
+func NewTextDataService(socket *grpc.ClientConn) *TextDataService {
 	return &TextDataService{
-		socket: socket,
+		client: pb.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -24,16 +26,6 @@ func (s *TextDataService) Save(ctx context.Context, req client.TextDataSaveReque
 			View: req.Name,
 			DEK:  []byte("dek"),
 			Data: req.Text,
-		},
-	}
-}
-
-func (s *TextDataService) List(ctx context.Context) client.TextDataListResponse {
-	return client.TextDataListResponse{
-		Result: []client.TextDataView{
-			{
-				Name: "test",
-			},
 		},
 	}
 }

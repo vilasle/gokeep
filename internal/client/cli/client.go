@@ -12,7 +12,9 @@ import (
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 	"github.com/vilasle/gokeep/internal/repository/client/sqlite"
 	"github.com/vilasle/gokeep/internal/service/client"
-	"github.com/vilasle/gokeep/internal/service/client/grpc"
+	grpcSvc "github.com/vilasle/gokeep/internal/service/client/grpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,12 +30,12 @@ type externalServices struct {
 	binary      client.BinaryDataDataService
 }
 
-func newDataServices(grpcSocket string) *externalServices {
+func newDataServices(socket *grpc.ClientConn) *externalServices {
 	return &externalServices{
-		credentials: grpc.NewLoginPasswordDataService(grpcSocket),
-		bankCard:    grpc.NewBankCardService(grpcSocket),
-		text:        grpc.NewTextDataService(grpcSocket),
-		binary:      grpc.NewBinaryDataService(grpcSocket),
+		credentials: grpcSvc.NewLoginPasswordDataService(socket),
+		bankCard:    grpcSvc.NewBankCardService(socket),
+		text:        grpcSvc.NewTextDataService(socket),
+		binary:      grpcSvc.NewBinaryDataService(socket),
 	}
 }
 
@@ -48,6 +50,7 @@ type Client struct {
 	externalServices *externalServices
 	localStorage     repository.ClientRepository
 	credential       []byte
+	conn             *grpc.ClientConn
 }
 
 func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
@@ -67,15 +70,19 @@ func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
 		return nil, err
 	}
 
-	client.auth = grpc.NewGRPCAuthService(client.config.ServerSocket)
-	client.externalServices = newDataServices(client.config.ServerSocket)
+	conn, err := grpc.NewClient(client.config.ServerSocket, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	client.conn = conn
+
+	client.auth = grpcSvc.NewGRPCAuthService(conn)
+	client.externalServices = newDataServices(conn)
 	client.localStorage, err = sqlite.NewSQLiteClient(client.config.DBPath)
 
 	return client, err
 }
 
 func (c *Client) Close() error {
-	return c.localStorage.Close()
+	return errors.Join(c.conn.Close(), c.localStorage.Close())
 }
 
 func (c *Client) loadConfiguration() error {

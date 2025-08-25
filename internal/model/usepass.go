@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"strings"
 )
 
 var _ PrivateData = (*Usepass)(nil)
@@ -19,6 +18,7 @@ type Usepass struct {
 func newUsepass(owner *User, login, password string) *Usepass {
 	return &Usepass{
 		model: model{
+			view:      login,
 			owner:     owner,
 			modelType: TypeUsepass,
 		},
@@ -33,10 +33,6 @@ func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
 		return err
 	}
 	return u.model.Save(ctx)
-}
-
-func (u *Usepass) String() string {
-	return u.login
 }
 
 func (u *Usepass) SetUsername(username string) {
@@ -54,21 +50,21 @@ func (u *Usepass) prepareEncryptedData(encoder Encoder) (err error) {
 	return err
 }
 
-func (u *Usepass) decryptData(encoder Encoder) error {
-	data, err := encoder.Decrypt(*u.encryptedData)
-	if err != nil {
-		return err
-	}
+// func (u *Usepass) decryptData(encoder Encoder) error {
+// 	data, err := encoder.Decrypt(*u.encryptedData)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	lp := strings.Split(string(data), "\n")
-	if len(lp) != 2 {
-		return errors.New("invalid data")
-	}
+// 	lp := strings.Split(string(data), "\n")
+// 	if len(lp) != 2 {
+// 		return errors.New("invalid data")
+// 	}
 
-	u.login, u.password = lp[0], lp[1]
+// 	u.login, u.password = lp[0], lp[1]
 
-	return nil
-}
+// 	return nil
+// }
 
 func (u Usepass) dataForEncryption() []byte {
 	buf := bytes.Buffer{}
@@ -79,11 +75,14 @@ func (u Usepass) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-// FIXME add getting usepass by id and check that owner was right id
 func findUsepassByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*Usepass, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if data.UserID != owner.id {
+		return nil, errors.New("user not found")
 	}
 
 	model := model{

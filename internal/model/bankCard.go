@@ -19,8 +19,10 @@ type BankCard struct {
 }
 
 func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) *BankCard {
+	view := strings.Repeat("*", len(cardNumber)-4) + cardNumber[len(cardNumber)-4:]
 	return &BankCard{
 		model: model{
+			view:      view,
 			owner:     owner,
 			modelType: TypeBankCard,
 		},
@@ -57,11 +59,6 @@ func (bc *BankCard) decryptData(encoder Encoder) (err error) {
 		return err
 	}
 	return nil
-}
-
-func (u *BankCard) String() string {
-	view := strings.Repeat("*", len(u.number)-4) + u.number[len(u.number)-4:]
-	return string(view)
 }
 
 func (u *BankCard) SetNumber(number string) {
@@ -107,6 +104,10 @@ func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRep
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	if data.UserID != owner.id {
+		return nil, ErrNotFound
 	}
 
 	model := model{

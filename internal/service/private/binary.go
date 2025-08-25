@@ -2,17 +2,20 @@ package private
 
 import (
 	"context"
+	"errors"
 
 	"github.com/vilasle/gokeep/internal/encryption"
+	"github.com/vilasle/gokeep/internal/logger"
 	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/service"
 )
 
-var _ service.LoginPasswordService = (*UsepassService)(nil)
+var _ service.BinaryDataService = (*BinaryDataService)(nil)
 
 type BinaryDataService struct {
 	//key encryption key
-	kek     encryption.Encoder
+	kek encryption.Encoder
+	//manager provide assess to work with models
 	manager model.ModelManager
 }
 
@@ -23,135 +26,146 @@ func NewBinaryDataService(manager model.ModelManager, masterKey encryption.Encod
 	}
 }
 
-func (s *BinaryDataService) List(ctx context.Context, userID int) (service.ListPrivateDataResponse, error) {
+func (s *BinaryDataService) List(ctx context.Context,
+	userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
+
+	log := logger.With("operation", "BinaryDataService.List")
+
+	log.Info("getting list of data by user", "userId", userID)
+
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BinaryData.List(ctx, user)
 
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get list of data", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	if len(result) == 0 {
-		//TODO improve message
+		log.Debug("result is empty")
 		return service.ListPrivateDataResponse{}, nil
 	}
 
-	response := service.ListPrivateDataResponse{
-		Data: make([]map[string]any, len(result)),
+	ls := make([]model.PrivateData, len(result))
+	for i, v := range result {
+		ls[i] = v
 	}
-
-	for i, pv := range result {
-		response.Data[i] = map[string]any{
-			"id":   pv.ID(),
-			"name": pv.String(),
-		}
-	}
-
-	return response, nil
+	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
-func (s *BinaryDataService) Get(ctx context.Context, req service.GetPrivateData) (response service.PrivateDataResponse, err error) {
+func (s *BinaryDataService) Get(ctx context.Context,
+	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
+
+	log := logger.With("operation", "BinaryDataService.Get")
+	log.Info("getting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
+		log.Error("failed to get user", err)
 		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BinaryData.Get(ctx, user, req.ID)
 	if err != nil {
-		//TODO change error, and if not found user, message about it
+		log.Error("failed to get data", err)
 		return service.PrivateDataResponse{}, err
 	}
 
-	response.Fields = map[string]any{
-		"id":   result.ID(),
-		"name": result.String(),
+	keys := replacementKeys{
+		kek:    s.kek,
+		newKek: clientKey,
 	}
-
-	return
+	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
 func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivateData) error {
+	log := logger.With("operation", "BinaryDataService.Delete")
+	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
+		logger.Error("failed to get user", err)
 		return err
 	}
 
 	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
 	if err != nil {
+		logger.Error("failed to get entity", err)
 		return err
 	}
-	//TODO wrap error
 	return entity.Delete(ctx)
 }
 
-func (s *BinaryDataService) Add(ctx context.Context, req service.AddBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BinaryDataService) Add(ctx context.Context,
+	req service.AddBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
+	log := logger.With("operation", "BinaryDataService.Add")
+
+	log.Info("add new user's entity", "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		log.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
 
-	entity := s.manager.BinaryData.New(user, req.Name, req.Data)
+	entity := s.manager.BinaryData.New(user, req.Data, req.Name)
 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BinaryDataService) Update(ctx context.Context, req service.UpdateBinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
+func (s *BinaryDataService) Update(ctx context.Context,
+	req service.UpdateBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
+	log := logger.With("operation", "BinaryDataService.Update")
+
+	log.Info("update existed user's entity", "userId", req.UserID)
+
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get user", err)
+		return service.PrivateDataResponse{}, err
 	}
 
 	entity, err := s.manager.BinaryData.Get(ctx, user, req.ID)
 	if err != nil {
-		return service.AddingUpdatePrivateDataResponse{}, err
+		logger.Error("failed to get entity", err)
+		return service.PrivateDataResponse{}, err
 	}
 
-	entity.SetName(req.Name)
 	entity.SetData(req.Data)
+	entity.SetName(req.Name)
 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BinaryDataService) save(ctx context.Context, entity *model.BinaryData, clientKey encryption.Encoder) (service.AddingUpdatePrivateDataResponse, error) {
-	//generate new key for data
+func (s *BinaryDataService) save(ctx context.Context,
+	entity *model.BinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
+
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		return service.PrivateDataResponse{},
+			errors.Join(ErrGenerateDEK, err)
 	}
 
 	dekSrc := dek.JSON()
 	encryptor := encryption.NewModelEncoding([]byte(dekSrc), s.kek, dek)
 
 	if err := entity.Save(ctx, encryptor); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+		return service.PrivateDataResponse{},
+			errors.Join(ErrSaveData, err)
 	}
 
-	//replace key to client key
-	savedData := entity.EncryptedData()
-
-	encData := encryption.NewEncryptedDataFromReadyData(dek, savedData.Data, savedData.Key)
-
-	if err := encData.ReplaceKey(s.kek, clientKey); err != nil {
-		//TODO improve message
-		return service.AddingUpdatePrivateDataResponse{}, err
+	keys := replacementKeys{
+		kek:    s.kek,
+		dek:    dek,
+		newKek: clientKey,
 	}
 
-	response := service.AddingUpdatePrivateDataResponse{
-		ID:   entity.ID(),
-		Data: encData.Data,
-		Key:  encData.Key,
-	}
-
-	return response, nil
+	return getResponseFromModel(entity, keys)
 }
