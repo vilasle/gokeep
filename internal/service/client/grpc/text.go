@@ -5,18 +5,17 @@ import (
 
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/proto"
-	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type TextDataService struct {
-	client pb.PrivateDataServiceClient
+	client proto.PrivateDataServiceClient
 }
 
 func NewTextDataService(socket *grpc.ClientConn) *TextDataService {
 	return &TextDataService{
-		client: pb.NewPrivateDataServiceClient(socket),
+		client: proto.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -26,14 +25,14 @@ func (s *TextDataService) Save(ctx context.Context,
 	dto := proto.SaveTextDataRequest{
 		Name:       req.Name,
 		Data:       req.Text,
-		Credential: &pb.ConfirmAssess{Token: req.JWT},
+		Credential: &proto.ConfirmAssess{Token: req.JWT},
 	}
 
 	resp, err := s.client.SaveTextData(ctx, &dto)
 	return handleSaveResponse(resp, err)
 }
 
-func (s *TextDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedData, error) {
+func (s *TextDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {
 	return get(ctx, s.client, req)
 }
 

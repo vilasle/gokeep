@@ -5,17 +5,16 @@ import (
 	"errors"
 
 	"github.com/vilasle/gokeep/proto"
-	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
 
 type GRPCAuthService struct {
-	client pb.AccountServiceClient
+	client proto.AccountServiceClient
 }
 
 func NewGRPCAuthService(socket *grpc.ClientConn) *GRPCAuthService {
 	return &GRPCAuthService{
-		client: pb.NewAccountServiceClient(socket),
+		client: proto.NewAccountServiceClient(socket),
 	}
 }
 

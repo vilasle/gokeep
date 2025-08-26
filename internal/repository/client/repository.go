@@ -15,6 +15,7 @@ type ClientRepository interface {
 	Close() error
 	Save(ctx context.Context, tData model.Type, req SaveRequest) error
 	Get(ctx context.Context, tData model.Type, req ...GetRequest) ([]GetResponse, error)
+	All(ctx context.Context, tData model.Type) ([]GetResponse, error)
 	Delete(ctx context.Context, tData model.Type, req DeleteRequest) error
 }
 

@@ -166,6 +166,30 @@ func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req ...cli
 	return result, nil
 }
 
+func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.GetResponse, error) {
+	sq := sqlbuilder.Select("id", "external_id", "view").From("private_data")
+	sq = sq.Where(sq.Equal("type", tData))
+
+	q, args := sq.Build()
+
+	rows, err := r.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make([]client.GetResponse, 0)
+
+	for rows.Next() {
+		var response client.GetResponse
+		if err := rows.Scan(&response.ID, &response.ExternalID, &response.View); err != nil {
+			return nil, err
+		}
+		result = append(result, response)
+	}
+
+	return result, nil
+}
 func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req client.DeleteRequest) error {
 	dq := sqlbuilder.DeleteFrom("private_data")
 	dq = dq.Where(dq.Equal("type", tData))

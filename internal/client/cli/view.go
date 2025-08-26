@@ -10,14 +10,14 @@ import (
 	"github.com/vilasle/gokeep/internal/repository/client"
 )
 
-type view interface {
+type viewer interface {
 	View() string
 }
 
 type loginPasswordView struct {
-	ID       int    `json:"-"`
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	ID       int
+	Login    string
+	Password string
 }
 
 func (v *loginPasswordView) View() string {
@@ -25,14 +25,23 @@ func (v *loginPasswordView) View() string {
 }
 
 type bankCardView struct {
-	ID      int    `json:"-"`
-	Number  string `json:"number"`
-	Expires string `json:"expires"`
-	CVV     string `json:"cvv"`
+	ID      int
+	Number  string
+	Expires string
+	CVV     string
 }
 
 func (v *bankCardView) View() string {
 	return fmt.Sprintf("ID: %d\nNumber: %s\nExpires: %s\nCVV: %s\n", v.ID, v.Number, v.Expires, v.CVV)
+}
+
+type entityView struct {
+	ID          int
+	Description string
+}
+
+func (v *entityView) View() string {
+	return fmt.Sprintf("ID: %d|Desc: %s", v.ID, v.Description)
 }
 
 func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) error {
@@ -58,7 +67,7 @@ func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) 
 			continue
 		}
 
-		var v view
+		var v viewer
 		switch tData {
 		case model.TypeUsepass:
 			lp := string(content)
@@ -80,6 +89,15 @@ func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) 
 
 		fmt.Println(v.View())
 
+	}
+
+	return nil
+}
+
+func (c *Client) showListOfEntities(tData model.Type, data ...client.GetResponse) error {
+	for _, entity := range data {
+		ev := entityView{ID: entity.ID, Description: entity.View}
+		fmt.Println(ev.View())
 	}
 
 	return nil

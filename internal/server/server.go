@@ -139,12 +139,15 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 	if result, err := s.cread.Add(ctx, dto, ses.encoder); err != nil {
 		resp.Error = err.Error()
 	} else {
-		resp.Id = int64(result.ID)
-		resp.Data = &pb.EncryptedData{
-			Data: []byte(result.Data),
-			Dek:  []byte(result.Key),
-			View: result.View,
+		resp.Entity = &pb.EncryptedEntity{
+			Id: int64(result.ID),
+			Data: &pb.EncryptedData{
+				Data: []byte(result.Data),
+				Dek:  []byte(result.Key),
+				View: result.View,
+			},
 		}
+
 	}
 
 	return resp, nil
@@ -177,12 +180,15 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 	if result, err := s.bank.Add(ctx, dto, ses.encoder); err != nil {
 		resp.Error = err.Error()
 	} else {
-		resp.Id = int64(result.ID)
-		resp.Data = &pb.EncryptedData{
-			Data: []byte(result.Data),
-			Dek:  []byte(result.Key),
-			View: result.View,
+		resp.Entity = &pb.EncryptedEntity{
+			Id: int64(result.ID),
+			Data: &pb.EncryptedData{
+				Data: []byte(result.Data),
+				Dek:  []byte(result.Key),
+				View: result.View,
+			},
 		}
+
 	}
 
 	return resp, nil
@@ -208,12 +214,15 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 	if result, err := s.text.Add(ctx, dto, ses.encoder); err != nil {
 		resp.Error = err.Error()
 	} else {
-		resp.Id = int64(result.ID)
-		resp.Data = &pb.EncryptedData{
-			Data: []byte(result.Data),
-			Dek:  []byte(result.Key),
-			View: result.View,
+		resp.Entity = &pb.EncryptedEntity{
+			Id: int64(result.ID),
+			Data: &pb.EncryptedData{
+				Data: []byte(result.Data),
+				Dek:  []byte(result.Key),
+				View: result.View,
+			},
 		}
+
 	}
 
 	return resp, nil
@@ -239,12 +248,15 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 	if result, err := s.binary.Add(ctx, dto, ses.encoder); err != nil {
 		resp.Error = err.Error()
 	} else {
-		resp.Id = int64(result.ID)
-		resp.Data = &pb.EncryptedData{
-			Data: []byte(result.Data),
-			Dek:  []byte(result.Key),
-			View: result.View,
+		resp.Entity = &pb.EncryptedEntity{
+			Id: int64(result.ID),
+			Data: &pb.EncryptedData{
+				Data: []byte(result.Data),
+				Dek:  []byte(result.Key),
+				View: result.View,
+			},
 		}
+
 	}
 
 	return resp, nil
@@ -296,7 +308,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetDataRequest) (resp *pb.GetD
 		return resp, nil
 	}
 
-	var result []*pb.EncryptedData
+	var result []*pb.EncryptedEntity
 	if req.Id == 0 {
 		result, err = s.list(ctx, req, ses)
 	} else {
@@ -312,7 +324,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetDataRequest) (resp *pb.GetD
 	return resp, nil
 }
 
-func (s *Server) get(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedData, error) {
+func (s *Server) get(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedEntity, error) {
 	var data service.PrivateDataResponse
 	var err error
 
@@ -338,16 +350,19 @@ func (s *Server) get(ctx context.Context, req *pb.GetDataRequest, ses session) (
 		return nil, err
 	}
 
-	return []*pb.EncryptedData{
-		{
+	entity := &pb.EncryptedEntity{
+		Id: int64(data.ID),
+		Data: &pb.EncryptedData{
 			Data: []byte(data.Data),
 			Dek:  []byte(data.Key),
 			View: data.View,
 		},
-	}, err
+	}
+
+	return []*pb.EncryptedEntity{entity}, err
 }
 
-func (s *Server) list(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedData, error) {
+func (s *Server) list(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedEntity, error) {
 	var data service.ListPrivateDataResponse
 	var err error
 
@@ -368,12 +383,15 @@ func (s *Server) list(ctx context.Context, req *pb.GetDataRequest, ses session) 
 		return nil, err
 	}
 
-	response := make([]*pb.EncryptedData, len(data.Data))
+	response := make([]*pb.EncryptedEntity, len(data.Data))
 	for i, d := range data.Data {
-		response[i] = &pb.EncryptedData{
-			Data: []byte(d.Data),
-			Dek:  []byte(d.Key),
-			View: d.View,
+		response[i] = &pb.EncryptedEntity{
+			Id: int64(d.ID),
+			Data: &pb.EncryptedData{
+				Data: []byte(d.Data),
+				Dek:  []byte(d.Key),
+				View: d.View,
+			},
 		}
 	}
 	return response, err

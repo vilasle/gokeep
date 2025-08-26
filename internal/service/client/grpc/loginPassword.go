@@ -5,18 +5,17 @@ import (
 
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/proto"
-	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
 
 // TODO implement it
 type LoginPasswordService struct {
-	client pb.PrivateDataServiceClient
+	client proto.PrivateDataServiceClient
 }
 
 func NewLoginPasswordDataService(socket *grpc.ClientConn) *LoginPasswordService {
 	return &LoginPasswordService{
-		client: pb.NewPrivateDataServiceClient(socket),
+		client: proto.NewPrivateDataServiceClient(socket),
 	}
 }
 
@@ -26,14 +25,15 @@ func (s *LoginPasswordService) Save(ctx context.Context,
 	dto := proto.SaveLoginPasswordRequest{
 		Login:      req.Login,
 		Password:   req.Password,
-		Credential: &pb.ConfirmAssess{Token: req.JWT},
+		Credential: &proto.ConfirmAssess{Token: req.JWT},
+		
 	}
 
 	resp, err := s.client.SaveLoginPassword(ctx, &dto)
 	return handleSaveResponse(resp, err)
 }
 
-func (s *LoginPasswordService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedData, error) {
+func (s *LoginPasswordService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {
 	return get(ctx, s.client, req)
 }
 

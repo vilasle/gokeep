@@ -6,10 +6,9 @@ import (
 
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/proto"
-	pb "github.com/vilasle/gokeep/proto"
 )
 
-func handleSaveResponse(resp *pb.EncryptedDataResponse, err error) (client.SaveResponse, error) {
+func handleSaveResponse(resp *proto.EncryptedDataResponse, err error) (client.SaveResponse, error) {
 	if err != nil {
 		return client.SaveResponse{}, err
 	}
@@ -19,23 +18,23 @@ func handleSaveResponse(resp *pb.EncryptedDataResponse, err error) (client.SaveR
 	}
 
 	return client.SaveResponse{
-		ID: int(resp.Id),
+		ID: int(resp.Entity.Id),
 		Data: client.EncryptedData{
-			View: resp.Data.View,
-			DEK:  resp.Data.Dek,
-			Data: resp.Data.Data,
+			View: resp.Entity.Data.View,
+			DEK:  resp.Entity.Data.Dek,
+			Data: resp.Entity.Data.Data,
 		},
 	}, nil
 }
-func get(ctx context.Context, svc proto.PrivateDataServiceClient, req client.GetRequest) ([]client.EncryptedData, error) {
+func get(ctx context.Context, svc proto.PrivateDataServiceClient, req client.GetRequest) ([]client.EncryptedEntity, error) {
 	resp, err := svc.Get(ctx, &proto.GetDataRequest{
 		Id:         int64(req.ID),
-		Credential: &pb.ConfirmAssess{Token: req.JWT},
+		Credential: &proto.ConfirmAssess{Token: req.JWT},
 	})
 	return handleGetResponse(resp, err)
 }
 
-func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.EncryptedData, error) {
+func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.EncryptedEntity, error) {
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +42,15 @@ func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.Encrypt
 	if resp.Error != "" {
 		return nil, errors.New(resp.Error)
 	}
-	result := make([]client.EncryptedData, len(resp.Data))
+	result := make([]client.EncryptedEntity, len(resp.Data))
 	for i, data := range resp.Data {
-		result[i] = client.EncryptedData{
-			View: data.View,
-			DEK:  data.Dek,
-			Data: data.Data,
+		result[i] = client.EncryptedEntity{
+			ID: int(data.Id),
+			Data: client.EncryptedData{
+				View: data.Data.View,
+				DEK:  data.Data.Dek,
+				Data: data.Data.Data,
+			},
 		}
 	}
 	return result, nil
@@ -57,7 +59,7 @@ func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.Encrypt
 func delete(ctx context.Context, svc proto.PrivateDataServiceClient, req client.DeleteRequest) error {
 	resp, err := svc.Delete(ctx, &proto.DeleteDataRequest{
 		Id:         int64(req.ID),
-		Credential: &pb.ConfirmAssess{Token: req.JWT},
+		Credential: &proto.ConfirmAssess{Token: req.JWT},
 	})
 	return handleDeleteResponse(resp, err)
 }

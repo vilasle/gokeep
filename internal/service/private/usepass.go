@@ -33,14 +33,14 @@ func (s *UsepassService) List(ctx context.Context, userID int, clientKey encrypt
 
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.Usepass.List(ctx, user)
 
 	if err != nil {
-		log.Error("failed to get list of data", err)
+		log.Error("failed to get list of data", "error", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
@@ -62,13 +62,13 @@ func (s *UsepassService) Get(ctx context.Context, req service.GetPrivateData, cl
 
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.Usepass.Get(ctx, user, req.ID)
 	if err != nil {
-		log.Error("failed to get data", err)
+		log.Error("failed to get data", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 
@@ -105,7 +105,7 @@ func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, 
 
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 

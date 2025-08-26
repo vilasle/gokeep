@@ -35,14 +35,14 @@ func (s *BinaryDataService) List(ctx context.Context,
 
 	user, err := s.manager.Users.Get(ctx, userID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BinaryData.List(ctx, user)
 
 	if err != nil {
-		log.Error("failed to get list of data", err)
+		log.Error("failed to get list of data", "error", err)
 		return service.ListPrivateDataResponse{}, err
 	}
 
@@ -66,13 +66,13 @@ func (s *BinaryDataService) Get(ctx context.Context,
 
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 
 	result, err := s.manager.BinaryData.Get(ctx, user, req.ID)
 	if err != nil {
-		log.Error("failed to get data", err)
+		log.Error("failed to get data", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 
@@ -110,7 +110,7 @@ func (s *BinaryDataService) Add(ctx context.Context,
 
 	user, err := s.manager.Users.Get(ctx, req.UserID)
 	if err != nil {
-		log.Error("failed to get user", err)
+		log.Error("failed to get user", "error", err)
 		return service.PrivateDataResponse{}, err
 	}
 

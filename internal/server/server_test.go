@@ -229,11 +229,13 @@ func TestSaveLoginPassword(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id: int64(entityID),
-				Data: &pb.EncryptedData{
-					Data: []byte("test_data"),
-					View: login,
-					Dek:  []byte("test_dek"),
+				Entity: &pb.EncryptedEntity{
+					Id: int64(entityID),
+					Data: &pb.EncryptedData{
+						Data: []byte("test_data"),
+						View: login,
+						Dek:  []byte("test_dek"),
+					},
 				},
 			},
 			authMockArgs: authMockArgs{
@@ -270,8 +272,10 @@ func TestSaveLoginPassword(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "public key is not valid",
 			},
 			authMockArgs: authMockArgs{
@@ -296,8 +300,10 @@ func TestSaveLoginPassword(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "auth request failed",
 			},
 			authMockArgs: authMockArgs{
@@ -368,10 +374,10 @@ func TestSaveLoginPassword(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.output.Id, resp.Id)
-			assert.Equal(t, tt.output.Data.Data, resp.Data.Data)
-			assert.Equal(t, tt.output.Data.Dek, resp.Data.Dek)
-			assert.Equal(t, tt.output.Data.View, resp.Data.View)
+			assert.Equal(t, tt.output.Entity.Id, resp.Entity.Id)
+			assert.Equal(t, tt.output.Entity.Data.Data, resp.Entity.Data.Data)
+			assert.Equal(t, tt.output.Entity.Data.Dek, resp.Entity.Data.Dek)
+			assert.Equal(t, tt.output.Entity.Data.View, resp.Entity.Data.View)
 		})
 	}
 }
@@ -432,11 +438,13 @@ func TestBankCard(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id: int64(entityID),
-				Data: &pb.EncryptedData{
-					Data: []byte("test_data"),
-					View: number,
-					Dek:  []byte("test_dek"),
+				Entity: &pb.EncryptedEntity{
+					Id: int64(entityID),
+					Data: &pb.EncryptedData{
+						Data: []byte("test_data"),
+						View: number,
+						Dek:  []byte("test_dek"),
+					},
 				},
 			},
 			authMockArgs: authMockArgs{
@@ -475,8 +483,10 @@ func TestBankCard(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "public key is not valid",
 			},
 			authMockArgs: authMockArgs{
@@ -502,8 +512,10 @@ func TestBankCard(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "auth request failed",
 			},
 			authMockArgs: authMockArgs{
@@ -559,8 +571,9 @@ func TestBankCard(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil},
 				Error: "parsing time \"wrong_date\" as \"01/06\": cannot parse \"wrong_date\" as \"01\"",
 			},
 			authMockArgs: authMockArgs{
@@ -603,10 +616,10 @@ func TestBankCard(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.output.Id, resp.Id)
-			assert.Equal(t, tt.output.Data.Data, resp.Data.Data)
-			assert.Equal(t, tt.output.Data.Dek, resp.Data.Dek)
-			assert.Equal(t, tt.output.Data.View, resp.Data.View)
+			assert.Equal(t, tt.output.Entity.Id, resp.Entity.Id)
+			assert.Equal(t, tt.output.Entity.Data.Data, resp.Entity.Data.Data)
+			assert.Equal(t, tt.output.Entity.Data.Dek, resp.Entity.Data.Dek)
+			assert.Equal(t, tt.output.Entity.Data.View, resp.Entity.Data.View)
 		})
 	}
 }
@@ -661,11 +674,13 @@ func TestTextData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id: int64(entityID),
-				Data: &pb.EncryptedData{
-					Data: []byte("test_data"),
-					View: name,
-					Dek:  []byte("test_dek"),
+				Entity: &pb.EncryptedEntity{
+					Id: int64(entityID),
+					Data: &pb.EncryptedData{
+						Data: []byte("test_data"),
+						View: name,
+						Dek:  []byte("test_dek"),
+					},
 				},
 			},
 			authMockArgs: authMockArgs{
@@ -702,8 +717,10 @@ func TestTextData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "public key is not valid",
 			},
 			authMockArgs: authMockArgs{
@@ -728,8 +745,11 @@ func TestTextData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
+
 				Error: "auth request failed",
 			},
 			authMockArgs: authMockArgs{
@@ -800,10 +820,10 @@ func TestTextData(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.output.Id, resp.Id)
-			assert.Equal(t, tt.output.Data.Data, resp.Data.Data)
-			assert.Equal(t, tt.output.Data.Dek, resp.Data.Dek)
-			assert.Equal(t, tt.output.Data.View, resp.Data.View)
+			assert.Equal(t, tt.output.Entity.Id, resp.Entity.Id)
+			assert.Equal(t, tt.output.Entity.Data.Data, resp.Entity.Data.Data)
+			assert.Equal(t, tt.output.Entity.Data.Dek, resp.Entity.Data.Dek)
+			assert.Equal(t, tt.output.Entity.Data.View, resp.Entity.Data.View)
 		})
 	}
 }
@@ -858,11 +878,13 @@ func TestBinaryData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id: int64(entityID),
-				Data: &pb.EncryptedData{
-					Data: []byte("test_data"),
-					View: name,
-					Dek:  []byte("test_dek"),
+				Entity: &pb.EncryptedEntity{
+					Id: int64(entityID),
+					Data: &pb.EncryptedData{
+						Data: []byte("test_data"),
+						View: name,
+						Dek:  []byte("test_dek"),
+					},
 				},
 			},
 			authMockArgs: authMockArgs{
@@ -899,8 +921,10 @@ func TestBinaryData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "public key is not valid",
 			},
 			authMockArgs: authMockArgs{
@@ -925,8 +949,10 @@ func TestBinaryData(t *testing.T) {
 				},
 			},
 			output: &pb.EncryptedDataResponse{
-				Id:    0,
-				Data:  nil,
+				Entity: &pb.EncryptedEntity{
+					Id:   0,
+					Data: nil,
+				},
 				Error: "auth request failed",
 			},
 			authMockArgs: authMockArgs{
@@ -997,10 +1023,10 @@ func TestBinaryData(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, tt.output.Id, resp.Id)
-			assert.Equal(t, tt.output.Data.Data, resp.Data.Data)
-			assert.Equal(t, tt.output.Data.Dek, resp.Data.Dek)
-			assert.Equal(t, tt.output.Data.View, resp.Data.View)
+			assert.Equal(t, tt.output.Entity.Id, resp.Entity.Id)
+			assert.Equal(t, tt.output.Entity.Data.Data, resp.Entity.Data.Data)
+			assert.Equal(t, tt.output.Entity.Data.Dek, resp.Entity.Data.Dek)
+			assert.Equal(t, tt.output.Entity.Data.View, resp.Entity.Data.View)
 		})
 	}
 }
@@ -1301,9 +1327,127 @@ func TestDelete(t *testing.T) {
 				return
 			}
 		})
-
 	}
+}
 
+func TestGet(t *testing.T) {
+	// type authMockArgs struct {
+	// 	input  string
+	// 	output service.SessionInfo
+	// 	err    error
+	// }
+
+	// type getMockArgs struct {
+	// 	input service.GetPrivateData
+	// 	err   error
+	// }
+	// token := "test_token"
+	// entityID := 1
+
+	// pk, err := rsa.GenerateKey(rand.Reader, 2048)
+	// require.NoError(t, err)
+
+	// publicKeyBytes, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	// require.NoError(t, err)
+
+	// publicKeyBlock := &pem.Block{
+	// 	Type:  "RSA PUBLIC KEY",
+	// 	Bytes: publicKeyBytes,
+	// }
+	// publicKey := pem.EncodeToMemory(publicKeyBlock)
+
+	// testCase := []struct {
+	// 	name         string
+	// 	ctx          context.Context
+	// 	input        *pb.GetDataRequest
+	// 	output       *pb.GetDataResponse
+	// 	authMockArgs authMockArgs
+	// 	creadMockArgs  *getMockArgs
+	// 	bankMockArgs  *getMockArgs
+	// 	textMockArgs  *getMockArgs
+	// 	binaryMockArgs  *getMockArgs
+	// }{
+	// 	{
+	// 		name: "get specific login password",
+	// 		ctx:  context.Background(),
+	// 		input: &pb.GetDataRequest{
+	// 			Credential: &pb.ConfirmAssess{
+	// 				Token: token,
+	// 			},
+	// 			Id:   int64(entityID),
+	// 			Type: 2,
+	// 		},
+	// 		output: &pb.GetDataResponse{},
+	// 		authMockArgs: authMockArgs{
+	// 			input: token,
+	// 			output: service.SessionInfo{
+	// 				UserID:    1,
+	// 				PublicKey: publicKey,
+	// 			},
+	// 			err: nil,
+	// 		},
+	// 		creadMockArgs: &getMockArgs{
+	// 			input: service.DeletePrivateData{
+	// 				UserID: 1,
+	// 				ID:     entityID,
+	// 			},
+	// 			err: nil,
+	// 		},
+	// 		bankMockArgs: nil,
+	// 		textMockArgs: nil,
+	// 		binaryMockArgs:   nil,
+	// 	},
+	// }
+
+	// for _, tt := range testCase {
+	// 	t.Run(tt.name, func(t *testing.T) {
+	// 		ctrl := gomock.NewController(t)
+	// 		defer ctrl.Finish()
+
+	// 		authMock := NewMockAuthService(ctrl)
+	// 		credMock := NewMockLoginPasswordService(ctrl)
+	// 		bankMock := NewMockBankCardService(ctrl)
+	// 		textMock := NewMockTextDataService(ctrl)
+	// 		binaryMock := NewMockBinaryDataService(ctrl)
+
+	// 		authMock.EXPECT().
+	// 			GetSessionByCredentialToken(tt.ctx, tt.authMockArgs.input).
+	// 			Return(tt.authMockArgs.output, tt.authMockArgs.err)
+
+	// 		if tt.deleteLoginPasswordMockArgs != nil {
+	// 			credMock.EXPECT().
+	// 				Delete(tt.ctx, tt.deleteLoginPasswordMockArgs.input).
+	// 				Return(tt.deleteLoginPasswordMockArgs.err)
+	// 		}
+
+	// 		if tt.deleteBankCardMockArgs != nil {
+	// 			bankMock.EXPECT().
+	// 				Delete(tt.ctx, tt.deleteBankCardMockArgs.input).
+	// 				Return(tt.deleteBankCardMockArgs.err)
+	// 		}
+
+	// 		if tt.deleteTextDataMockArgs != nil {
+	// 			textMock.EXPECT().
+	// 				Delete(tt.ctx, tt.deleteTextDataMockArgs.input).
+	// 				Return(tt.deleteTextDataMockArgs.err)
+	// 		}
+
+	// 		if tt.deleteBinaryMockArgs != nil {
+	// 			binaryMock.EXPECT().
+	// 				Delete(tt.ctx, tt.deleteBinaryMockArgs.input).
+	// 				Return(tt.deleteBinaryMockArgs.err)
+	// 		}
+
+	// 		s := &Server{auth: authMock, cread: credMock, bank: bankMock, text: textMock, binary: binaryMock}
+	// 		resp, err := s.Delete(tt.ctx, tt.input)
+	// 		require.NoError(t, err)
+
+	// 		if resp.Error != "" {
+	// 			assert.Equal(t, tt.output.Error, resp.Error)
+	// 			return
+	// 		}
+	// 	})
+	// }
 }
 
 func TestPrepareServer(t *testing.T) {
@@ -1336,5 +1480,5 @@ func TestPrepareServer(t *testing.T) {
 	time.Sleep(1 * time.Second)
 	server.Stop()
 	time.Sleep(2 * time.Second)
-	
+
 }

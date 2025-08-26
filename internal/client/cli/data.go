@@ -69,6 +69,7 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 		ExternalID: response.ID,
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
+		View:       response.Data.View,
 	})
 }
 
@@ -186,74 +187,22 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 }
 
 func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
-	t := model.TypeUsepass
-	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
-		ID: id,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(response) == 0 {
-		return fmt.Errorf("no data found")
-	}
-
-	return c.showFullEntities(t, response...)
+	return c.get(ctx, model.TypeUsepass, id)
 }
 
 // TODO implement work with local repository
 func (c *Client) GetBankCard(ctx context.Context, id int) error {
-	t := model.TypeBankCard
-	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
-		ID: id,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(response) == 0 {
-		return fmt.Errorf("no data found")
-	}
-
-	return c.showFullEntities(t, response...)
+	return c.get(ctx, model.TypeBankCard, id)
 }
 
 // TODO implement work with local repository
 func (c *Client) GetTextData(ctx context.Context, id int) error {
-	t := model.TypePlainText
-	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
-		ID: id,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(response) == 0 {
-		return fmt.Errorf("no data found")
-	}
-
-	return c.showFullEntities(t, response...)
+	return c.get(ctx, model.TypePlainText, id)
 }
 
 // TODO implement work with local repository
 func (c *Client) GetBinaryData(ctx context.Context, id int) error {
-	t := model.TypeBinaryData
-	response, err := c.localStorage.Get(ctx, t, repository.GetRequest{
-		ID: id,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(response) == 0 {
-		return fmt.Errorf("no data found")
-	}
-
-	return c.showFullEntities(t, response...)
+	return c.get(ctx, model.TypeBinaryData, id)
 }
 
 // TODO implement work with local repository
@@ -315,4 +264,28 @@ func (c *Client) DeleteBinaryData(ctx context.Context, id int) error {
 		return err
 	}
 	return c.localStorage.Delete(ctx, model.TypeBinaryData, repository.DeleteRequest{ID: id})
+}
+
+func (c *Client) get(ctx context.Context, t model.Type, id int) error {
+	var (
+		response []repository.GetResponse
+		err      error
+	)
+
+	//show specific data and all entity in short format
+	if id > 0 {
+		if response, err = c.localStorage.Get(ctx, t, repository.GetRequest{ID: id}); err != nil {
+			return err
+		}
+		if len(response) == 0 {
+			return fmt.Errorf("no data found")
+		}
+		return c.showFullEntities(t, response...)
+
+	} else {
+		if response, err = c.localStorage.All(ctx, t); err != nil {
+			return err
+		}
+		return c.showListOfEntities(t, response...)
+	}
 }

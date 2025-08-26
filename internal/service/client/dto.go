@@ -13,6 +13,11 @@ type EncryptedData struct {
 	Data []byte
 }
 
+type EncryptedEntity struct {
+	ID   int
+	Data EncryptedData
+}
+
 type GetRequest struct {
 	ID  int
 	JWT string
