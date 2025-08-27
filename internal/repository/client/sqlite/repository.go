@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/huandu/go-sqlbuilder"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/repository/client"
@@ -71,7 +70,7 @@ func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req clien
 		return r.update(ctx, tData, req, req.ID)
 	}
 	//search by external id and if there is record then update that
-	id, err := r.searchByExternalID(req.ExternalID)
+	id, err := r.searchByExternalID(ctx, req.ExternalID)
 	if err != nil {
 		return err
 	}
@@ -86,22 +85,18 @@ func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req clien
 func (r *ClientRepository) add(ctx context.Context,
 	tData model.Type, req client.SaveRequest) error {
 
+	txt := `
+	INSERT INTO private_data (external_id, type, dek, data, view) 
+	VALUES (?, ?, ?, ?, ?) 
+	RETURNING id`
+
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	//save main entity
-	iq := sqlbuilder.InsertInto("private_data").
-		Cols("external_id", "type", "dek", "data", "view").
-		Values(req.ExternalID, tData, req.DEK, req.Data, req.View).
-		Returning("id")
-	iq.SetFlavor(sqlbuilder.SQLite)
-
-	q, args := iq.Build()
-
-	result, err := r.db.ExecContext(ctx, q, args...)
+	result, err := r.db.ExecContext(ctx, txt, req.ExternalID, tData, req.DEK, req.Data, req.View)
 	if err != nil {
 		return err
 	}
@@ -121,95 +116,64 @@ func (r *ClientRepository) add(ctx context.Context,
 func (r *ClientRepository) update(ctx context.Context,
 	tData model.Type, req client.SaveRequest, id int) error {
 
-	uq := sqlbuilder.Update("private_data")
-	uq.Set(
-		uq.Equal("dek", req.DEK),
-		uq.Equal("data", req.Data),
-		uq.Equal("view", req.View),
-		uq.Equal("type", tData),
-	)
-	uq.SetFlavor(sqlbuilder.SQLite)
+	txt := `UPDATE private_data SET dek = ?, data = ?, view = ?, type = ? WHERE id = ?`
 
-	q, args := uq.Where(uq.Equal("id", id)).Build()
-
-	_, err := r.db.ExecContext(ctx, q, args...)
-
+	_, err := r.db.ExecContext(ctx, txt, req.DEK, req.Data, req.View, tData, id)
 	return err
 }
 
-func (r *ClientRepository) searchByExternalID(externalID int) (int, error) {
-	query := sqlbuilder.
-		Select("id").
-		From("private_data")
-
-	q, args := query.
-		Where(query.Equal("external_id", externalID)).
-		Build()
-
-	row := r.db.QueryRow(q, args...)
-	var id int
-	if err := row.Scan(&id); err != nil {
-		if err != sql.ErrNoRows {
-			return 0, err
-		}
+func (r *ClientRepository) searchByExternalID(ctx context.Context, externalID int) (id int, err error) {
+	txt := `SELECT id FROM private_data WHERE external_id = ?`
+	err = r.db.QueryRowContext(ctx, txt, externalID).Scan(&id)
+	if err == sql.ErrNoRows {
+		return 0, nil
 	}
-	return id, nil
+	return id, err
 }
 
-func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req ...client.GetRequest) ([]client.GetResponse, error) {
-	sq := sqlbuilder.Select("id", "external_id", "dek", "data", "view").From("private_data")
-	sq = sq.Where(sq.Equal("type", tData))
+func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req client.GetRequest) ([]client.GetResponse, error) {
+	txt := `SELECT t1.id
+	,t1.external_id
+		,t1.dek
+		,t1.data
+		,t1.view
+		,IFNULL(t2.key, '')
+		,IFNULL(t2.value, '')
+		FROM private_data AS t1 
+			LEFT JOIN metadata AS t2 ON t1.id = t2.owner_id 
+		WHERE t1.type = ? and t1.id = ?`
 
-	for _, r := range req {
-		if r.ID > 0 {
-			sq.Where(sq.Equal("id", r.ID))
-		}
-	}
-
-	q, args := sq.Build()
-
-	rows, err := r.db.QueryContext(ctx, q, args...)
+	rows, err := r.db.QueryContext(ctx, txt, tData, req.ID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	result := make([]client.GetResponse, 0)
+	return readEntityFromRows(rows)
 
-	for rows.Next() {
-		var response client.GetResponse
-		if err := rows.Scan(&response.ID, &response.ExternalID, &response.DEK, &response.Data, &response.View); err != nil {
-			return nil, err
-		}
-		result = append(result, response)
-	}
-
-	return result, nil
 }
 
 func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.GetResponse, error) {
-	sq := sqlbuilder.Select("id", "external_id", "view").From("private_data")
-	sq = sq.Where(sq.Equal("type", tData))
+	txt := `
+		SELECT t1.id
+		,t1.external_id
+		,t1.dek
+		,t1.data
+		,t1.view
+		,IFNULL(t2.key, '') 
+		,IFNULL(t2.value, '')
+		FROM private_data AS t1 
+			LEFT JOIN metadata AS t2 ON t1.id = t2.owner_id 
+		WHERE t1.type = ?			
+	`
 
-	q, args := sq.Build()
-
-	rows, err := r.db.QueryContext(ctx, q, args...)
+	rows, err := r.db.QueryContext(ctx, txt, tData)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	result := make([]client.GetResponse, 0)
-
-	for rows.Next() {
-		var response client.GetResponse
-		if err := rows.Scan(&response.ID, &response.ExternalID, &response.View); err != nil {
-			return nil, err
-		}
-		result = append(result, response)
-	}
-
-	return result, nil
+	return readEntityFromRows(rows)
 }
 
 func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req client.DeleteRequest) error {
@@ -218,26 +182,16 @@ func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req cli
 		return err
 	}
 
-	dq := sqlbuilder.DeleteFrom("private_data")
-	dq = dq.Where(dq.Equal("type", tData))
-
-	if req.ID > 0 {
-		dq = dq.Where(dq.Equal("id", req.ID))
-	}
-
-	q, args := dq.Build()
-
-	_, err := r.db.ExecContext(ctx, q, args...)
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM private_data WHERE type = ? AND id = ?`,
+		tData, req.ID)
 	return err
 }
 
 func (r *ClientRepository) deleteMetadataByOwner(ctx context.Context, ownerId int) error {
-	dq := sqlbuilder.DeleteFrom("metadata")
-	dq = dq.Where(dq.Equal("owner_id", ownerId))
-
-	q, args := dq.Build()
-
-	_, err := r.db.ExecContext(ctx, q, args...)
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM metadata WHERE owner_id = ?`,
+		ownerId)
 	return err
 }
 
@@ -284,4 +238,40 @@ func updateMetadata(ctx context.Context, tx *sql.Tx, ownerId int, key, value str
 
 	_, err := tx.ExecContext(ctx, q, value, ownerId, key)
 	return err
+}
+
+func readEntityFromRows(rows *sql.Rows) ([]client.GetResponse, error) {
+	tmp := make(map[int]client.GetResponse)
+
+	for rows.Next() {
+		var response client.GetResponse
+		var key, value string
+		if err := rows.Scan(
+			&response.ID, &response.ExternalID, &response.DEK,
+			&response.Data, &response.View, &key, &value); err != nil {
+
+			return nil, err
+		}
+
+		if r, ok := tmp[response.ID]; !ok {
+			response.Metadata = make([]client.MetadataValue, 0)
+
+			if key != "" && value != "" {
+				response.Metadata = append(response.Metadata, client.MetadataValue{Key: key, Value: value})
+			}
+
+			tmp[response.ID] = response
+		} else {
+			r = tmp[response.ID]
+			r.Metadata = append(r.Metadata, client.MetadataValue{Key: key, Value: value})
+			tmp[r.ID] = r
+		}
+	}
+
+	result := make([]client.GetResponse, 0)
+	for _, r := range tmp {
+		result = append(result, r)
+	}
+
+	return result, nil
 }

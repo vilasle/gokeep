@@ -18,15 +18,7 @@ type model struct {
 }
 
 func (m *model) Save(ctx context.Context) (err error) {
-	var saveFn func(context.Context, PrivateDataSave) (int, error)
-
 	isExists := m.isExists()
-
-	if isExists {
-		saveFn = m.dataRepository.Update
-	} else {
-		saveFn = m.dataRepository.Add
-	}
 
 	dto := PrivateDataSave{
 		ID:       m.id,
@@ -37,12 +29,13 @@ func (m *model) Save(ctx context.Context) (err error) {
 		View:     m.view,
 		Metadata: m.metadata,
 	}
-	if id, err := saveFn(ctx, dto); err == nil {
-		m.id = id
+
+	if isExists {
+		m.id, err = m.dataRepository.Update(ctx, dto)
 	} else {
-		return err
+		m.id, err = m.dataRepository.Add(ctx, dto)
 	}
-	return nil
+	return err
 }
 
 func (m *model) String() string {
@@ -89,4 +82,12 @@ func (m model) EncryptedData() EncryptedData {
 
 func (m model) Type() int {
 	return int(m.modelType)
+}
+
+func (m model) Metadata() map[string]string {
+	r := make(map[string]string)
+	for k, v := range m.metadata {
+		r[k] = v
+	}
+	return r
 }

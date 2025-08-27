@@ -77,6 +77,7 @@ func NewServer(config Config, opts ...Option) (*Server, error) {
 func (s *Server) Listen() error {
 	pb.RegisterPrivateDataServiceServer(s.srv, s)
 	pb.RegisterAccountServiceServer(s.srv, s)
+	logger.Info("starting server", "addr", s.conn.Addr().String())
 	return s.srv.Serve(s.conn)
 }
 
@@ -147,6 +148,7 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 				Dek:  []byte(result.Key),
 				View: result.View,
 			},
+			Metadata: castMetadataPB(result.Metadata),
 		}
 
 	}
@@ -176,7 +178,7 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 		Number:     req.Number,
 		CVV:        int(req.Cvv),
 		Expiration: expiration,
-		Metadata: castMetadata(req.Metadata),
+		Metadata:   castMetadata(req.Metadata),
 	}
 
 	if result, err := s.bank.Add(ctx, dto, ses.encoder); err != nil {
@@ -189,6 +191,7 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 				Dek:  []byte(result.Key),
 				View: result.View,
 			},
+			Metadata: castMetadataPB(result.Metadata),
 		}
 
 	}
@@ -208,9 +211,9 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 	}
 
 	dto := service.AddTextData{
-		UserID: ses.userID,
-		Name:   req.Name,
-		Text:   req.Data,
+		UserID:   ses.userID,
+		Name:     req.Name,
+		Text:     req.Data,
 		Metadata: castMetadata(req.Metadata),
 	}
 
@@ -224,6 +227,7 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 				Dek:  []byte(result.Key),
 				View: result.View,
 			},
+			Metadata: castMetadataPB(result.Metadata),
 		}
 
 	}
@@ -243,9 +247,9 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 	}
 
 	dto := service.AddBinaryData{
-		UserID: ses.userID,
-		Name:   req.Name,
-		Data:   req.Data,
+		UserID:   ses.userID,
+		Name:     req.Name,
+		Data:     req.Data,
 		Metadata: castMetadata(req.Metadata),
 	}
 
@@ -259,6 +263,7 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 				Dek:  []byte(result.Key),
 				View: result.View,
 			},
+			Metadata: castMetadataPB(result.Metadata),
 		}
 
 	}
@@ -424,6 +429,18 @@ func castMetadata(src []*pb.Metadata) []service.MetadataValue {
 	dst := make([]service.MetadataValue, len(src))
 	for i, v := range src {
 		dst[i] = service.MetadataValue{Key: v.Key, Value: v.Value}
+	}
+	return dst
+}
+
+func castMetadataPB(src []service.MetadataValue) []*pb.Metadata {
+	if src == nil {
+		return []*pb.Metadata{}
+	}
+
+	dst := make([]*pb.Metadata, len(src))
+	for i, v := range src {
+		dst[i] = &pb.Metadata{Key: v.Key, Value: v.Value}
 	}
 	return dst
 }

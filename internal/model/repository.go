@@ -21,6 +21,7 @@ type PrivateData interface {
 	Owner() *User
 	String() string
 	EncryptedData() EncryptedData
+	Metadata() map[string]string
 }
 
 type PrivateDataRepository interface {

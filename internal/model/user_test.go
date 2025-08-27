@@ -10,16 +10,20 @@ import (
 )
 
 func TestUser_Save(t *testing.T) {
-	behavior := func(m *MockUserRepository, ctx context.Context, user *User, err error) {
+	behavior := func(m *MockUserRepository, user *User, err error) {
 		if user.id == 0 {
-			m.EXPECT().Add(ctx, user).Return(err)
+			m.EXPECT().
+				Add(gomock.Any(), UserAdd{Login: user.login, Password: user.password}).
+				Return(1234, err)
 		} else {
-			m.EXPECT().Update(ctx, user).Return(err)
+			m.EXPECT().
+				Update(gomock.Any(), UserUpdate{ID: user.id, Login: user.login, Password: user.password}).
+				Return(err)
 		}
 	}
 	testCases := []struct {
 		name     string
-		id       int64
+		id       int
 		login    string
 		password string
 		success  bool
@@ -69,7 +73,7 @@ func TestUser_Save(t *testing.T) {
 			user := newUser(tt.login, tt.password, r)
 			user.id = tt.id
 			ctx := context.Background()
-			behavior(r, ctx, user, testError)
+			behavior(r, user, testError)
 
 			err := user.Save(ctx)
 			assert.Equal(t, tt.success, err == nil)
@@ -78,14 +82,14 @@ func TestUser_Save(t *testing.T) {
 }
 
 func TestUser_Delete(t *testing.T) {
-	behavior := func(m *MockUserRepository, ctx context.Context, user *User, err error) {
+	behavior := func(m *MockUserRepository, user *User, err error) {
 		if user.id > 0 {
-			m.EXPECT().Delete(ctx, user).Return(err)
+			m.EXPECT().Delete(gomock.Any(), user.id).Return(err)
 		}
 	}
 	testCases := []struct {
 		name     string
-		id       int64
+		id       int
 		login    string
 		password string
 		success  bool
@@ -128,7 +132,7 @@ func TestUser_Delete(t *testing.T) {
 			user := newUser(tt.login, tt.password, r)
 			user.id = tt.id
 			ctx := context.Background()
-			behavior(r, ctx, user, testError)
+			behavior(r, user, testError)
 
 			err := user.Delete(ctx)
 			assert.Equal(t, tt.success, err == nil)
@@ -213,10 +217,16 @@ func Test_hash256(t *testing.T) {
 }
 
 func Test_findUserByLogin(t *testing.T) {
+	type mockArgs struct {
+		input  string
+		output UserInfo
+	}
+
 	testCases := []struct {
 		name     string
 		login    string
 		password string
+		mockArgs mockArgs
 		expected *User
 	}{
 		{
@@ -228,6 +238,14 @@ func Test_findUserByLogin(t *testing.T) {
 				login:    "test",
 				password: "5e884898da28047151d42d8",
 			},
+			mockArgs: mockArgs{
+				input: "test",
+				output: UserInfo{
+					ID:       1,
+					Login:    "test",
+					Password: "5e884898da28047151d42d8",
+				},
+			},
 		},
 	}
 	for _, tt := range testCases {
@@ -237,11 +255,13 @@ func Test_findUserByLogin(t *testing.T) {
 
 			ctx := context.Background()
 			r := NewMockUserRepository(ctrl)
-			r.EXPECT().Find(ctx, tt.login).Return(tt.expected, nil)
+			r.EXPECT().Find(ctx, tt.mockArgs.input).Return(tt.mockArgs.output, nil)
 
 			actual, err := findUserByLogin(ctx, tt.login, r)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, actual)
+			assert.Equal(t, tt.expected.id, actual.ID())
+			assert.Equal(t, tt.expected.login, actual.login)
+			assert.Equal(t, tt.expected.password, actual.password)
 		})
 	}
 }

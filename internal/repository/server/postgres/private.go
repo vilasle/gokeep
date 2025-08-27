@@ -42,7 +42,7 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 		return 0, err
 	}
 
-	if err := r.saveMetadata(ctx, tx, data.ID, data.Metadata); err != nil {
+	if err := r.saveMetadata(ctx, tx, id, data.Metadata); err != nil {
 		return 0, err
 	}
 
@@ -90,9 +90,7 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 		return 0, err
 	}
 
-	err = tx.Commit()
-
-	return data.ID, err
+	return data.ID, tx.Commit()
 }
 
 func (r *PrivateDataRepository) updateEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) error {
@@ -110,8 +108,7 @@ func (r *PrivateDataRepository) updateEncryptedData(ctx context.Context, tx *sql
 func (r *PrivateDataRepository) saveMetadata(ctx context.Context, tx *sql.Tx, id int, metadata map[string]string) error {
 	txt := `
 	INSERT INTO metadata (entity_id , key, value) 
-	VALUES ($1, $2, $3) w
-	ON CONFLICT (entity_id,key) DO 
+ 	VALUES ($1, $2, $3) ON CONFLICT (entity_id,key) DO 
 	UPDATE SET value = EXCLUDED.value;
 	`
 	for k, v := range metadata {

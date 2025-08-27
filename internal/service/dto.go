@@ -74,7 +74,8 @@ type PrivateDataResponse struct {
 	//encrypted data
 	Data string
 	//encrypted DEK key
-	Key string
+	Key      string
+	Metadata []MetadataValue
 }
 
 type ListPrivateDataResponse struct {

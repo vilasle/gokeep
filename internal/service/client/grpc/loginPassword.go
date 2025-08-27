@@ -29,11 +29,11 @@ func (s *LoginPasswordService) Save(ctx context.Context,
 		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
 	}
 
-	for _, v := range req.Metadata {
-		dto.Metadata = append(dto.Metadata, &proto.Metadata{
+	for i, v := range req.Metadata {
+		dto.Metadata[i] = &proto.Metadata{
 			Key:   v.Key,
 			Value: v.Value,
-		})
+		}
 	}
 	return handleSaveResponse(s.client.SaveLoginPassword(ctx, &dto))
 }

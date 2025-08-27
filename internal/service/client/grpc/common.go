@@ -24,8 +24,10 @@ func handleSaveResponse(resp *proto.EncryptedDataResponse, err error) (client.Sa
 			DEK:  resp.Entity.Data.Dek,
 			Data: resp.Entity.Data.Data,
 		},
+		Metadata: castMetadata(resp.Entity.Metadata),
 	}, nil
 }
+
 func get(ctx context.Context, svc proto.PrivateDataServiceClient, req client.GetRequest) ([]client.EncryptedEntity, error) {
 	resp, err := svc.Get(ctx, &proto.GetDataRequest{
 		Id:         int64(req.ID),
@@ -73,4 +75,15 @@ func handleDeleteResponse(resp *proto.DeleteDataResponse, err error) error {
 		return errors.New(resp.Error)
 	}
 	return nil
+}
+
+func castMetadata(metadata []*proto.Metadata) []client.MetadataValue {
+	result := make([]client.MetadataValue, len(metadata))
+	for i, m := range metadata {
+		result[i] = client.MetadataValue{
+			Key:   m.Key,
+			Value: m.Value,
+		}
+	}
+	return result
 }

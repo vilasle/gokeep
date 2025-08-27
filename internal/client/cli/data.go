@@ -8,7 +8,6 @@ import (
 
 	"github.com/vilasle/gokeep/internal/model"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
-	"github.com/vilasle/gokeep/internal/service/client"
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
 
@@ -44,6 +43,7 @@ func (c *Client) SaveLoginPassword(ctx context.Context,
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
 		View:       login,
+		Metadata:   prepareMetadataForLocalStorage(response.Metadata),
 	})
 }
 
@@ -315,22 +315,22 @@ func (c *Client) get(ctx context.Context, t model.Type, id int) error {
 	}
 }
 
-func prepareMetadataForExternalStorage(meta map[string]string) []client.MetadataValue {
+func prepareMetadataForExternalStorage(meta map[string]string) []svc.MetadataValue {
 	if meta == nil {
-		return []client.MetadataValue{}
+		return []svc.MetadataValue{}
 	}
-	var metadata []client.MetadataValue
+	metadata := make([]svc.MetadataValue, 0, len(meta))
 	for k, v := range meta {
-		metadata = append(metadata, client.MetadataValue{Key: k, Value: v})
+		metadata = append(metadata, svc.MetadataValue{Key: k, Value: v})
 	}
 	return metadata
 }
 
-func prepareMetadataForLocalStorage(meta []client.MetadataValue) []repository.MetadataValue {
+func prepareMetadataForLocalStorage(meta []svc.MetadataValue) []repository.MetadataValue {
 	if meta == nil {
 		return []repository.MetadataValue{}
 	}
-	var metadata []repository.MetadataValue
+	metadata := make([]repository.MetadataValue, 0, len(meta))
 	for _, v := range meta {
 		metadata = append(metadata, repository.MetadataValue{Key: v.Key, Value: v.Value})
 	}

@@ -21,7 +21,7 @@ func prepareListOfPrivateData(ls []model.PrivateData, keys replacementKeys) (ser
 		Data: make([]service.PrivateDataResponse, 0, len(ls)),
 	}
 
-	errs := make([]error, 0, len(ls)) 
+	errs := make([]error, 0, len(ls))
 	for _, pv := range ls {
 		keys := replacementKeys{
 			kek:    keys.kek,
@@ -63,6 +63,11 @@ func getResponseFromModelWithEncryptedDEK(m model.PrivateData, keys replacementK
 
 // getResponseFromModel - replace KEK to client key
 func getResponseFromModel(m model.PrivateData, keys replacementKeys) (service.PrivateDataResponse, error) {
+	meta := make([]service.MetadataValue, 0, len(m.Metadata()))
+	for k, v := range m.Metadata() {
+		meta = append(meta, service.MetadataValue{Key: k, Value: v})
+	}
+
 	saveData := m.EncryptedData()
 
 	ed := encryptedData{data: saveData.Data, key: saveData.Key}
@@ -70,10 +75,11 @@ func getResponseFromModel(m model.PrivateData, keys replacementKeys) (service.Pr
 	newData, err := replaceKey(ed, keys)
 
 	return service.PrivateDataResponse{
-		ID:   m.ID(),
-		View: m.String(),
-		Data: string(newData.data),
-		Key:  string(newData.key),
+		ID:       m.ID(),
+		View:     m.String(),
+		Data:     string(newData.data),
+		Key:      string(newData.key),
+		Metadata: meta,
 	}, err
 }
 

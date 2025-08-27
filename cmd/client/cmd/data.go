@@ -21,7 +21,7 @@ var dataCmd = &cobra.Command{
 var meta []string
 
 func init() {
-	dataCmd.PersistentFlags().StringArrayVarP(&meta, "meta", "m", []string{}, "metadata")
+	dataCmd.PersistentFlags().StringArrayVarP(&meta, "metadata", "m", []string{}, "metadata")
 
 	dataCmd.AddCommand(creadCmd)
 	dataCmd.AddCommand(bankCmd)
