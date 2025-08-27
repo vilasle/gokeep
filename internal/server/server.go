@@ -134,6 +134,7 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 		UserID:   ses.userID,
 		Username: req.Login,
 		Password: req.Password,
+		Metadata: castMetadata(req.Metadata),
 	}
 
 	if result, err := s.cread.Add(ctx, dto, ses.encoder); err != nil {
@@ -175,6 +176,7 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 		Number:     req.Number,
 		CVV:        int(req.Cvv),
 		Expiration: expiration,
+		Metadata: castMetadata(req.Metadata),
 	}
 
 	if result, err := s.bank.Add(ctx, dto, ses.encoder); err != nil {
@@ -209,6 +211,7 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 		UserID: ses.userID,
 		Name:   req.Name,
 		Text:   req.Data,
+		Metadata: castMetadata(req.Metadata),
 	}
 
 	if result, err := s.text.Add(ctx, dto, ses.encoder); err != nil {
@@ -243,6 +246,7 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 		UserID: ses.userID,
 		Name:   req.Name,
 		Data:   req.Data,
+		Metadata: castMetadata(req.Metadata),
 	}
 
 	if result, err := s.binary.Add(ctx, dto, ses.encoder); err != nil {
@@ -410,4 +414,16 @@ func (s *Server) getSessionByToken(ctx context.Context, token string) (session, 
 	//create encoder from session public key
 	encoder, err := encryption.NewRSACipherFroRawPublicKey(ses.PublicKey)
 	return session{ses.UserID, encoder}, err
+}
+
+func castMetadata(src []*pb.Metadata) []service.MetadataValue {
+	if src == nil {
+		return []service.MetadataValue{}
+	}
+
+	dst := make([]service.MetadataValue, len(src))
+	for i, v := range src {
+		dst[i] = service.MetadataValue{Key: v.Key, Value: v.Value}
+	}
+	return dst
 }

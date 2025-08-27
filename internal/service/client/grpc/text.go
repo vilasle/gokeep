@@ -26,10 +26,15 @@ func (s *TextDataService) Save(ctx context.Context,
 		Name:       req.Name,
 		Data:       req.Text,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
+		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
 	}
-
-	resp, err := s.client.SaveTextData(ctx, &dto)
-	return handleSaveResponse(resp, err)
+	for i, m := range req.Metadata {
+		dto.Metadata[i] = &proto.Metadata{
+			Key:   m.Key,
+			Value: m.Value,
+		}
+	}
+	return handleSaveResponse(s.client.SaveTextData(ctx, &dto))
 }
 
 func (s *TextDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {

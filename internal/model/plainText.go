@@ -61,6 +61,7 @@ func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRe
 			Data: data.Data,
 			Key:  data.DEK,
 		},
+		metadata: data.Metadata,
 	}
 	return &PlainText{model: model}, nil
 }

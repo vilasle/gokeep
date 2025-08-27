@@ -113,6 +113,9 @@ func (s *TextService) Add(ctx context.Context,
 	}
 
 	entity := s.manager.PlainTexts.New(user, req.Text, req.Name)
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }
@@ -137,6 +140,10 @@ func (s *TextService) Update(ctx context.Context,
 	}
 
 	entity.SetText(req.Text)
+
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }

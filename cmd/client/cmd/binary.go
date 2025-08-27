@@ -39,11 +39,13 @@ var binaryAddCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
+
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBinaryData(ctx, binaryAdd.file, binaryAdd.name, 0); err != nil {
+		if err := app.SaveBinaryData(ctx, binaryAdd.file, binaryAdd.name, 0, metadata); err != nil {
 			fmt.Printf("saving binary data failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
@@ -106,12 +108,12 @@ var binaryEditCmd = &cobra.Command{
 			fmt.Println("id is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
-
+		metadata := prepareMetadata()
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBinaryData(ctx, binaryEdit.file, binaryEdit.name, binaryEdit.id); err != nil {
+		if err := app.SaveBinaryData(ctx, binaryEdit.file, binaryEdit.name, binaryEdit.id, metadata); err != nil {
 			fmt.Printf("saving text failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}

@@ -45,11 +45,12 @@ var bankAddCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBankCard(ctx, bankAdd.number, bankAdd.expires, bankAdd.cvv, 0); err != nil {
+		if err := app.SaveBankCard(ctx, bankAdd.number, bankAdd.expires, bankAdd.cvv, 0, metadata); err != nil {
 			fmt.Printf("saving bank card failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
@@ -119,11 +120,13 @@ var bankEditCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
+
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBankCard(ctx, bankEdit.number, bankEdit.expires, bankEdit.cvv, bankEdit.id); err != nil {
+		if err := app.SaveBankCard(ctx, bankEdit.number, bankEdit.expires, bankEdit.cvv, bankEdit.id, metadata); err != nil {
 			fmt.Printf("saving bank card failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}

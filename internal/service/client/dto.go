@@ -39,12 +39,14 @@ type LoginPasswordView struct {
 type LoginPasswordSaveRequest struct {
 	ID              int
 	Login, Password string
+	Metadata        []MetadataValue
 	JWT             string
 }
 
 type SaveResponse struct {
 	ID   int
 	Data EncryptedData
+	Metadata []MetadataValue
 }
 
 type LoginPasswordListResponse struct {
@@ -61,11 +63,12 @@ type BankCardView struct {
 }
 
 type BankCardSaveRequest struct {
-	ID      int
-	Number  string
-	Expires string
-	CVV     int
-	JWT     string
+	ID       int
+	Number   string
+	Expires  string
+	CVV      int
+	Metadata []MetadataValue
+	JWT      string
 }
 
 // response
@@ -86,10 +89,11 @@ type TextDataView struct {
 
 // requests
 type TextDataSaveRequest struct {
-	ID   int
-	Name string
-	Text []byte
-	JWT  string
+	ID       int
+	Name     string
+	Text     []byte
+	JWT      string
+	Metadata []MetadataValue
 }
 
 // response
@@ -111,10 +115,11 @@ type BinaryDataView struct {
 //requests
 
 type BinaryDataSaveRequest struct {
-	ID   int
-	Name string
-	Data []byte
-	JWT  string
+	ID       int
+	Name     string
+	Data     []byte
+	JWT      string
+	Metadata []MetadataValue
 }
 
 // response

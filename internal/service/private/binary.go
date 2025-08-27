@@ -115,7 +115,10 @@ func (s *BinaryDataService) Add(ctx context.Context,
 	}
 
 	entity := s.manager.BinaryData.New(user, req.Data, req.Name)
-
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
+	
 	return s.save(ctx, entity, clientKey)
 }
 
@@ -140,6 +143,9 @@ func (s *BinaryDataService) Update(ctx context.Context,
 
 	entity.SetData(req.Data)
 	entity.SetName(req.Name)
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }

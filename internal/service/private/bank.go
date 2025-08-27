@@ -25,7 +25,7 @@ func NewBankCardService(manager model.ModelManager, masterKey encryption.Encoder
 	}
 }
 
-func (s *BankCardService) List(ctx context.Context, 
+func (s *BankCardService) List(ctx context.Context,
 	userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 
 	log := logger.With("operation", "BankCardService.List")
@@ -100,7 +100,7 @@ func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateD
 	return entity.Delete(ctx)
 }
 
-func (s *BankCardService) Add(ctx context.Context, 
+func (s *BankCardService) Add(ctx context.Context,
 	req service.AddBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
 	log := logger.With("operation", "BankCardService.Add")
@@ -115,13 +115,16 @@ func (s *BankCardService) Add(ctx context.Context,
 	}
 
 	entity := s.manager.BankCards.New(user, req.Number, req.CVV, req.Expiration)
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }
 
-func (s *BankCardService) Update(ctx context.Context, 
+func (s *BankCardService) Update(ctx context.Context,
 	req service.UpdateBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
-		
+
 	log := logger.With("operation", "BankCardService.Update")
 
 	log.Info("update existed user's entity", "userId", req.UserID)
@@ -142,6 +145,10 @@ func (s *BankCardService) Update(ctx context.Context,
 	entity.SetNumber(req.Number)
 	entity.SetCVV(req.CVV)
 	entity.SetExpiration(req.Expiration)
+
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }

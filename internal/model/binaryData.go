@@ -62,6 +62,7 @@ func findBinaryDataByID(ctx context.Context, id int, owner *User, r PrivateDataR
 			Data: data.Data,
 			Key:  data.DEK,
 		},
+		metadata: data.Metadata,
 	}
 
 	return &BinaryData{model: model}, nil

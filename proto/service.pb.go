@@ -719,6 +719,7 @@ type SaveLoginPasswordRequest struct {
 	Login         string                 `protobuf:"bytes,2,opt,name=login,proto3" json:"login,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
 	Credential    *ConfirmAssess         `protobuf:"bytes,4,opt,name=credential,proto3" json:"credential,omitempty"`
+	Metadata      []*Metadata            `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -781,6 +782,13 @@ func (x *SaveLoginPasswordRequest) GetCredential() *ConfirmAssess {
 	return nil
 }
 
+func (x *SaveLoginPasswordRequest) GetMetadata() []*Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 type SaveBankCardRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -788,6 +796,7 @@ type SaveBankCardRequest struct {
 	Expires       string                 `protobuf:"bytes,3,opt,name=expires,proto3" json:"expires,omitempty"`
 	Cvv           int64                  `protobuf:"varint,4,opt,name=cvv,proto3" json:"cvv,omitempty"`
 	Credential    *ConfirmAssess         `protobuf:"bytes,5,opt,name=credential,proto3" json:"credential,omitempty"`
+	Metadata      []*Metadata            `protobuf:"bytes,6,rep,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -857,12 +866,20 @@ func (x *SaveBankCardRequest) GetCredential() *ConfirmAssess {
 	return nil
 }
 
+func (x *SaveBankCardRequest) GetMetadata() []*Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 type SaveTextDataRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	Credential    *ConfirmAssess         `protobuf:"bytes,4,opt,name=credential,proto3" json:"credential,omitempty"`
+	Metadata      []*Metadata            `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -925,12 +942,20 @@ func (x *SaveTextDataRequest) GetCredential() *ConfirmAssess {
 	return nil
 }
 
+func (x *SaveTextDataRequest) GetMetadata() []*Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 type SaveBinaryDataRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	Credential    *ConfirmAssess         `protobuf:"bytes,4,opt,name=credential,proto3" json:"credential,omitempty"`
+	Metadata      []*Metadata            `protobuf:"bytes,5,rep,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -993,6 +1018,13 @@ func (x *SaveBinaryDataRequest) GetCredential() *ConfirmAssess {
 	return nil
 }
 
+func (x *SaveBinaryDataRequest) GetMetadata() []*Metadata {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
 var File_proto_service_proto protoreflect.FileDescriptor
 
 const file_proto_service_proto_rawDesc = "" +
@@ -1043,14 +1075,15 @@ const file_proto_service_proto_rawDesc = "" +
 	"credential\"S\n" +
 	"\x0fGetDataResponse\x12*\n" +
 	"\x04data\x18\x01 \x03(\v2\x16.proto.EncryptedEntityR\x04data\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\"\x92\x01\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\xbf\x01\n" +
 	"\x18SaveLoginPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05login\x18\x02 \x01(\tR\x05login\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x124\n" +
 	"\n" +
 	"credential\x18\x04 \x01(\v2\x14.proto.ConfirmAssessR\n" +
-	"credential\"\x9f\x01\n" +
+	"credential\x12+\n" +
+	"\bmetadata\x18\x05 \x03(\v2\x0f.proto.MetadataR\bmetadata\"\xcc\x01\n" +
 	"\x13SaveBankCardRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x16\n" +
 	"\x06number\x18\x02 \x01(\tR\x06number\x12\x18\n" +
@@ -1058,21 +1091,24 @@ const file_proto_service_proto_rawDesc = "" +
 	"\x03cvv\x18\x04 \x01(\x03R\x03cvv\x124\n" +
 	"\n" +
 	"credential\x18\x05 \x01(\v2\x14.proto.ConfirmAssessR\n" +
-	"credential\"\x83\x01\n" +
+	"credential\x12+\n" +
+	"\bmetadata\x18\x06 \x03(\v2\x0f.proto.MetadataR\bmetadata\"\xb0\x01\n" +
 	"\x13SaveTextDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04data\x18\x03 \x01(\fR\x04data\x124\n" +
 	"\n" +
 	"credential\x18\x04 \x01(\v2\x14.proto.ConfirmAssessR\n" +
-	"credential\"\x85\x01\n" +
+	"credential\x12+\n" +
+	"\bmetadata\x18\x05 \x03(\v2\x0f.proto.MetadataR\bmetadata\"\xb2\x01\n" +
 	"\x15SaveBinaryDataRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04data\x18\x03 \x01(\fR\x04data\x124\n" +
 	"\n" +
 	"credential\x18\x04 \x01(\v2\x14.proto.ConfirmAssessR\n" +
-	"credential2\x94\x01\n" +
+	"credential\x12+\n" +
+	"\bmetadata\x18\x05 \x03(\v2\x0f.proto.MetadataR\bmetadata2\x94\x01\n" +
 	"\x0eAccountService\x12L\n" +
 	"\rCreateAccount\x12\x1b.proto.CreateAccountRequest\x1a\x1c.proto.CreateAccountResponse\"\x00\x124\n" +
 	"\x05Login\x12\x13.proto.LoginRequest\x1a\x14.proto.LoginResponse\"\x002\xcb\x03\n" +
@@ -1124,30 +1160,34 @@ var file_proto_service_proto_depIdxs = []int32{
 	1,  // 4: proto.GetDataRequest.credential:type_name -> proto.ConfirmAssess
 	7,  // 5: proto.GetDataResponse.data:type_name -> proto.EncryptedEntity
 	1,  // 6: proto.SaveLoginPasswordRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 7: proto.SaveBankCardRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 8: proto.SaveTextDataRequest.credential:type_name -> proto.ConfirmAssess
-	1,  // 9: proto.SaveBinaryDataRequest.credential:type_name -> proto.ConfirmAssess
-	0,  // 10: proto.AccountService.CreateAccount:input_type -> proto.CreateAccountRequest
-	3,  // 11: proto.AccountService.Login:input_type -> proto.LoginRequest
-	13, // 12: proto.PrivateDataService.SaveLoginPassword:input_type -> proto.SaveLoginPasswordRequest
-	14, // 13: proto.PrivateDataService.SaveBankCard:input_type -> proto.SaveBankCardRequest
-	15, // 14: proto.PrivateDataService.SaveTextData:input_type -> proto.SaveTextDataRequest
-	16, // 15: proto.PrivateDataService.SaveBinaryData:input_type -> proto.SaveBinaryDataRequest
-	11, // 16: proto.PrivateDataService.Get:input_type -> proto.GetDataRequest
-	9,  // 17: proto.PrivateDataService.Delete:input_type -> proto.DeleteDataRequest
-	2,  // 18: proto.AccountService.CreateAccount:output_type -> proto.CreateAccountResponse
-	4,  // 19: proto.AccountService.Login:output_type -> proto.LoginResponse
-	8,  // 20: proto.PrivateDataService.SaveLoginPassword:output_type -> proto.EncryptedDataResponse
-	8,  // 21: proto.PrivateDataService.SaveBankCard:output_type -> proto.EncryptedDataResponse
-	8,  // 22: proto.PrivateDataService.SaveTextData:output_type -> proto.EncryptedDataResponse
-	8,  // 23: proto.PrivateDataService.SaveBinaryData:output_type -> proto.EncryptedDataResponse
-	12, // 24: proto.PrivateDataService.Get:output_type -> proto.GetDataResponse
-	10, // 25: proto.PrivateDataService.Delete:output_type -> proto.DeleteDataResponse
-	18, // [18:26] is the sub-list for method output_type
-	10, // [10:18] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	6,  // 7: proto.SaveLoginPasswordRequest.metadata:type_name -> proto.Metadata
+	1,  // 8: proto.SaveBankCardRequest.credential:type_name -> proto.ConfirmAssess
+	6,  // 9: proto.SaveBankCardRequest.metadata:type_name -> proto.Metadata
+	1,  // 10: proto.SaveTextDataRequest.credential:type_name -> proto.ConfirmAssess
+	6,  // 11: proto.SaveTextDataRequest.metadata:type_name -> proto.Metadata
+	1,  // 12: proto.SaveBinaryDataRequest.credential:type_name -> proto.ConfirmAssess
+	6,  // 13: proto.SaveBinaryDataRequest.metadata:type_name -> proto.Metadata
+	0,  // 14: proto.AccountService.CreateAccount:input_type -> proto.CreateAccountRequest
+	3,  // 15: proto.AccountService.Login:input_type -> proto.LoginRequest
+	13, // 16: proto.PrivateDataService.SaveLoginPassword:input_type -> proto.SaveLoginPasswordRequest
+	14, // 17: proto.PrivateDataService.SaveBankCard:input_type -> proto.SaveBankCardRequest
+	15, // 18: proto.PrivateDataService.SaveTextData:input_type -> proto.SaveTextDataRequest
+	16, // 19: proto.PrivateDataService.SaveBinaryData:input_type -> proto.SaveBinaryDataRequest
+	11, // 20: proto.PrivateDataService.Get:input_type -> proto.GetDataRequest
+	9,  // 21: proto.PrivateDataService.Delete:input_type -> proto.DeleteDataRequest
+	2,  // 22: proto.AccountService.CreateAccount:output_type -> proto.CreateAccountResponse
+	4,  // 23: proto.AccountService.Login:output_type -> proto.LoginResponse
+	8,  // 24: proto.PrivateDataService.SaveLoginPassword:output_type -> proto.EncryptedDataResponse
+	8,  // 25: proto.PrivateDataService.SaveBankCard:output_type -> proto.EncryptedDataResponse
+	8,  // 26: proto.PrivateDataService.SaveTextData:output_type -> proto.EncryptedDataResponse
+	8,  // 27: proto.PrivateDataService.SaveBinaryData:output_type -> proto.EncryptedDataResponse
+	12, // 28: proto.PrivateDataService.Get:output_type -> proto.GetDataResponse
+	10, // 29: proto.PrivateDataService.Delete:output_type -> proto.DeleteDataResponse
+	22, // [22:30] is the sub-list for method output_type
+	14, // [14:22] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_proto_service_proto_init() }

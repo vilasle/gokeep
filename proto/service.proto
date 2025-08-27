@@ -82,6 +82,7 @@ message SaveLoginPasswordRequest {
     string login = 2;
     string password = 3;
     ConfirmAssess credential = 4;
+    repeated Metadata metadata = 5;
 }
 
 message SaveBankCardRequest {
@@ -90,6 +91,7 @@ message SaveBankCardRequest {
     string expires = 3;
     int64 cvv = 4;
     ConfirmAssess credential = 5;
+    repeated Metadata metadata = 6;
 }
 
 message SaveTextDataRequest {
@@ -97,6 +99,7 @@ message SaveTextDataRequest {
     string name = 2;
     bytes data = 3;
     ConfirmAssess credential = 4;
+    repeated Metadata metadata = 5;
 }
 
 message SaveBinaryDataRequest {
@@ -104,6 +107,7 @@ message SaveBinaryDataRequest {
     string name = 2;
     bytes data = 3;
     ConfirmAssess credential = 4;
+    repeated Metadata metadata = 5;
 }
 
 service PrivateDataService {

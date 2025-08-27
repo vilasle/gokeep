@@ -14,6 +14,7 @@ type model struct {
 	owner          *User
 	encryptedData  *EncryptedData
 	dataRepository PrivateDataRepository
+	metadata       map[string]string
 }
 
 func (m *model) Save(ctx context.Context) (err error) {
@@ -28,12 +29,13 @@ func (m *model) Save(ctx context.Context) (err error) {
 	}
 
 	dto := PrivateDataSave{
-		ID:     m.id,
-		Type:   m.modelType,
-		UserID: m.owner.id,
-		Data:   m.encryptedData.Data,
-		DEK:    m.encryptedData.Key,
-		View:   m.view,
+		ID:       m.id,
+		Type:     m.modelType,
+		UserID:   m.owner.id,
+		Data:     m.encryptedData.Data,
+		DEK:      m.encryptedData.Key,
+		View:     m.view,
+		Metadata: m.metadata,
 	}
 	if id, err := saveFn(ctx, dto); err == nil {
 		m.id = id
@@ -55,6 +57,17 @@ func (m *model) Delete(ctx context.Context) (err error) {
 		return errors.New("entity is not exists")
 	}
 	return m.dataRepository.Delete(ctx, m.id)
+}
+
+func (m *model) AddMetadata(key string, value string) {
+	if m.metadata == nil {
+		m.metadata = make(map[string]string)
+	}
+	m.metadata[key] = value
+}
+
+func (m *model) SetMetadata(metadata map[string]string) {
+	m.metadata = metadata
 }
 
 // isExists - return false if user does not exists in storage

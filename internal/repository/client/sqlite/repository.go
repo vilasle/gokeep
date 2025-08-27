@@ -86,6 +86,13 @@ func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req clien
 func (r *ClientRepository) add(ctx context.Context,
 	tData model.Type, req client.SaveRequest) error {
 
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	//save main entity
 	iq := sqlbuilder.InsertInto("private_data").
 		Cols("external_id", "type", "dek", "data", "view").
 		Values(req.ExternalID, tData, req.DEK, req.Data, req.View).
@@ -94,8 +101,21 @@ func (r *ClientRepository) add(ctx context.Context,
 
 	q, args := iq.Build()
 
-	_, err := r.db.ExecContext(ctx, q, args...)
-	return err
+	result, err := r.db.ExecContext(ctx, q, args...)
+	if err != nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	if err := r.addOrUpdateMetadataByOwner(ctx, tx, int(id), req.Metadata); err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (r *ClientRepository) update(ctx context.Context,
@@ -113,6 +133,7 @@ func (r *ClientRepository) update(ctx context.Context,
 	q, args := uq.Where(uq.Equal("id", id)).Build()
 
 	_, err := r.db.ExecContext(ctx, q, args...)
+
 	return err
 }
 
@@ -190,7 +211,13 @@ func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.
 
 	return result, nil
 }
+
 func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req client.DeleteRequest) error {
+
+	if err := r.deleteMetadataByOwner(ctx, req.ID); err != nil {
+		return err
+	}
+
 	dq := sqlbuilder.DeleteFrom("private_data")
 	dq = dq.Where(dq.Equal("type", tData))
 
@@ -201,5 +228,60 @@ func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req cli
 	q, args := dq.Build()
 
 	_, err := r.db.ExecContext(ctx, q, args...)
+	return err
+}
+
+func (r *ClientRepository) deleteMetadataByOwner(ctx context.Context, ownerId int) error {
+	dq := sqlbuilder.DeleteFrom("metadata")
+	dq = dq.Where(dq.Equal("owner_id", ownerId))
+
+	q, args := dq.Build()
+
+	_, err := r.db.ExecContext(ctx, q, args...)
+	return err
+}
+
+func (r *ClientRepository) addOrUpdateMetadataByOwner(ctx context.Context, tx *sql.Tx, ownerId int, metadata []client.MetadataValue) error {
+	for _, m := range metadata {
+		id, err := getMetadata(ctx, tx, ownerId, m.Key)
+		if err != nil {
+			return err
+		}
+		if id == 0 {
+			if err := addMetadata(ctx, tx, ownerId, m.Key, m.Value); err != nil {
+				return err
+			}
+		} else {
+			if err := updateMetadata(ctx, tx, ownerId, m.Key, m.Value); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func getMetadata(ctx context.Context, tx *sql.Tx, ownerId int, key string) (id int, err error) {
+	q := `SELECT id FROM metadata WHERE owner_id = $1 AND key = $2`
+
+	err = tx.QueryRowContext(ctx, q, ownerId, key).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return id, err
+}
+
+func addMetadata(ctx context.Context, tx *sql.Tx, ownerId int, key, value string) error {
+	q := `INSERT INTO metadata (owner_id, key, value) VALUES ($1, $2, $3)`
+	_, err := tx.ExecContext(ctx, q, ownerId, key, value)
+	return err
+}
+
+func updateMetadata(ctx context.Context, tx *sql.Tx, ownerId int, key, value string) error {
+	q := `UPDATE metadata SET value = $1 WHERE owner_id = $2 AND id = $3`
+
+	_, err := tx.ExecContext(ctx, q, value, ownerId, key)
 	return err
 }

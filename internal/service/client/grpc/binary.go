@@ -20,12 +20,19 @@ func NewBinaryDataService(socket *grpc.ClientConn) *BinaryDataService {
 }
 
 func (s *BinaryDataService) Save(ctx context.Context, req client.BinaryDataSaveRequest) (client.SaveResponse, error) {
-	resp, err := s.client.SaveTextData(ctx, &proto.SaveTextDataRequest{
+	dto := &proto.SaveTextDataRequest{
 		Name:       req.Name,
 		Data:       req.Data,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
-	})
-	return handleSaveResponse(resp, err)
+		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
+	}
+	for i, m := range req.Metadata {
+		dto.Metadata[i] = &proto.Metadata{
+			Key:   m.Key,
+			Value: m.Value,
+		}
+	}
+	return handleSaveResponse(s.client.SaveTextData(ctx, dto))
 }
 
 func (s *BinaryDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {

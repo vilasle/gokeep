@@ -42,6 +42,10 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 		return 0, err
 	}
 
+	if err := r.saveMetadata(ctx, tx, data.ID, data.Metadata); err != nil {
+		return 0, err
+	}
+
 	err = tx.Commit()
 
 	return id, err
@@ -82,6 +86,10 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 		return 0, err
 	}
 
+	if err := r.saveMetadata(ctx, tx, data.ID, data.Metadata); err != nil {
+		return 0, err
+	}
+
 	err = tx.Commit()
 
 	return data.ID, err
@@ -97,6 +105,21 @@ func (r *PrivateDataRepository) updateEncryptedData(ctx context.Context, tx *sql
 	txt := `UPDATE data_encrypted SET data = $1, dek = $2 WHERE entity_id = $3`
 	_, err := tx.ExecContext(ctx, txt, data, dek, id)
 	return err
+}
+
+func (r *PrivateDataRepository) saveMetadata(ctx context.Context, tx *sql.Tx, id int, metadata map[string]string) error {
+	txt := `
+	INSERT INTO metadata (entity_id , key, value) 
+	VALUES ($1, $2, $3) w
+	ON CONFLICT (entity_id,key) DO 
+	UPDATE SET value = EXCLUDED.value;
+	`
+	for k, v := range metadata {
+		if _, err := tx.ExecContext(ctx, txt, id, k, v); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
@@ -124,35 +147,86 @@ func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 	return tx.Commit()
 }
 
-func (r *PrivateDataRepository) Get(ctx context.Context, id int) (model.PrivateDataInfo, error) {
-	txt := `SELECT id, user_id, "type", view FROM entity WHERE id = $1`
-	var data model.PrivateDataInfo
-	err := r.db.
-		QueryRowContext(ctx, txt, id).
-		Scan(&data.ID, &data.UserID, &data.Type, &data.View)
+func (r *PrivateDataRepository) Get(ctx context.Context, id int) (response model.PrivateDataInfo, err error) {
+	txt := `
+	SELECT t1.id 
+		,t1.view
+		,t2.data
+		,t2.dek 
+		,t3.key
+		,t3.value
+	FROM entity AS t1 
+		LEFT JOIN data_encrypted AS t2 ON t1.id = t2.entity_id
+		LEFT JOIN metadata AS t3 ON t1.id = t3.entity_id
+	WHERE t1.id = $1`
 
-	return data, err
-}
-
-func (r *PrivateDataRepository) List(ctx context.Context, modelType model.Type, owner *model.User) ([]model.PrivateDataInfo, error) {
-	txt := `SELECT id, user_id, "type", view FROM entity WHERE "type" = $1 AND user_id = $2`
-	rows, err := r.db.QueryContext(ctx, txt, modelType, owner.ID)
+	rows, err := r.db.QueryContext(ctx, txt, id)
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer rows.Close()
 
-	var data []model.PrivateDataInfo
-	for rows.Next() {
-		var d model.PrivateDataInfo
-		err := rows.Scan(&d.ID, &d.UserID, &d.Type, &d.View)
-		if err != nil {
-			return nil, err
-		}
-		data = append(data, d)
+	result, err := readGettingRows(rows)
+	for k := range result {
+		response = result[k]
+		break
 	}
 
-	return data, nil
+	return response, err
+}
+
+func (r *PrivateDataRepository) List(ctx context.Context,
+	modelType model.Type, owner *model.User) (response []model.PrivateDataInfo, err error) {
+
+	txt := `
+	SELECT t1.id 
+		,t1.view
+		,t2.data
+		,t2.dek 
+		,t3.key
+		,t3.value
+	FROM entity AS t1 
+		LEFT JOIN data_encrypted AS t2 ON t1.id = t2.entity_id
+		LEFT JOIN metadata AS t3 ON t1.id = t3.entity_id
+	WHERE t1.user_id = $1 AND t1.type = $2`
+
+	rows, err := r.db.QueryContext(ctx, txt, owner.ID, modelType)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	result, err := readGettingRows(rows)
+	response = make([]model.PrivateDataInfo, 0, len(result))
+	for k := range result {
+		response = append(response, result[k])
+	}
+
+	return response, err
+}
+
+func readGettingRows(rows *sql.Rows) (result map[int]model.PrivateDataInfo, err error) {
+	result = make(map[int]model.PrivateDataInfo)
+	for rows.Next() {
+		var d model.PrivateDataInfo
+		var key, value string
+		err := rows.Scan(&d.ID, &d.View, &d.Data, &d.DEK, &key, &value)
+		if err != nil {
+			return result, err
+		}
+		if _, ok := result[d.ID]; !ok {
+			d.Metadata = make(map[string]string)
+			if key != "" {
+				d.Metadata[key] = value
+			}
+			result[d.ID] = d
+		} else {
+			if key != "" {
+				d.Metadata[key] = value
+			}
+		}
+	}
+	return result, err
 }
 
 func (r *PrivateDataRepository) initSchema() error {
@@ -177,7 +251,19 @@ func (r *PrivateDataRepository) initSchema() error {
 		FOREIGN KEY (entity_id) REFERENCES entity (id)
 	);
 	CREATE INDEX IF NOT EXISTS data_encrypted_entity_id_idx ON data_encrypted (entity_id);
+
+	CREATE TABLE IF NOT EXISTS metadata (
+		id bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+		entity_id bigint NOT NULL,
+		key TEXT,
+		value TEXT,
+		FOREIGN KEY (entity_id) REFERENCES entity (id),
+		CONSTRAINT metadata_entity_id_key_unique UNIQUE (entity_id, key)
+	);
+	CREATE INDEX IF NOT EXISTS metadata_entity_id_idx ON metadata (entity_id);
+	CREATE INDEX IF NOT EXISTS metadata_key_idx ON metadata (key);
 	`
+
 	_, err := r.db.Exec(txt)
 	return err
 }

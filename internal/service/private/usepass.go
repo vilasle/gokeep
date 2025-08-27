@@ -110,6 +110,9 @@ func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, 
 	}
 
 	entity := s.manager.Usepass.New(user, req.Username, req.Password)
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }
@@ -134,6 +137,9 @@ func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPass
 
 	entity.SetUsername(req.Username)
 	entity.SetPassword(req.Password)
+	for _, v := range req.Metadata {
+		entity.AddMetadata(v.Key, v.Value)
+	}
 
 	return s.save(ctx, entity, clientKey)
 }

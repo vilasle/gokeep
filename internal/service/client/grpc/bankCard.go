@@ -25,10 +25,17 @@ func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveReque
 		Cvv:        int64(req.CVV),
 		Expires:    req.Expires,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
+		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
 	}
 
-	resp, err := s.client.SaveBankCard(ctx, &dto)
-	return handleSaveResponse(resp, err)
+	for _, v := range req.Metadata {
+		dto.Metadata = append(dto.Metadata, &proto.Metadata{
+			Key:   v.Key,
+			Value: v.Value,
+		})
+	}
+
+	return handleSaveResponse(s.client.SaveBankCard(ctx, &dto))
 }
 
 func (s *BankCardService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {

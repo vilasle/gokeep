@@ -6,10 +6,6 @@ import (
 	"github.com/vilasle/gokeep/internal/model"
 )
 
-
-
-
-
 type ClientRepository interface {
 	CreateScheme(ctx context.Context) error
 	Close() error
@@ -19,16 +15,22 @@ type ClientRepository interface {
 	Delete(ctx context.Context, tData model.Type, req DeleteRequest) error
 }
 
+type MetadataValue struct {
+	Key   string
+	Value string
+}
+
 type SaveRequest struct {
 	ID         int
 	View       string
 	ExternalID int
 	DEK        string
 	Data       string
+	Metadata   []MetadataValue
 }
 
 type SaveResponse struct {
-	ID    int
+	ID int
 }
 
 type GetRequest struct {
@@ -41,6 +43,7 @@ type GetResponse struct {
 	DEK        []byte
 	Data       []byte
 	View       string
+	Metadata   []MetadataValue
 }
 
 type DeleteRequest struct {

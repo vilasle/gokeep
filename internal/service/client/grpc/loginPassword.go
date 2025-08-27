@@ -26,11 +26,16 @@ func (s *LoginPasswordService) Save(ctx context.Context,
 		Login:      req.Login,
 		Password:   req.Password,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
-		
+		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
 	}
 
-	resp, err := s.client.SaveLoginPassword(ctx, &dto)
-	return handleSaveResponse(resp, err)
+	for _, v := range req.Metadata {
+		dto.Metadata = append(dto.Metadata, &proto.Metadata{
+			Key:   v.Key,
+			Value: v.Value,
+		})
+	}
+	return handleSaveResponse(s.client.SaveLoginPassword(ctx, &dto))
 }
 
 func (s *LoginPasswordService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {

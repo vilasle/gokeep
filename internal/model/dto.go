@@ -18,12 +18,13 @@ type UserInfo struct {
 }
 
 type PrivateDataSave struct {
-	ID     int
-	UserID int
-	Type   int
-	View   string
-	Data   []byte
-	DEK    []byte
+	ID       int
+	UserID   int
+	Type     int
+	View     string
+	Data     []byte
+	DEK      []byte
+	Metadata map[string]string
 }
 
 type PrivateDataInfo struct {
@@ -33,4 +34,5 @@ type PrivateDataInfo struct {
 	View   string
 	Data   []byte
 	DEK    []byte
+	Metadata map[string]string
 }

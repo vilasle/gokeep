@@ -40,18 +40,20 @@ var textAddCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
+
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		if textAdd.data != "" {
-			if err := app.SaveTextDataAsIs(ctx, textAdd.data, textAdd.name, 0); err != nil {
+			if err := app.SaveTextDataAsIs(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
 			fmt.Println("saving text success")
 		} else {
-			if err := app.SaveTextDataFromFile(ctx, textAdd.file, textAdd.name, 0); err != nil {
+			if err := app.SaveTextDataFromFile(ctx, textAdd.file, textAdd.name, 0, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
@@ -117,18 +119,20 @@ var textEditCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
+
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		if textAdd.data != "" {
-			if err := app.SaveTextDataAsIs(ctx, textEdit.data, textEdit.name, textEdit.id); err != nil {
+			if err := app.SaveTextDataAsIs(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
 			fmt.Println("saving text success")
 		} else {
-			if err := app.SaveTextDataFromFile(ctx, textEdit.file, textEdit.name, textEdit.id); err != nil {
+			if err := app.SaveTextDataFromFile(ctx, textEdit.file, textEdit.name, textEdit.id, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}

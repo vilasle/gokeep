@@ -8,16 +8,23 @@ type RegisterLoginUser struct {
 	PublicKey []byte
 }
 
+type MetadataValue struct {
+	Key   string
+	Value string
+}
+
 type AddLoginPassword struct {
 	UserID   int
 	Username string
 	Password string
+	Metadata []MetadataValue
 }
 
 type UpdateLoginPassword struct {
 	UserID int
 	ID     int
 	AddLoginPassword
+	Metadata []MetadataValue
 }
 
 type AddBankCard struct {
@@ -25,33 +32,39 @@ type AddBankCard struct {
 	Number     string
 	CVV        int
 	Expiration time.Time
+	Metadata   []MetadataValue
 }
 
 type UpdateBankCard struct {
 	ID int
 	AddBankCard
+	Metadata []MetadataValue
 }
 
 type AddTextData struct {
-	UserID int
-	Name   string
-	Text   []byte
+	UserID   int
+	Name     string
+	Text     []byte
+	Metadata []MetadataValue
 }
 
 type UpdateTextData struct {
 	ID int
 	AddTextData
+	Metadata []MetadataValue
 }
 
 type AddBinaryData struct {
-	UserID int
-	Name   string
-	Data   []byte
+	UserID   int
+	Name     string
+	Data     []byte
+	Metadata []MetadataValue
 }
 
 type UpdateBinaryData struct {
 	ID int
 	AddBinaryData
+	Metadata []MetadataValue
 }
 
 type PrivateDataResponse struct {
@@ -61,11 +74,11 @@ type PrivateDataResponse struct {
 	//encrypted data
 	Data string
 	//encrypted DEK key
-	Key   string
+	Key string
 }
 
 type ListPrivateDataResponse struct {
-	Data  []PrivateDataResponse
+	Data []PrivateDataResponse
 }
 
 type GetPrivateData struct {
@@ -79,7 +92,7 @@ type DeletePrivateData struct {
 }
 
 type SessionInfo struct {
-	UserID int
+	UserID    int
 	SessionID int
 	PublicKey []byte
 }

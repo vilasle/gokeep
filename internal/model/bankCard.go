@@ -119,6 +119,7 @@ func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRep
 			Data: data.Data,
 			Key:  data.DEK,
 		},
+		metadata: data.Metadata,
 	}
 
 	return &BankCard{model: model}, nil

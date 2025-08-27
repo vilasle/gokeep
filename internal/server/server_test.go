@@ -252,6 +252,7 @@ func TestSaveLoginPassword(t *testing.T) {
 					UserID:   userID,
 					Username: login,
 					Password: password,
+					Metadata: make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{
 					ID:   entityID,
@@ -340,6 +341,7 @@ func TestSaveLoginPassword(t *testing.T) {
 					UserID:   userID,
 					Username: login,
 					Password: password,
+					Metadata: make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
@@ -462,6 +464,7 @@ func TestBankCard(t *testing.T) {
 					Number:     number,
 					CVV:        int(cvv),
 					Expiration: expiration,
+					Metadata:   make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{
 					ID:   entityID,
@@ -554,6 +557,7 @@ func TestBankCard(t *testing.T) {
 					Number:     number,
 					CVV:        int(cvv),
 					Expiration: expiration,
+					Metadata:   make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{},
 				err:    errors.New("bank request failed"),
@@ -694,9 +698,10 @@ func TestTextData(t *testing.T) {
 			},
 			textMockArgs: &textMockArgs{
 				input: service.AddTextData{
-					UserID: userID,
-					Name:   name,
-					Text:   []byte(text),
+					UserID:   userID,
+					Name:     name,
+					Text:     []byte(text),
+					Metadata: make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{
 					ID:   entityID,
@@ -783,9 +788,10 @@ func TestTextData(t *testing.T) {
 			},
 			textMockArgs: &textMockArgs{
 				input: service.AddTextData{
-					UserID: userID,
-					Name:   name,
-					Text:   []byte(text),
+					UserID:   userID,
+					Name:     name,
+					Text:     []byte(text),
+					Metadata: make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
@@ -876,6 +882,12 @@ func TestBinaryData(t *testing.T) {
 				Credential: &pb.ConfirmAssess{
 					Token: token,
 				},
+				Metadata: []*pb.Metadata{
+					{
+						Key:   "test_key",
+						Value: "test_value",
+					},
+				},
 			},
 			output: &pb.EncryptedDataResponse{
 				Entity: &pb.EncryptedEntity{
@@ -901,6 +913,12 @@ func TestBinaryData(t *testing.T) {
 					UserID: userID,
 					Name:   name,
 					Data:   []byte(text),
+					Metadata: []service.MetadataValue{
+						{
+							Key:   "test_key",
+							Value: "test_value",
+						},
+					},
 				},
 				output: service.PrivateDataResponse{
 					ID:   entityID,
@@ -986,9 +1004,10 @@ func TestBinaryData(t *testing.T) {
 			},
 			binaryMockArgs: &binaryMockArgs{
 				input: service.AddBinaryData{
-					UserID: userID,
-					Name:   name,
-					Data:   []byte(text),
+					UserID:   userID,
+					Name:     name,
+					Data:     []byte(text),
+					Metadata: make([]service.MetadataValue, 0),
 				},
 				output: service.PrivateDataResponse{},
 				err:    errors.New("credential request failed"),
@@ -1331,123 +1350,592 @@ func TestDelete(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	// type authMockArgs struct {
-	// 	input  string
-	// 	output service.SessionInfo
-	// 	err    error
-	// }
+	type authMockArgs struct {
+		input  string
+		output service.SessionInfo
+		err    error
+	}
 
-	// type getMockArgs struct {
-	// 	input service.GetPrivateData
-	// 	err   error
-	// }
-	// token := "test_token"
-	// entityID := 1
+	type getMockArgs struct {
+		input  service.GetPrivateData
+		output service.PrivateDataResponse
+		err    error
+	}
+	token := "test_token"
+	entityID := 1
 
-	// pk, err := rsa.GenerateKey(rand.Reader, 2048)
-	// require.NoError(t, err)
+	pk, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
 
-	// publicKeyBytes, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
-	// require.NoError(t, err)
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	require.NoError(t, err)
 
-	// publicKeyBlock := &pem.Block{
-	// 	Type:  "RSA PUBLIC KEY",
-	// 	Bytes: publicKeyBytes,
-	// }
-	// publicKey := pem.EncodeToMemory(publicKeyBlock)
+	publicKeyBlock := &pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+	publicKey := pem.EncodeToMemory(publicKeyBlock)
 
-	// testCase := []struct {
-	// 	name         string
-	// 	ctx          context.Context
-	// 	input        *pb.GetDataRequest
-	// 	output       *pb.GetDataResponse
-	// 	authMockArgs authMockArgs
-	// 	creadMockArgs  *getMockArgs
-	// 	bankMockArgs  *getMockArgs
-	// 	textMockArgs  *getMockArgs
-	// 	binaryMockArgs  *getMockArgs
-	// }{
-	// 	{
-	// 		name: "get specific login password",
-	// 		ctx:  context.Background(),
-	// 		input: &pb.GetDataRequest{
-	// 			Credential: &pb.ConfirmAssess{
-	// 				Token: token,
-	// 			},
-	// 			Id:   int64(entityID),
-	// 			Type: 2,
-	// 		},
-	// 		output: &pb.GetDataResponse{},
-	// 		authMockArgs: authMockArgs{
-	// 			input: token,
-	// 			output: service.SessionInfo{
-	// 				UserID:    1,
-	// 				PublicKey: publicKey,
-	// 			},
-	// 			err: nil,
-	// 		},
-	// 		creadMockArgs: &getMockArgs{
-	// 			input: service.DeletePrivateData{
-	// 				UserID: 1,
-	// 				ID:     entityID,
-	// 			},
-	// 			err: nil,
-	// 		},
-	// 		bankMockArgs: nil,
-	// 		textMockArgs: nil,
-	// 		binaryMockArgs:   nil,
-	// 	},
-	// }
+	testCase := []struct {
+		name           string
+		ctx            context.Context
+		input          *pb.GetDataRequest
+		output         *pb.GetDataResponse
+		authMockArgs   authMockArgs
+		creadMockArgs  *getMockArgs
+		bankMockArgs   *getMockArgs
+		textMockArgs   *getMockArgs
+		binaryMockArgs *getMockArgs
+	}{
+		{
+			name: "get specific login password",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 2,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			creadMockArgs: &getMockArgs{
+				input: service.GetPrivateData{
+					UserID: 1,
+					ID:     entityID,
+				},
+				output: service.PrivateDataResponse{
+					ID:   entityID,
+					View: "test entity",
+					Data: "some data",
+					Key:  "some dek",
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "get specific bank card",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 3,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			bankMockArgs: &getMockArgs{
+				input: service.GetPrivateData{
+					UserID: 1,
+					ID:     entityID,
+				},
+				output: service.PrivateDataResponse{
+					ID:   entityID,
+					View: "test entity",
+					Data: "some data",
+					Key:  "some dek",
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "get specific text data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 4,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			textMockArgs: &getMockArgs{
+				input: service.GetPrivateData{
+					UserID: 1,
+					ID:     entityID,
+				},
+				output: service.PrivateDataResponse{
+					ID:   entityID,
+					View: "test entity",
+					Data: "some data",
+					Key:  "some dek",
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "get specific text data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 5,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			binaryMockArgs: &getMockArgs{
+				input: service.GetPrivateData{
+					UserID: 1,
+					ID:     entityID,
+				},
+				output: service.PrivateDataResponse{
+					ID:   entityID,
+					View: "test entity",
+					Data: "some data",
+					Key:  "some dek",
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "auth service failed",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 2,
+			},
+			output: &pb.GetDataResponse{
+				Error: "auth service failed",
+			},
+			authMockArgs: authMockArgs{
+				input:  token,
+				output: service.SessionInfo{},
+				err:    errors.New("auth service failed"),
+			},
+		},
+		{
+			name: "getting data was failed",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 5,
+			},
+			output: &pb.GetDataResponse{
+				Error: "getting data was failed",
+			},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			binaryMockArgs: &getMockArgs{
+				input: service.GetPrivateData{
+					UserID: 1,
+					ID:     entityID,
+				},
+				output: service.PrivateDataResponse{},
+				err:    errors.New("getting data was failed"),
+			},
+		},
+		{
+			name: "wrong type of data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 6,
+			},
+			output: &pb.GetDataResponse{
+				Error: "unknown type",
+			},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+		},
+	}
 
-	// for _, tt := range testCase {
-	// 	t.Run(tt.name, func(t *testing.T) {
-	// 		ctrl := gomock.NewController(t)
-	// 		defer ctrl.Finish()
+	for _, tt := range testCase {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	// 		authMock := NewMockAuthService(ctrl)
-	// 		credMock := NewMockLoginPasswordService(ctrl)
-	// 		bankMock := NewMockBankCardService(ctrl)
-	// 		textMock := NewMockTextDataService(ctrl)
-	// 		binaryMock := NewMockBinaryDataService(ctrl)
+			authMock := NewMockAuthService(ctrl)
+			credMock := NewMockLoginPasswordService(ctrl)
+			bankMock := NewMockBankCardService(ctrl)
+			textMock := NewMockTextDataService(ctrl)
+			binaryMock := NewMockBinaryDataService(ctrl)
 
-	// 		authMock.EXPECT().
-	// 			GetSessionByCredentialToken(tt.ctx, tt.authMockArgs.input).
-	// 			Return(tt.authMockArgs.output, tt.authMockArgs.err)
+			authMock.EXPECT().
+				GetSessionByCredentialToken(tt.ctx, tt.authMockArgs.input).
+				Return(tt.authMockArgs.output, tt.authMockArgs.err)
 
-	// 		if tt.deleteLoginPasswordMockArgs != nil {
-	// 			credMock.EXPECT().
-	// 				Delete(tt.ctx, tt.deleteLoginPasswordMockArgs.input).
-	// 				Return(tt.deleteLoginPasswordMockArgs.err)
-	// 		}
+			if tt.creadMockArgs != nil {
+				credMock.EXPECT().
+					Get(tt.ctx, tt.creadMockArgs.input, gomock.Any()).
+					Return(tt.creadMockArgs.output, tt.creadMockArgs.err)
+			}
 
-	// 		if tt.deleteBankCardMockArgs != nil {
-	// 			bankMock.EXPECT().
-	// 				Delete(tt.ctx, tt.deleteBankCardMockArgs.input).
-	// 				Return(tt.deleteBankCardMockArgs.err)
-	// 		}
+			if tt.bankMockArgs != nil {
+				bankMock.EXPECT().
+					Get(tt.ctx, tt.bankMockArgs.input, gomock.Any()).
+					Return(tt.bankMockArgs.output, tt.bankMockArgs.err)
+			}
 
-	// 		if tt.deleteTextDataMockArgs != nil {
-	// 			textMock.EXPECT().
-	// 				Delete(tt.ctx, tt.deleteTextDataMockArgs.input).
-	// 				Return(tt.deleteTextDataMockArgs.err)
-	// 		}
+			if tt.textMockArgs != nil {
+				textMock.EXPECT().
+					Get(tt.ctx, tt.textMockArgs.input, gomock.Any()).
+					Return(tt.textMockArgs.output, tt.textMockArgs.err)
+			}
 
-	// 		if tt.deleteBinaryMockArgs != nil {
-	// 			binaryMock.EXPECT().
-	// 				Delete(tt.ctx, tt.deleteBinaryMockArgs.input).
-	// 				Return(tt.deleteBinaryMockArgs.err)
-	// 		}
+			if tt.binaryMockArgs != nil {
+				binaryMock.EXPECT().
+					Get(tt.ctx, tt.binaryMockArgs.input, gomock.Any()).
+					Return(tt.binaryMockArgs.output, tt.binaryMockArgs.err)
+			}
 
-	// 		s := &Server{auth: authMock, cread: credMock, bank: bankMock, text: textMock, binary: binaryMock}
-	// 		resp, err := s.Delete(tt.ctx, tt.input)
-	// 		require.NoError(t, err)
+			s := &Server{auth: authMock, cread: credMock, bank: bankMock, text: textMock, binary: binaryMock}
+			resp, err := s.Get(tt.ctx, tt.input)
+			require.NoError(t, err)
 
-	// 		if resp.Error != "" {
-	// 			assert.Equal(t, tt.output.Error, resp.Error)
-	// 			return
-	// 		}
-	// 	})
-	// }
+			if resp.Error != "" {
+				assert.Equal(t, tt.output.Error, resp.Error)
+				return
+			}
+		})
+	}
+}
+
+func TestList(t *testing.T) {
+	type authMockArgs struct {
+		input  string
+		output service.SessionInfo
+		err    error
+	}
+
+	type listMockArgs struct {
+		input  int
+		output service.ListPrivateDataResponse
+		err    error
+	}
+	token := "test_token"
+	entityID := 1
+
+	pk, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	require.NoError(t, err)
+
+	publicKeyBlock := &pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+	publicKey := pem.EncodeToMemory(publicKeyBlock)
+
+	testCase := []struct {
+		name           string
+		ctx            context.Context
+		input          *pb.GetDataRequest
+		output         *pb.GetDataResponse
+		authMockArgs   authMockArgs
+		creadMockArgs  *listMockArgs
+		bankMockArgs   *listMockArgs
+		textMockArgs   *listMockArgs
+		binaryMockArgs *listMockArgs
+	}{
+		{
+			name: "list of login password",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 2,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			creadMockArgs: &listMockArgs{
+				input: 1,
+				output: service.ListPrivateDataResponse{
+					Data: []service.PrivateDataResponse{
+						{
+							ID:   entityID,
+							View: "test entity",
+							Data: "some data",
+							Key:  "some dek",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "list of bank card",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 3,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			bankMockArgs: &listMockArgs{
+				input: 1,
+				output: service.ListPrivateDataResponse{
+					Data: []service.PrivateDataResponse{
+						{
+							ID:   entityID,
+							View: "test entity",
+							Data: "some data",
+							Key:  "some dek",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "list of text data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 4,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			textMockArgs: &listMockArgs{
+				input: 1,
+				output: service.ListPrivateDataResponse{
+					Data: []service.PrivateDataResponse{
+						{
+							ID:   entityID,
+							View: "test entity",
+							Data: "some data",
+							Key:  "some dek",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "list of binary data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 5,
+			},
+			output: &pb.GetDataResponse{},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			binaryMockArgs: &listMockArgs{
+				input: 1,
+				output: service.ListPrivateDataResponse{
+					Data: []service.PrivateDataResponse{
+						{
+							ID:   entityID,
+							View: "test entity",
+							Data: "some data",
+							Key:  "some dek",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			name: "auth service failed",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   int64(entityID),
+				Type: 2,
+			},
+			output: &pb.GetDataResponse{
+				Error: "auth service failed",
+			},
+			authMockArgs: authMockArgs{
+				input:  token,
+				output: service.SessionInfo{},
+				err:    errors.New("auth service failed"),
+			},
+		},
+		{
+			name: "getting data was failed",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 5,
+			},
+			output: &pb.GetDataResponse{
+				Error: "getting data was failed",
+			},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+			binaryMockArgs: &listMockArgs{
+				input:  1,
+				output: service.ListPrivateDataResponse{},
+				err:    errors.New("getting data was failed"),
+			},
+		},
+		{
+			name: "wrong type of data",
+			ctx:  context.Background(),
+			input: &pb.GetDataRequest{
+				Credential: &pb.ConfirmAssess{
+					Token: token,
+				},
+				Id:   0,
+				Type: 6,
+			},
+			output: &pb.GetDataResponse{
+				Error: "unknown type",
+			},
+			authMockArgs: authMockArgs{
+				input: token,
+				output: service.SessionInfo{
+					UserID:    1,
+					PublicKey: publicKey,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, tt := range testCase {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authMock := NewMockAuthService(ctrl)
+			credMock := NewMockLoginPasswordService(ctrl)
+			bankMock := NewMockBankCardService(ctrl)
+			textMock := NewMockTextDataService(ctrl)
+			binaryMock := NewMockBinaryDataService(ctrl)
+
+			authMock.EXPECT().
+				GetSessionByCredentialToken(tt.ctx, tt.authMockArgs.input).
+				Return(tt.authMockArgs.output, tt.authMockArgs.err)
+
+			if tt.creadMockArgs != nil {
+				credMock.EXPECT().
+					List(tt.ctx, tt.creadMockArgs.input, gomock.Any()).
+					Return(tt.creadMockArgs.output, tt.creadMockArgs.err)
+			}
+
+			if tt.bankMockArgs != nil {
+				bankMock.EXPECT().
+					List(tt.ctx, tt.bankMockArgs.input, gomock.Any()).
+					Return(tt.bankMockArgs.output, tt.bankMockArgs.err)
+			}
+
+			if tt.textMockArgs != nil {
+				textMock.EXPECT().
+					List(tt.ctx, tt.textMockArgs.input, gomock.Any()).
+					Return(tt.textMockArgs.output, tt.textMockArgs.err)
+			}
+
+			if tt.binaryMockArgs != nil {
+				binaryMock.EXPECT().
+					List(tt.ctx, tt.binaryMockArgs.input, gomock.Any()).
+					Return(tt.binaryMockArgs.output, tt.binaryMockArgs.err)
+			}
+
+			s := &Server{auth: authMock, cread: credMock, bank: bankMock, text: textMock, binary: binaryMock}
+			resp, err := s.Get(tt.ctx, tt.input)
+			require.NoError(t, err)
+
+			if resp.Error != "" {
+				assert.Equal(t, tt.output.Error, resp.Error)
+				return
+			}
+		})
+	}
 }
 
 func TestPrepareServer(t *testing.T) {

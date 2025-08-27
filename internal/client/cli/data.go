@@ -8,15 +8,20 @@ import (
 
 	"github.com/vilasle/gokeep/internal/model"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
+	"github.com/vilasle/gokeep/internal/service/client"
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
 
-func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, id int) error {
+func (c *Client) SaveLoginPassword(ctx context.Context,
+	login, password string, id int, meta map[string]string) error {
+
+	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.LoginPasswordSaveRequest{
 		ID:       id,
 		Login:    login,
 		Password: password,
 		JWT:      string(c.credential),
+		Metadata: metadata,
 	}
 
 	if id > 0 {
@@ -42,12 +47,16 @@ func (c *Client) SaveLoginPassword(ctx context.Context, login, password string, 
 	})
 }
 
-func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, id int) error {
+func (c *Client) SaveBankCard(ctx context.Context,
+	number, expires string, cvv, id int, meta map[string]string) error {
+
+	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.BankCardSaveRequest{
-		Number:  number,
-		Expires: expires,
-		CVV:     cvv,
-		JWT:     string(c.credential),
+		Number:   number,
+		Expires:  expires,
+		CVV:      cvv,
+		JWT:      string(c.credential),
+		Metadata: metadata,
 	}
 
 	if id > 0 {
@@ -70,14 +79,19 @@ func (c *Client) SaveBankCard(ctx context.Context, number, expires string, cvv, 
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
 		View:       response.Data.View,
+		Metadata:   prepareMetadataForLocalStorage(response.Metadata),
 	})
 }
 
-func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string, id int) error {
+func (c *Client) SaveTextDataAsIs(ctx context.Context,
+	text string, name string, id int, meta map[string]string) error {
+
+	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.TextDataSaveRequest{
-		Text: []byte(text),
-		Name: name,
-		JWT:  string(c.credential),
+		Text:     []byte(text),
+		Name:     name,
+		JWT:      string(c.credential),
+		Metadata: metadata,
 	}
 
 	if id > 0 {
@@ -99,10 +113,13 @@ func (c *Client) SaveTextDataAsIs(ctx context.Context, text string, name string,
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
 		View:       response.Data.View,
+		Metadata:   prepareMetadataForLocalStorage(response.Metadata),
 	})
 }
 
-func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name string, id int) error {
+func (c *Client) SaveTextDataFromFile(ctx context.Context,
+	path string, name string, id int, meta map[string]string) error {
+
 	if name == "" {
 		stat, err := os.Stat(path)
 		if err != nil {
@@ -116,10 +133,12 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
+	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.TextDataSaveRequest{
-		Text: content,
-		Name: name,
-		JWT:  string(c.credential),
+		Text:     content,
+		Name:     name,
+		JWT:      string(c.credential),
+		Metadata: metadata,
 	}
 
 	if id > 0 {
@@ -141,10 +160,13 @@ func (c *Client) SaveTextDataFromFile(ctx context.Context, path string, name str
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
 		View:       response.Data.View,
+		Metadata:   prepareMetadataForLocalStorage(response.Metadata),
 	})
 }
 
-func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, id int) error {
+func (c *Client) SaveBinaryData(ctx context.Context,
+	path string, name string, id int, meta map[string]string) error {
+
 	if name == "" {
 		stat, err := os.Stat(path)
 		if err != nil {
@@ -158,10 +180,12 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
+	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.BinaryDataSaveRequest{
-		Data: content,
-		Name: name,
-		JWT:  string(c.credential),
+		Data:     content,
+		Name:     name,
+		JWT:      string(c.credential),
+		Metadata: metadata,
 	}
 
 	if id > 0 {
@@ -183,6 +207,7 @@ func (c *Client) SaveBinaryData(ctx context.Context, path string, name string, i
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
 		View:       response.Data.View,
+		Metadata:   prepareMetadataForLocalStorage(response.Metadata),
 	})
 }
 
@@ -288,4 +313,26 @@ func (c *Client) get(ctx context.Context, t model.Type, id int) error {
 		}
 		return c.showListOfEntities(t, response...)
 	}
+}
+
+func prepareMetadataForExternalStorage(meta map[string]string) []client.MetadataValue {
+	if meta == nil {
+		return []client.MetadataValue{}
+	}
+	var metadata []client.MetadataValue
+	for k, v := range meta {
+		metadata = append(metadata, client.MetadataValue{Key: k, Value: v})
+	}
+	return metadata
+}
+
+func prepareMetadataForLocalStorage(meta []client.MetadataValue) []repository.MetadataValue {
+	if meta == nil {
+		return []repository.MetadataValue{}
+	}
+	var metadata []repository.MetadataValue
+	for _, v := range meta {
+		metadata = append(metadata, repository.MetadataValue{Key: v.Key, Value: v.Value})
+	}
+	return metadata
 }

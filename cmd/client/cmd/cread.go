@@ -38,12 +38,13 @@ var creadAddCmd = &cobra.Command{
 			fmt.Println("password is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
+		metadata := prepareMetadata()
 
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveLoginPassword(ctx, creadAdd.login, creadAdd.password, 0); err != nil {
+		if err := app.SaveLoginPassword(ctx, creadAdd.login, creadAdd.password, 0, metadata); err != nil {
 			fmt.Printf("saving login password failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
@@ -108,11 +109,12 @@ var creadEditCmd = &cobra.Command{
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
+		metadata := prepareMetadata()
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveLoginPassword(ctx, creadEdit.login, creadEdit.password, creadEdit.id); err != nil {
+		if err := app.SaveLoginPassword(ctx, creadEdit.login, creadEdit.password, creadEdit.id, metadata); err != nil {
 			fmt.Printf("saving login password failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}

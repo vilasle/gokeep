@@ -94,6 +94,7 @@ func findUsepassByID(ctx context.Context, id int, owner *User, r PrivateDataRepo
 			Data: data.Data,
 			Key:  data.DEK,
 		},
+		metadata: data.Metadata,
 	}
 
 	return &Usepass{model: model}, nil
