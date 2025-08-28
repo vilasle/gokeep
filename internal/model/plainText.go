@@ -41,6 +41,10 @@ func (tp *PlainText) SetText(text []byte) {
 	tp.text = text
 }
 
+func (tp *PlainText) SetName(name string) {
+	tp.model.view = name
+}
+
 // FIXME add getting plain text by id and check that owner was right id
 func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*PlainText, error) {
 	data, err := r.Get(ctx, id)
@@ -55,7 +59,7 @@ func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRe
 	model := model{
 		id:             id,
 		owner:          owner,
-		modelType:      TypeUsepass,
+		modelType:      TypePlainText,
 		dataRepository: r,
 		encryptedData: &EncryptedData{
 			Data: data.Data,

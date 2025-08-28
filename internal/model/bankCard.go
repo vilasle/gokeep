@@ -3,7 +3,6 @@ package model
 import (
 	"bytes"
 	"context"
-	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -19,10 +18,8 @@ type BankCard struct {
 }
 
 func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) *BankCard {
-	view := strings.Repeat("*", len(cardNumber)-4) + cardNumber[len(cardNumber)-4:]
-	return &BankCard{
+	ent := &BankCard{
 		model: model{
-			view:      view,
 			owner:     owner,
 			modelType: TypeBankCard,
 		},
@@ -30,39 +27,16 @@ func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) 
 		expiration: expiration,
 		cvv:        cvv,
 	}
-}
 
-func (bc *BankCard) decryptData(encoder Encoder) (err error) {
-	data, err := encoder.Decrypt(*bc.encryptedData)
-	if err != nil {
-		return err
-	}
-
-	lp := strings.Split(string(data), "\n")
-	if len(lp) != 3 {
-		//TODO use package error
-		return errors.New("invalid data")
-	}
-
-	number, cvv, expiration := lp[0], lp[1], lp[2]
-
-	bc.number = number
-	bc.cvv, err = strconv.Atoi(cvv)
-	if err != nil {
-		//TODO use package error
-		return err
-	}
-
-	bc.expiration, err = time.Parse(time.DateOnly, expiration)
-	if err != nil {
-		//TODO use package error
-		return err
-	}
-	return nil
+	ent.SetNumber(ent.number)
+	return ent
 }
 
 func (u *BankCard) SetNumber(number string) {
 	u.number = number
+	if len(u.number) > 4 {
+		u.model.view = strings.Repeat("*", len(u.number)-4) + u.number[len(u.number)-4:]
+	}
 }
 
 func (u *BankCard) SetCVV(cvv int) {
@@ -113,7 +87,7 @@ func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRep
 	model := model{
 		id:             id,
 		owner:          owner,
-		modelType:      TypeUsepass,
+		modelType:      TypeBankCard,
 		dataRepository: r,
 		encryptedData: &EncryptedData{
 			Data: data.Data,

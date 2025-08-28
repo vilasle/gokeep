@@ -1,16 +1,15 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"testing"
 
-	"context"
-
-	"github.com/golang/mock/gomock"
+	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Usepass_Save(t *testing.T) {
+func Test_PlainText_Save(t *testing.T) {
 	behaviorRepository := func(m *MockPrivateDataRepository, ctx context.Context, isExists bool, up PrivateDataSave, err error) {
 		if isExists {
 			m.EXPECT().Add(ctx, up).Return(1, err)
@@ -26,8 +25,8 @@ func Test_Usepass_Save(t *testing.T) {
 	testCases := []struct {
 		name           string
 		id             int
-		login          string
-		password       string
+		data           string
+		dataName       string
 		srcData        []byte
 		owner          *User
 		encryptedData  *EncryptedData
@@ -35,54 +34,54 @@ func Test_Usepass_Save(t *testing.T) {
 		successEncrypt bool
 	}{
 		{
-			name:     "new usepass, need to add",
+			name:     "new text data",
 			id:       0,
-			login:    "test1",
-			password: "password1",
-			srcData:  []byte("test1\npassword1"),
+			data:     "some text",
+			dataName: "name",
+			srcData:  []byte("some text"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				Data: []byte("test1\npassword1"),
+				Data: []byte("some text"),
 				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successEncrypt: true,
 		},
 		{
-			name:     "usepass is existed, need to update",
+			name:     "text data is existed, need to update",
 			id:       1234,
-			login:    "test1",
-			password: "password1",
-			srcData:  []byte("test1\npassword1"),
+			data:     "some text",
+			dataName: "name",
+			srcData:  []byte("some text"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				Data: []byte("test1\npassword1"),
+				Data: []byte("some text"),
 				Key:  []byte("key"),
 			},
 			successPD:      true,
 			successEncrypt: true,
 		},
 		{
-			name:     "new usepass, need to add, got encryption error",
-			login:    "test1",
-			password: "password1",
-			srcData:  []byte("test1\npassword1"),
+			name:     "new text data, need to add, got encryption error",
+			data:     "some text",
+			dataName: "name",
+			srcData:  []byte("some text"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				Data: []byte("test1\npassword1"),
+				Data: []byte("some text"),
 				Key:  []byte("key"),
 			},
 			successPD:      false,
 			successEncrypt: false,
 		},
 		{
-			name:     "new usepass, need to add, got saving private data error",
-			login:    "test1",
-			password: "password1",
-			srcData:  []byte("test1\npassword1"),
+			name:     "new text data, need to add, got saving private data error",
+			data:     "some text",
+			dataName: "name",
+			srcData:  []byte("some text"),
 			owner:    &User{login: "test", password: "password"},
 			encryptedData: &EncryptedData{
-				Data: []byte("test1\npassword1"),
+				Data: []byte("some text"),
 				Key:  []byte("key"),
 			},
 			successEncrypt: true,
@@ -95,17 +94,18 @@ func Test_Usepass_Save(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			usepassR := NewMockPrivateDataRepository(ctrl)
+			r := NewMockPrivateDataRepository(ctrl)
 			encrypter := NewMockEncoder(ctrl)
 
-			usepass := newUsepass(tt.owner, "", "")
-			usepass.SetUsername(tt.login)
-			usepass.SetPassword(tt.password)
-			usepass.dataRepository = usepassR
+			entity := newPlainText(tt.owner, []byte{}, "")
+			entity.dataRepository = r
+			entity.id = tt.id
 
-			usepass.SetMetadata(map[string]string{"key": "value"})
+			entity.SetText([]byte(tt.data))
+			entity.SetName(tt.dataName)
 
-			usepass.id = tt.id
+			entity.AddMetadata("key", "value")
+			entity.AddMetadata("key2", "value2")
 
 			ctx := context.Background()
 
@@ -123,25 +123,25 @@ func Test_Usepass_Save(t *testing.T) {
 
 			dto := PrivateDataSave{
 				ID:       tt.id,
-				Type:     usepass.modelType,
-				UserID:   usepass.Owner().id,
+				Type:     entity.modelType,
+				UserID:   entity.owner.id,
 				Data:     tt.encryptedData.Data,
 				DEK:      tt.encryptedData.Key,
-				View:     usepass.String(),
-				Metadata: usepass.metadata,
+				View:     entity.view,
+				Metadata: entity.metadata,
 			}
 			if tt.successEncrypt {
-				behaviorRepository(usepassR, ctx, !usepass.isExists(), dto, errPD)
+				behaviorRepository(r, ctx, !entity.isExists(), dto, errPD)
 			}
 
-			err := usepass.Save(ctx, encrypter)
+			err := entity.Save(ctx, encrypter)
 
 			assert.Equal(t, tt.successPD && tt.successEncrypt, err == nil)
 		})
 	}
 }
 
-func Test_findUsepassByID(t *testing.T) {
+func Test_findPlainTextByID(t *testing.T) {
 	type repositoryMockArgs struct {
 		input  int
 		output PrivateDataInfo
@@ -151,7 +151,7 @@ func Test_findUsepassByID(t *testing.T) {
 		name    string
 		input   int
 		user    *User
-		output  *Usepass
+		output  *PlainText
 		wantErr bool
 		repositoryMockArgs
 	}{
@@ -161,27 +161,33 @@ func Test_findUsepassByID(t *testing.T) {
 			user: &User{
 				id: 1,
 			},
-			output: &Usepass{
+			output: &PlainText{
 				model: model{
 					id: 1,
 					encryptedData: &EncryptedData{
 						Data: []byte("data"),
 						Key:  []byte("key"),
 					},
-					metadata: make(map[string]string),
+					metadata: map[string]string{
+						"name": "test",
+						"view": "test",
+					},
 				},
 			},
 
 			repositoryMockArgs: repositoryMockArgs{
 				input: 1,
 				output: PrivateDataInfo{
-					ID:       1,
-					UserID:   1,
-					Type:     2,
-					View:     "test",
-					Data:     []byte("data"),
-					DEK:      []byte("key"),
-					Metadata: make(map[string]string),
+					ID:     1,
+					UserID: 1,
+					Type:   2,
+					View:   "test",
+					Data:   []byte("data"),
+					DEK:    []byte("key"),
+					Metadata: map[string]string{
+						"name": "test",
+						"view": "test",
+					},
 				},
 			},
 		},
@@ -206,7 +212,7 @@ func Test_findUsepassByID(t *testing.T) {
 				id: 2,
 			},
 			wantErr: true,
-			output: &Usepass{
+			output: &PlainText{
 				model: model{
 					id: 1,
 					encryptedData: &EncryptedData{
@@ -243,19 +249,21 @@ func Test_findUsepassByID(t *testing.T) {
 
 			r.EXPECT().Get(ctx, tt.repositoryMockArgs.input).Return(tt.repositoryMockArgs.output, tt.repositoryMockArgs.err)
 
-			actual, err := findUsepassByID(ctx, tt.input, tt.user, r)
+			actual, err := findPlainTextByID(ctx, tt.input, tt.user, r)
 
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
 			}
+			ed := actual.EncryptedData()
+
 			assert.NoError(t, err)
-			assert.Equal(t, tt.output.id, actual.id)
+			assert.Equal(t, tt.output.ID(), actual.id)
 			assert.Equal(t, tt.user, actual.owner)
-			assert.Equal(t, TypeUsepass, actual.modelType)
-			assert.Equal(t, tt.output.encryptedData.Data, actual.encryptedData.Data)
-			assert.Equal(t, tt.output.encryptedData.Key, actual.encryptedData.Key)
-			assert.Equal(t, tt.output.metadata, actual.metadata)
+			assert.Equal(t, TypePlainText, actual.Type())
+			assert.Equal(t, ed.Data, actual.encryptedData.Data)
+			assert.Equal(t, ed.Key, actual.encryptedData.Key)
+			assert.Equal(t, tt.output.Metadata(), actual.Metadata())
 
 		})
 	}
