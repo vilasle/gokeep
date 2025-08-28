@@ -71,6 +71,7 @@ func findUsepassByID(ctx context.Context, id int, owner *User, r PrivateDataRepo
 
 	model := model{
 		id:             id,
+		view:           data.View,
 		owner:          owner,
 		modelType:      TypeUsepass,
 		dataRepository: r,

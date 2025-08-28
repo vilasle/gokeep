@@ -86,6 +86,7 @@ func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRep
 
 	model := model{
 		id:             id,
+		view:           data.View,
 		owner:          owner,
 		modelType:      TypeBankCard,
 		dataRepository: r,

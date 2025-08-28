@@ -8,7 +8,6 @@ var _ PrivateData = (*PlainText)(nil)
 
 type PlainText struct {
 	model
-	name string
 	text []byte
 }
 
@@ -19,7 +18,6 @@ func newPlainText(owner *User, text []byte, name string) *PlainText {
 			owner:     owner,
 			modelType: TypePlainText,
 		},
-		name: name,
 		text: text,
 	}
 }
@@ -58,6 +56,7 @@ func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRe
 
 	model := model{
 		id:             id,
+		view:           data.View,
 		owner:          owner,
 		modelType:      TypePlainText,
 		dataRepository: r,

@@ -207,6 +207,7 @@ func newPrivateDate(pd PrivateDataInfo, modelType Type, owner *User, r PrivateDa
 
 	model := model{
 		id:             pd.ID,
+		view:           pd.View,
 		owner:          owner,
 		dataRepository: r,
 		modelType:      modelType,

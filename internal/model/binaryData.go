@@ -55,6 +55,7 @@ func findBinaryDataByID(ctx context.Context, id int, owner *User, r PrivateDataR
 
 	model := model{
 		id:             id,
+		view:           data.View,
 		owner:          owner,
 		modelType:      TypeBinaryData,
 		dataRepository: r,
