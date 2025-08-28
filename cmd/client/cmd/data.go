@@ -27,6 +27,7 @@ func init() {
 	dataCmd.AddCommand(bankCmd)
 	dataCmd.AddCommand(textCmd)
 	dataCmd.AddCommand(binaryCmd)
+	dataCmd.AddCommand(syncCmd)
 
 }
 
@@ -36,6 +37,7 @@ func prepareMetadata() map[string]string {
 		kv := strings.Split(v, "=")
 		if len(kv) != 2 {
 			fmt.Printf("invalid metadata: %s\n", v)
+			fmt.Println("metadata must be in format key=value")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 		metadata[kv[0]] = kv[1]

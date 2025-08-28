@@ -32,6 +32,7 @@ func get(ctx context.Context, svc proto.PrivateDataServiceClient, req client.Get
 	resp, err := svc.Get(ctx, &proto.GetDataRequest{
 		Id:         int64(req.ID),
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
+		Type:       int32(req.Type),
 	})
 	return handleGetResponse(resp, err)
 }
@@ -53,6 +54,7 @@ func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.Encrypt
 				DEK:  data.Data.Dek,
 				Data: data.Data.Data,
 			},
+			Metadata: castMetadata(data.Metadata),
 		}
 	}
 	return result, nil

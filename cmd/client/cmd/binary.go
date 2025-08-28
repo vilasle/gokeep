@@ -30,12 +30,12 @@ var binaryAddCmd = &cobra.Command{
 		defer app.Close()
 
 		if binaryAdd.file == "" {
-			fmt.Println("'file' is required")
+			fmt.Println("--file argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if binaryAdd.name == "" {
-			fmt.Println("'name' is required")
+			fmt.Println("--name argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -95,17 +95,17 @@ var binaryEditCmd = &cobra.Command{
 		defer app.Close()
 
 		if binaryEdit.file == "" {
-			fmt.Println("'file' is required")
+			fmt.Println("--file argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if binaryEdit.name == "" {
-			fmt.Println("'name' is required")
+			fmt.Println("--name argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if binaryEdit.id == 0 {
-			fmt.Println("id is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 		metadata := prepareMetadata()
@@ -136,7 +136,7 @@ var binaryDeleteCmd = &cobra.Command{
 		defer app.Close()
 
 		if textDelete.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 

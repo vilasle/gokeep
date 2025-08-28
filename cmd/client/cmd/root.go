@@ -76,6 +76,7 @@ func initCLIClient() *cli.Client {
 	app, err := cli.NewClient(config)
 	if err != nil {
 		fmt.Println("failed to create client")
+		fmt.Println(err)
 		os.Exit(reasonInternalError)
 	}
 

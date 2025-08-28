@@ -31,12 +31,12 @@ var initCmd = &cobra.Command{
 	generate RSA keys and create config file with information about local database and grpc server`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if grpcSocket == "" {
-			fmt.Println("grpc socket is not set")
+			fmt.Println("grpc socket is not set(--grpc-socket|-s)")
 			os.Exit(2)
 		}
 
 		if localDatabasePath == "" {
-			fmt.Println("local database path is not set")
+			fmt.Println("local database path is not set(--db-path|-d)")
 			os.Exit(3)
 		}
 

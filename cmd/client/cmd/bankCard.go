@@ -31,17 +31,17 @@ var bankAddCmd = &cobra.Command{
 		defer app.Close()
 
 		if bankAdd.number == "" {
-			fmt.Println("number is required")
+			fmt.Println("--number argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if bankAdd.cvv == 0 {
-			fmt.Println("cvv is required")
+			fmt.Println("--cvv argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if bankAdd.expires == "" {
-			fmt.Println("expires is required")
+			fmt.Println("--expires argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -101,22 +101,22 @@ var bankEditCmd = &cobra.Command{
 		defer app.Close()
 
 		if bankEdit.number == "" {
-			fmt.Println("'number' is required")
+			fmt.Println("--number argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if bankEdit.cvv == 0 {
-			fmt.Println("'cvv' is required")
+			fmt.Println("--cvv argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if bankEdit.expires == "" {
-			fmt.Println("'expires' is required")
+			fmt.Println("--expires argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if bankEdit.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -149,7 +149,7 @@ var bankDeleteCmd = &cobra.Command{
 		defer app.Close()
 
 		if bankDelete.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 

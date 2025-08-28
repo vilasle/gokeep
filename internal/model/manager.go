@@ -200,6 +200,11 @@ func newPrivateDate(pd PrivateDataInfo, modelType Type, owner *User, r PrivateDa
 
 	var pv PrivateData
 
+	meta := make(map[string]string)
+	for k, v := range pd.Metadata {
+		meta[k] = v
+	}
+
 	model := model{
 		id:             pd.ID,
 		owner:          owner,
@@ -209,6 +214,7 @@ func newPrivateDate(pd PrivateDataInfo, modelType Type, owner *User, r PrivateDa
 			Data: pd.Data,
 			Key:  pd.DEK,
 		},
+		metadata: meta,
 	}
 
 	switch modelType {

@@ -81,7 +81,7 @@ func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) 
 				return err
 			}
 
-			fmt.Printf("File %s saved to %s\n", entity.View, path)
+			fmt.Printf("File '%s' saved to '%s'\n", entity.View, path)
 			continue
 		}
 

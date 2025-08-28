@@ -150,8 +150,8 @@ func (r *PrivateDataRepository) Get(ctx context.Context, id int) (response model
 		,t1.view
 		,t2.data
 		,t2.dek 
-		,t3.key
-		,t3.value
+		,COALESCE(t3.key, '')
+		,COALESCEt(3.value, '')
 	FROM entity AS t1 
 		LEFT JOIN data_encrypted AS t2 ON t1.id = t2.entity_id
 		LEFT JOIN metadata AS t3 ON t1.id = t3.entity_id
@@ -180,14 +180,14 @@ func (r *PrivateDataRepository) List(ctx context.Context,
 		,t1.view
 		,t2.data
 		,t2.dek 
-		,t3.key
-		,t3.value
+		,COALESCE(t3.key, '')
+		,COALESCE(t3.value, '')
 	FROM entity AS t1 
 		LEFT JOIN data_encrypted AS t2 ON t1.id = t2.entity_id
 		LEFT JOIN metadata AS t3 ON t1.id = t3.entity_id
 	WHERE t1.user_id = $1 AND t1.type = $2`
 
-	rows, err := r.db.QueryContext(ctx, txt, owner.ID, modelType)
+	rows, err := r.db.QueryContext(ctx, txt, owner.ID(), modelType)
 	if err != nil {
 		return
 	}

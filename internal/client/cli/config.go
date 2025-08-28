@@ -206,9 +206,13 @@ func generateRSAKeys(savePath string) error {
 }
 
 func generateConfig(savePath, serverSocket, dbPath string) error {
+	db, err := filepath.Abs(dbPath)
+	if err != nil {
+		return err
+	}
 	config := Config{
 		ServerSocket: serverSocket,
-		DBPath:       dbPath,
+		DBPath:       db,
 	}
 
 	configBytes, err := yaml.Marshal(config)

@@ -23,11 +23,6 @@ func prepareListOfPrivateData(ls []model.PrivateData, keys replacementKeys) (ser
 
 	errs := make([]error, 0, len(ls))
 	for _, pv := range ls {
-		keys := replacementKeys{
-			kek:    keys.kek,
-			newKek: keys.newKek,
-		}
-
 		r, err := getResponseFromModelWithEncryptedDEK(pv, keys)
 		if err != nil {
 			errs = append(errs, err)
@@ -44,7 +39,9 @@ func getResponseFromModelWithEncryptedDEK(m model.PrivateData, keys replacementK
 
 	encDEK := savedData.Key
 
-	cleanDEK, err := keys.kek.Decrypt(encDEK)
+	edDEK := encryption.NewEncryptedDataFromReadyData(keys.kek, encDEK, nil)
+
+	cleanDEK, err := edDEK.Decrypt()
 	if err != nil {
 		return service.PrivateDataResponse{},
 			errors.Join(ErrDecryptionDEK, err)

@@ -53,7 +53,8 @@ func (s *UsepassService) List(ctx context.Context, userID int, clientKey encrypt
 	for i, v := range result {
 		ls[i] = v
 	}
-	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
+	keys := replacementKeys{kek: s.kek, newKek: clientKey}
+	return prepareListOfPrivateData(ls, keys)
 }
 
 func (s *UsepassService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {

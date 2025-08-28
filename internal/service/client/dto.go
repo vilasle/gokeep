@@ -14,13 +14,15 @@ type EncryptedData struct {
 }
 
 type EncryptedEntity struct {
-	ID   int
-	Data EncryptedData
+	ID       int
+	Data     EncryptedData
+	Metadata []MetadataValue
 }
 
 type GetRequest struct {
-	ID  int
-	JWT string
+	ID   int
+	JWT  string
+	Type int
 }
 
 type DeleteRequest struct {
@@ -44,8 +46,8 @@ type LoginPasswordSaveRequest struct {
 }
 
 type SaveResponse struct {
-	ID   int
-	Data EncryptedData
+	ID       int
+	Data     EncryptedData
 	Metadata []MetadataValue
 }
 

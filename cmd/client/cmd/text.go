@@ -31,12 +31,12 @@ var textAddCmd = &cobra.Command{
 		defer app.Close()
 
 		if textAdd.name == "" {
-			fmt.Println("name is required")
+			fmt.Println("--name argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if textAdd.data == "" && textAdd.file == "" {
-			fmt.Println("'data' or 'file' is required")
+			fmt.Println("'--data' or '--file' argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -105,17 +105,17 @@ var textEditCmd = &cobra.Command{
 		defer app.Close()
 
 		if textEdit.name == "" {
-			fmt.Println("name is required")
+			fmt.Println("--name argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if textEdit.data == "" && textEdit.file == "" {
-			fmt.Println("'data' or 'file' is required")
+			fmt.Println("'data' or 'file' argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if textEdit.id == 0 {
-			fmt.Println("id is required")
+			fmt.Println("--id is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -156,7 +156,7 @@ var textDeleteCmd = &cobra.Command{
 		defer app.Close()
 
 		if textDelete.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 

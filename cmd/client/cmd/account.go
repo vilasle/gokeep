@@ -51,6 +51,7 @@ var createCmd = &cobra.Command{
 			fmt.Println("failed to create account")
 			os.Exit(reasonInternalError)
 		}
+		fmt.Println("account created")
 	},
 }
 
@@ -59,7 +60,6 @@ var loginCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("called account login")
 		if len(args) == 0 {
 			fmt.Println("does not define account name")
 			os.Exit(reasonNotFillRequiredArgs)
@@ -84,9 +84,11 @@ var loginCmd = &cobra.Command{
 		defer cancel()
 
 		if err := app.Login(ctx, accountName, pass); err != nil {
-			fmt.Println("failed to create account")
+			fmt.Println("login failed")
+			fmt.Println(err.Error())
 			os.Exit(reasonInternalError)
 		}
+		fmt.Println("login operation completed")
 	},
 }
 

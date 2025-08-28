@@ -65,9 +65,9 @@ func (r *ClientRepository) Close() error {
 	return r.db.Close()
 }
 
-func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req client.SaveRequest) error {
+func (r *ClientRepository) Save(ctx context.Context, req client.SaveRequest) error {
 	if req.ID > 0 {
-		return r.update(ctx, tData, req, req.ID)
+		return r.update(ctx, req)
 	}
 	//search by external id and if there is record then update that
 	id, err := r.searchByExternalID(ctx, req.ExternalID)
@@ -76,14 +76,14 @@ func (r *ClientRepository) Save(ctx context.Context, tData model.Type, req clien
 	}
 
 	if id == 0 {
-		return r.add(ctx, tData, req)
+		return r.add(ctx, req)
 	} else {
-		return r.update(ctx, tData, req, id)
+		req.ID = id
+		return r.update(ctx, req)
 	}
 }
 
-func (r *ClientRepository) add(ctx context.Context,
-	tData model.Type, req client.SaveRequest) error {
+func (r *ClientRepository) add(ctx context.Context, req client.SaveRequest) error {
 
 	txt := `
 	INSERT INTO private_data (external_id, type, dek, data, view) 
@@ -96,7 +96,7 @@ func (r *ClientRepository) add(ctx context.Context,
 	}
 	defer tx.Rollback()
 
-	result, err := r.db.ExecContext(ctx, txt, req.ExternalID, tData, req.DEK, req.Data, req.View)
+	result, err := r.db.ExecContext(ctx, txt, req.ExternalID, req.Type, req.DEK, req.Data, req.View)
 	if err != nil {
 		return err
 	}
@@ -113,12 +113,11 @@ func (r *ClientRepository) add(ctx context.Context,
 	return tx.Commit()
 }
 
-func (r *ClientRepository) update(ctx context.Context,
-	tData model.Type, req client.SaveRequest, id int) error {
+func (r *ClientRepository) update(ctx context.Context, req client.SaveRequest) error {
 
 	txt := `UPDATE private_data SET dek = ?, data = ?, view = ?, type = ? WHERE id = ?`
 
-	_, err := r.db.ExecContext(ctx, txt, req.DEK, req.Data, req.View, tData, id)
+	_, err := r.db.ExecContext(ctx, txt, req.DEK, req.Data, req.View, req.Type, req.ID)
 	return err
 }
 
@@ -131,7 +130,7 @@ func (r *ClientRepository) searchByExternalID(ctx context.Context, externalID in
 	return id, err
 }
 
-func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req client.GetRequest) ([]client.GetResponse, error) {
+func (r *ClientRepository) Get(ctx context.Context, req client.GetRequest) ([]client.GetResponse, error) {
 	txt := `SELECT t1.id
 	,t1.external_id
 		,t1.dek
@@ -143,7 +142,7 @@ func (r *ClientRepository) Get(ctx context.Context, tData model.Type, req client
 			LEFT JOIN metadata AS t2 ON t1.id = t2.owner_id 
 		WHERE t1.type = ? and t1.id = ?`
 
-	rows, err := r.db.QueryContext(ctx, txt, tData, req.ID)
+	rows, err := r.db.QueryContext(ctx, txt, req.Type, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -176,16 +175,60 @@ func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.
 	return readEntityFromRows(rows)
 }
 
-func (r *ClientRepository) Delete(ctx context.Context, tData model.Type, req client.DeleteRequest) error {
-
+func (r *ClientRepository) Delete(ctx context.Context, req client.DeleteRequest) error {
 	if err := r.deleteMetadataByOwner(ctx, req.ID); err != nil {
 		return err
 	}
 
 	_, err := r.db.ExecContext(ctx,
 		`DELETE FROM private_data WHERE type = ? AND id = ?`,
-		tData, req.ID)
+		req.Type, req.ID)
 	return err
+}
+
+func (r *ClientRepository) Rewrite(ctx context.Context, req []client.SaveRequest) error {
+	txt := `
+		DELETE FROM metadata;
+		DELETE FROM sqlite_sequence WHERE name = 'metadata';
+		DELETE FROM private_data;
+		DELETE FROM sqlite_sequence WHERE name = 'private_data';
+	`
+	if _, err := r.db.ExecContext(ctx, txt); err != nil {
+		return err
+	}
+
+	txtEntity := `
+		INSERT INTO private_data (external_id, type, dek, data, view) 
+		VALUES (?, ?, ?, ?, ?) 
+		RETURNING id
+	`
+	txtMetadata := `
+		INSERT INTO metadata (owner_id, key, value) 
+		VALUES (?, ?, ?) 
+	`
+
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	for _, e := range req {
+		r, err := tx.ExecContext(ctx, txtEntity, e.ExternalID, e.Type, e.DEK, e.Data, e.View)
+		if err != nil {
+			return err
+		}
+		id, err := r.LastInsertId()
+		if err != nil {
+			return err
+		}
+		for _, m := range e.Metadata {
+			if _, err := tx.ExecContext(ctx, txtMetadata, id, m.Key, m.Value); err != nil {
+				return err
+			}
+		}
+	}
+	return tx.Commit()
 }
 
 func (r *ClientRepository) deleteMetadataByOwner(ctx context.Context, ownerId int) error {

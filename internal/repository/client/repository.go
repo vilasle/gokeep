@@ -9,10 +9,11 @@ import (
 type ClientRepository interface {
 	CreateScheme(ctx context.Context) error
 	Close() error
-	Save(ctx context.Context, tData model.Type, req SaveRequest) error
-	Get(ctx context.Context, tData model.Type, req GetRequest) ([]GetResponse, error)
+	Save(ctx context.Context, req SaveRequest) error
+	Get(ctx context.Context, req GetRequest) ([]GetResponse, error)
 	All(ctx context.Context, tData model.Type) ([]GetResponse, error)
-	Delete(ctx context.Context, tData model.Type, req DeleteRequest) error
+	Delete(ctx context.Context, req DeleteRequest) error
+	Rewrite(ctx context.Context, req []SaveRequest) error
 }
 
 type MetadataValue struct {
@@ -25,6 +26,7 @@ type SaveRequest struct {
 	View       string
 	ExternalID int
 	DEK        string
+	Type       int
 	Data       string
 	Metadata   []MetadataValue
 }
@@ -34,7 +36,8 @@ type SaveResponse struct {
 }
 
 type GetRequest struct {
-	ID int
+	ID   int
+	Type int
 }
 
 type GetResponse struct {
@@ -47,5 +50,6 @@ type GetResponse struct {
 }
 
 type DeleteRequest struct {
-	ID int
+	ID   int
+	Type int
 }

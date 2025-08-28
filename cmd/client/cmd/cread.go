@@ -30,12 +30,12 @@ var creadAddCmd = &cobra.Command{
 		defer app.Close()
 
 		if creadAdd.login == "" {
-			fmt.Println("login is required")
+			fmt.Println("--login argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if creadAdd.password == "" {
-			fmt.Println("password is required")
+			fmt.Println("--password argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 		metadata := prepareMetadata()
@@ -95,17 +95,17 @@ var creadEditCmd = &cobra.Command{
 		defer app.Close()
 
 		if creadEdit.login == "" {
-			fmt.Println("'login' is required")
+			fmt.Println("--login argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if creadEdit.password == "" {
-			fmt.Println("'password' is required")
+			fmt.Println("--password argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
 		if creadEdit.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
@@ -137,7 +137,7 @@ var creadDeleteCmd = &cobra.Command{
 		defer app.Close()
 
 		if creadDelete.id == 0 {
-			fmt.Println("'id' is required")
+			fmt.Println("--id argument is required")
 			os.Exit(reasonNotFillRequiredArgs)
 		}
 
