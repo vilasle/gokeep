@@ -50,22 +50,6 @@ func (u *Usepass) prepareEncryptedData(encoder Encoder) (err error) {
 	return err
 }
 
-// func (u *Usepass) decryptData(encoder Encoder) error {
-// 	data, err := encoder.Decrypt(*u.encryptedData)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	lp := strings.Split(string(data), "\n")
-// 	if len(lp) != 2 {
-// 		return errors.New("invalid data")
-// 	}
-
-// 	u.login, u.password = lp[0], lp[1]
-
-// 	return nil
-// }
-
 func (u Usepass) dataForEncryption() []byte {
 	buf := bytes.Buffer{}
 	buf.WriteString(u.login)

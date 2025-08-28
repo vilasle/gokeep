@@ -210,6 +210,20 @@ func (mr *MockPrivateDataMockRecorder) ID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockPrivateData)(nil).ID))
 }
 
+// Metadata mocks base method.
+func (m *MockPrivateData) Metadata() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Metadata")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Metadata indicates an expected call of Metadata.
+func (mr *MockPrivateDataMockRecorder) Metadata() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Metadata", reflect.TypeOf((*MockPrivateData)(nil).Metadata))
+}
+
 // Owner mocks base method.
 func (m *MockPrivateData) Owner() *model.User {
 	m.ctrl.T.Helper()
