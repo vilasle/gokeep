@@ -220,6 +220,7 @@ func Test_findUserByLogin(t *testing.T) {
 	type mockArgs struct {
 		input  string
 		output UserInfo
+		err error
 	}
 
 	testCases := []struct {
@@ -228,6 +229,7 @@ func Test_findUserByLogin(t *testing.T) {
 		password string
 		mockArgs mockArgs
 		expected *User
+		wantErr bool
 	}{
 		{
 			name:     "valid user",
@@ -238,6 +240,7 @@ func Test_findUserByLogin(t *testing.T) {
 				login:    "test",
 				password: "5e884898da28047151d42d8",
 			},
+			wantErr: false,
 			mockArgs: mockArgs{
 				input: "test",
 				output: UserInfo{
@@ -245,6 +248,19 @@ func Test_findUserByLogin(t *testing.T) {
 					Login:    "test",
 					Password: "5e884898da28047151d42d8",
 				},
+				err: nil,
+			},
+		},
+		{
+			name:     "repository error",
+			login:    "test",
+			password: "password",
+			expected: nil,
+			wantErr: true,
+			mockArgs: mockArgs{
+				input: "test",
+				output: UserInfo{},
+				err: errors.New("repository error"),
 			},
 		},
 	}
@@ -255,13 +271,89 @@ func Test_findUserByLogin(t *testing.T) {
 
 			ctx := context.Background()
 			r := NewMockUserRepository(ctrl)
-			r.EXPECT().Find(ctx, tt.mockArgs.input).Return(tt.mockArgs.output, nil)
+			r.EXPECT().Find(ctx, tt.mockArgs.input).Return(tt.mockArgs.output, tt.mockArgs.err)
 
 			actual, err := findUserByLogin(ctx, tt.login, r)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected.id, actual.ID())
 			assert.Equal(t, tt.expected.login, actual.login)
 			assert.Equal(t, tt.expected.password, actual.password)
 		})
 	}
+}
+
+func Test_getUserByID(t *testing.T) {
+	type mockArg struct {
+		input  int
+		output UserInfo
+		err    error
+	}
+
+	testCases := []struct {
+		name      string
+		input     int
+		output    *User
+		wantError bool
+		mockArg
+	}{
+		{
+			name:  "valid user",
+			input: 1,
+			output: &User{
+				id:       1,
+				login:    "test",
+				password: "password",
+			},
+			wantError: false,
+			mockArg: mockArg{
+				input: 1,
+				output: UserInfo{
+					ID:       1,
+					Login:    "test",
+					Password: "password",
+				},
+				err: nil,
+			},
+		},
+		{
+			name:      "repository failed",
+			input:     1,
+			output:    nil,
+			wantError: true,
+			mockArg: mockArg{
+				input:  1,
+				output: UserInfo{},
+				err:    errors.New("repository failed"),
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			r := NewMockUserRepository(ctrl)
+
+			r.EXPECT().Get(gomock.Any(), tt.mockArg.input).Return(tt.mockArg.output, tt.mockArg.err)
+
+			ctx := context.Background()
+			actual, err := getUserByID(ctx, tt.input, r)
+
+			if tt.wantError {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.output.id, actual.id)
+			assert.Equal(t, tt.output.password, actual.password)
+			assert.Equal(t, tt.output.login, actual.login)
+		})
+	}
+
 }
