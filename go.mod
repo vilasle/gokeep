@@ -7,7 +7,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 	github.com/huandu/go-assert v1.1.6
-	github.com/huandu/go-sqlbuilder v1.36.0
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/spf13/cobra v1.9.1
@@ -20,7 +19,6 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect

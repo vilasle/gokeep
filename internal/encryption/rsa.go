@@ -10,26 +10,12 @@ import (
 	"errors"
 )
 
-/*
-	var aesCipher, rsaCipher Cipher
-	var data []byte
-
-	dek := aes.NewCipher(key)
-	encryptedData := dek.Encrypt(data)
-
-	serverDEKKey := aesCipher.Encrypt(dek)
-	encData := createEncData(encryptedData, serverDEKKey)
-
-	err := encData.ReplaceMasterKey(aesCipher, rsaCipher)
-
-*/
-
 type RSACipher struct {
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 }
 
-func NewRSACipherFroRawPublicKey(publicKey []byte) (*RSACipher, error) {
+func NewRSACipherFromRawPublicKey(publicKey []byte) (*RSACipher, error) {
 	spkiBlock, _ := pem.Decode(publicKey)
 	if spkiBlock == nil {
 		return nil, errors.New("public key is not valid")

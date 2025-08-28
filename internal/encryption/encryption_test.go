@@ -3,6 +3,8 @@ package encryption
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"testing"
 
 	"errors"
@@ -135,20 +137,34 @@ func TestAESKey_EncryptDecrypt(t *testing.T) {
 }
 
 func Test_EncryptedData_EncryptDecrypt(t *testing.T) {
+	//valid case
 	jsonKey := []byte(`{"key":"898a1670e42bf1eb639ac10589a48c44f811fa4ad5aeed0e43607d0d75b3bc04","nonce":"93f7bfe35b9442fc1679785e"}`)
 	content := []byte("SomeContentForEncryptionAndDecryption")
 	DEK, err := NewAESKeyFromJSON(jsonKey)
 	require.NoError(t, err)
 
-	data := EncryptedData{dek: DEK}
+	data := NewEncryptedData(DEK)
 
 	err = data.Encrypt(content)
 	require.NoError(t, err)
 
-	decData, err := data.Decrypt()
-	require.NoError(t, err)
+	newData := NewEncryptedDataFromReadyData(DEK, []byte(data.Data), DEK.key)
 
+	decData, err := newData.Decrypt()
+	require.NoError(t, err)
 	require.Equal(t, content, decData)
+
+	edWrongHexData := EncryptedData{dek: DEK, Data: "not hex string"}
+
+	_, err = edWrongHexData.Decrypt()
+	require.Error(t, err)
+
+	edWrongHexData.Key = "not hex string"
+
+	_, err = edWrongHexData.DecryptKey(DEK)
+	require.Error(t, err)
+
+
 }
 
 func Test_EncryptedData_ReplaceKey(t *testing.T) {
@@ -195,4 +211,36 @@ func Test_EncryptedData_ReplaceKey(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, content, decData)
+}
+
+func Test_GenerateNewAESKey(t *testing.T) {
+	key, err := GenerateNewAESKey()
+	require.NoError(t, err)
+	require.NotNil(t, key)
+}
+
+func Test_NewRSACipherFromRawPublicKey(t *testing.T) {
+	//valid public key
+	pk, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&pk.PublicKey)
+	require.NoError(t, err)
+
+	publicKeyBlock := &pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+	publicKey := pem.EncodeToMemory(publicKeyBlock)
+
+	cipher, err := NewRSACipherFromRawPublicKey(publicKey)
+	require.NoError(t, err)
+	require.NotNil(t, cipher)
+
+	//not valid public key
+
+	cipher, err = NewRSACipherFromRawPublicKey([]byte("not valid public key"))
+	require.Error(t, err)
+	require.Nil(t, cipher)
+
 }

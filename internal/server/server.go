@@ -417,7 +417,7 @@ func (s *Server) getSessionByToken(ctx context.Context, token string) (session, 
 		return session{}, err
 	}
 	//create encoder from session public key
-	encoder, err := encryption.NewRSACipherFroRawPublicKey(ses.PublicKey)
+	encoder, err := encryption.NewRSACipherFromRawPublicKey(ses.PublicKey)
 	return session{ses.UserID, encoder}, err
 }
 
