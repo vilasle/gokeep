@@ -69,78 +69,20 @@ func (r *ClientRepository) Save(ctx context.Context, req client.SaveRequest) err
 	if req.ID > 0 {
 		return r.update(ctx, req)
 	}
-	//search by external id and if there is record then update that
-	id, err := r.searchByExternalID(ctx, req.ExternalID)
-	if err != nil {
-		return err
-	}
-
-	if id == 0 {
-		return r.add(ctx, req)
-	} else {
-		req.ID = id
-		return r.update(ctx, req)
-	}
-}
-
-func (r *ClientRepository) add(ctx context.Context, req client.SaveRequest) error {
-
-	txt := `
-	INSERT INTO private_data (external_id, type, dek, data, view) 
-	VALUES (?, ?, ?, ?, ?) 
-	RETURNING id`
-
-	tx, err := r.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	result, err := r.db.ExecContext(ctx, txt, req.ExternalID, req.Type, req.DEK, req.Data, req.View)
-	if err != nil {
-		return err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	if err := r.addOrUpdateMetadataByOwner(ctx, tx, int(id), req.Metadata); err != nil {
-		return err
-	}
-
-	return tx.Commit()
-}
-
-func (r *ClientRepository) update(ctx context.Context, req client.SaveRequest) error {
-
-	txt := `UPDATE private_data SET dek = ?, data = ?, view = ?, type = ? WHERE id = ?`
-
-	_, err := r.db.ExecContext(ctx, txt, req.DEK, req.Data, req.View, req.Type, req.ID)
-	return err
-}
-
-func (r *ClientRepository) searchByExternalID(ctx context.Context, externalID int) (id int, err error) {
-	txt := `SELECT id FROM private_data WHERE external_id = ?`
-	err = r.db.QueryRowContext(ctx, txt, externalID).Scan(&id)
-	if err == sql.ErrNoRows {
-		return 0, nil
-	}
-	return id, err
+	return r.add(ctx, req)
 }
 
 func (r *ClientRepository) Get(ctx context.Context, req client.GetRequest) ([]client.GetResponse, error) {
 	txt := `SELECT t1.id
 	,t1.external_id
-		,t1.dek
-		,t1.data
-		,t1.view
-		,IFNULL(t2.key, '')
-		,IFNULL(t2.value, '')
-		FROM private_data AS t1 
-			LEFT JOIN metadata AS t2 ON t1.id = t2.owner_id 
-		WHERE t1.type = ? and t1.id = ?`
+	,t1.dek
+	,t1.data
+	,t1.view
+	,IFNULL(t2.key, '')
+	,IFNULL(t2.value, '')
+	FROM private_data AS t1 
+		LEFT JOIN metadata AS t2 ON t1.id = t2.owner_id 
+	WHERE t1.type = ? and t1.id = ?`
 
 	rows, err := r.db.QueryContext(ctx, txt, req.Type, req.ID)
 	if err != nil {
@@ -231,6 +173,56 @@ func (r *ClientRepository) Rewrite(ctx context.Context, req []client.SaveRequest
 	return tx.Commit()
 }
 
+func (r *ClientRepository) add(ctx context.Context, req client.SaveRequest) error {
+
+	txt := `
+	INSERT INTO private_data (external_id, type, dek, data, view) 
+	VALUES (?, ?, ?, ?, ?) 
+	RETURNING id`
+
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	result, err := r.db.ExecContext(ctx, txt, req.ExternalID, req.Type, req.DEK, req.Data, req.View)
+	if err != nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	if err := r.addOrUpdateMetadataByOwner(ctx, tx, int(id), req.Metadata); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *ClientRepository) update(ctx context.Context, req client.SaveRequest) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	txt := `UPDATE private_data SET dek = ?, data = ?, view = ?, type = ? WHERE id = ?`
+
+	if _, err := tx.ExecContext(ctx, txt, req.DEK, req.Data, req.View, req.Type, req.ID); err != nil {
+		return err
+	}
+
+	if err := r.addOrUpdateMetadataByOwner(ctx, tx, req.ID, req.Metadata); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (r *ClientRepository) deleteMetadataByOwner(ctx context.Context, ownerId int) error {
 	_, err := r.db.ExecContext(ctx,
 		`DELETE FROM metadata WHERE owner_id = ?`,
@@ -260,12 +252,8 @@ func (r *ClientRepository) addOrUpdateMetadataByOwner(ctx context.Context, tx *s
 func getMetadata(ctx context.Context, tx *sql.Tx, ownerId int, key string) (id int, err error) {
 	q := `SELECT id FROM metadata WHERE owner_id = $1 AND key = $2`
 
-	err = tx.QueryRowContext(ctx, q, ownerId, key).Scan(&id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, nil
-		}
-		return 0, err
+	if err = tx.QueryRowContext(ctx, q, ownerId, key).Scan(&id); err == sql.ErrNoRows {
+		err = nil
 	}
 	return id, err
 }
