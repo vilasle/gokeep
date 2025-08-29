@@ -25,17 +25,13 @@ func (r *SessionRepository) Create(ctx context.Context, credential repository.Cr
 	return
 }
 
-func (r *SessionRepository) Get(ctx context.Context, id int) (repository.CredentialInfo, error) {
+func (r *SessionRepository) Get(ctx context.Context, id int) (credential repository.CredentialInfo, err error) {
 	txt := "SELECT id, user_id, public_key FROM session WHERE id = $1"
 
-	row := r.db.QueryRowContext(ctx, txt, id)
-	var credential repository.CredentialInfo
-	err := row.Scan(&credential.ID, &credential.UserId, &credential.PublicKey)
-
+	err = r.db.QueryRowContext(ctx, txt, id).Scan(&credential.ID, &credential.UserId, &credential.PublicKey)
 	if err == sql.ErrNoRows {
 		return repository.CredentialInfo{}, repository.ErrNotFound
 	}
-
 	return credential, err
 }
 

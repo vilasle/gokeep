@@ -46,7 +46,9 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 		return 0, err
 	}
 
-	err = tx.Commit()
+	if err = tx.Commit(); err != nil {
+		id = 0
+	}
 
 	return id, err
 }
@@ -67,10 +69,11 @@ func (r *PrivateDataRepository) addEncryptedData(ctx context.Context, tx *sql.Tx
 	return err
 }
 
-func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDataSave) (int, error) {
+func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDataSave) (id int, err error) {
 	if data.ID == 0 {
 		return 0, model.ErrEmptyID
 	}
+	id = data.ID
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -90,7 +93,11 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 		return 0, err
 	}
 
-	return data.ID, tx.Commit()
+	if err = tx.Commit(); err != nil {
+		id = 0
+	}
+
+	return id, err
 }
 
 func (r *PrivateDataRepository) updateEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) error {
@@ -132,6 +139,7 @@ func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 
 	txt := []string{
 		`DELETE FROM data_encrypted WHERE entity_id = $1`,
+		`DELETE FROM metadata WHERE entity_id = $1`,
 		`DELETE FROM entity WHERE id = $1`,
 	}
 
@@ -219,7 +227,7 @@ func readGettingRows(rows *sql.Rows) (result map[int]model.PrivateDataInfo, err 
 			result[d.ID] = d
 		} else {
 			if key != "" {
-				d.Metadata[key] = value
+				result[d.ID].Metadata[key] = value
 			}
 		}
 	}
