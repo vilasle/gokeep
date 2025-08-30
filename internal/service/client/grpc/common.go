@@ -13,6 +13,10 @@ func handleSaveResponse(resp *proto.EncryptedDataResponse, err error) (client.Sa
 		return client.SaveResponse{}, err
 	}
 
+	if resp == nil {
+		return client.SaveResponse{}, errors.New("response is nil")
+	}
+
 	if resp.Error != "" {
 		return client.SaveResponse{}, errors.New(resp.Error)
 	}
@@ -40,6 +44,10 @@ func get(ctx context.Context, svc proto.PrivateDataServiceClient, req client.Get
 func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.EncryptedEntity, error) {
 	if err != nil {
 		return nil, err
+	}
+
+	if resp == nil {
+		return nil, errors.New("response is nil")
 	}
 
 	if resp.Error != "" {
@@ -71,6 +79,10 @@ func delete(ctx context.Context, svc proto.PrivateDataServiceClient, req client.
 func handleDeleteResponse(resp *proto.DeleteDataResponse, err error) error {
 	if err != nil {
 		return err
+	}
+
+	if resp == nil {
+		return errors.New("response is nil")
 	}
 
 	if resp.Error != "" {

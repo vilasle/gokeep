@@ -69,7 +69,7 @@ func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
 	if err = client.loadRSAKeys(); err != nil {
 		return nil, err
 	}
-
+	//FIXME use TLS
 	conn, err := grpc.NewClient(client.config.ServerSocket, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err

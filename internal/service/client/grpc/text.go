@@ -26,14 +26,16 @@ func (s *TextDataService) Save(ctx context.Context,
 		Name:       req.Name,
 		Data:       req.Text,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
-		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
+		Metadata:   make([]*proto.Metadata, 0, len(req.Metadata)),
 	}
-	for i, m := range req.Metadata {
-		dto.Metadata[i] = &proto.Metadata{
-			Key:   m.Key,
-			Value: m.Value,
-		}
+
+	for _, v := range req.Metadata {
+		dto.Metadata = append(dto.Metadata, &proto.Metadata{
+			Key:   v.Key,
+			Value: v.Value,
+		})
 	}
+
 	return handleSaveResponse(s.client.SaveTextData(ctx, &dto))
 }
 

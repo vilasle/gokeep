@@ -26,15 +26,16 @@ func (s *LoginPasswordService) Save(ctx context.Context,
 		Login:      req.Login,
 		Password:   req.Password,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
-		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
+		Metadata:   make([]*proto.Metadata, 0, len(req.Metadata)),
 	}
 
-	for i, v := range req.Metadata {
-		dto.Metadata[i] = &proto.Metadata{
+	for _, v := range req.Metadata {
+		dto.Metadata = append(dto.Metadata, &proto.Metadata{
 			Key:   v.Key,
 			Value: v.Value,
-		}
+		})
 	}
+
 	return handleSaveResponse(s.client.SaveLoginPassword(ctx, &dto))
 }
 

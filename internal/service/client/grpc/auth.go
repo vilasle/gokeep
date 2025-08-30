@@ -29,8 +29,12 @@ func (s *GRPCAuthService) CreateAccount(ctx context.Context, accountName, passwo
 		return err
 	}
 
-	if resp.Error != "" {
+	if resp != nil && resp.Error != "" {
 		return errors.New(resp.Error)
+	}
+
+	if resp == nil {
+		return errors.New("response is invalid")
 	}
 	return nil
 }
@@ -47,8 +51,12 @@ func (s *GRPCAuthService) Login(ctx context.Context, accountName, password strin
 		return nil, err
 	}
 
-	if resp.Error != "" {
+	if resp != nil && resp.Error != "" {
 		return nil, errors.New(resp.Error)
+	}
+
+	if resp == nil {
+		return nil, errors.New("response is invalid")
 	}
 
 	return []byte(resp.Token), nil

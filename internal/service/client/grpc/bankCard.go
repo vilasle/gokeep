@@ -25,7 +25,7 @@ func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveReque
 		Cvv:        int64(req.CVV),
 		Expires:    req.Expires,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
-		Metadata:   make([]*proto.Metadata, len(req.Metadata)),
+		Metadata:   make([]*proto.Metadata, 0, len(req.Metadata)),
 	}
 
 	for _, v := range req.Metadata {

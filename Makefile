@@ -26,6 +26,8 @@ generate-mock:
 	mockgen -package=private -destination=internal/service/private/encryption_mock_test.go -source=internal/encryption/encryption.go
 	mockgen -package=server -destination=internal/server/service_mock_test.go -source=internal/service/service.go
 
+	mockgen -package=grpc -destination=internal/service/client/grpc/pb_mock_test.go -source=proto/service_grpc.pb.go
+
 test:
 	go test ./...
 
