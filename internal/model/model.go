@@ -11,7 +11,7 @@ type model struct {
 	id             int
 	view           string
 	modelType      Type
-	owner          *User
+	owner          UserAccess
 	encryptedData  *EncryptedData
 	dataRepository PrivateDataRepository
 	metadata       map[string]string
@@ -23,7 +23,7 @@ func (m *model) Save(ctx context.Context) (err error) {
 	dto := PrivateDataSave{
 		ID:       m.id,
 		Type:     m.modelType,
-		UserID:   m.owner.id,
+		UserID:   m.owner.ID(),
 		Data:     m.encryptedData.Data,
 		DEK:      m.encryptedData.Key,
 		View:     m.view,
@@ -72,7 +72,7 @@ func (m model) ID() int {
 	return m.id
 }
 
-func (m model) Owner() *User {
+func (m model) Owner() UserAccess {
 	return m.owner
 }
 

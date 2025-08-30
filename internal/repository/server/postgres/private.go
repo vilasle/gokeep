@@ -181,7 +181,7 @@ func (r *PrivateDataRepository) Get(ctx context.Context, id int) (response model
 }
 
 func (r *PrivateDataRepository) List(ctx context.Context,
-	modelType model.Type, owner *model.User) (response []model.PrivateDataInfo, err error) {
+	modelType model.Type, owner model.UserAccess) (response []model.PrivateDataInfo, err error) {
 
 	txt := `
 	SELECT t1.id 

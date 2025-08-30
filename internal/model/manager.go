@@ -20,7 +20,6 @@ const (
 
 // ModelManager is a manager for all models.
 type ModelManager struct {
-	repository RepositoryCollector
 	Users      *userManager
 	BankCards  *bankCardManager
 	PlainTexts *plainTextManager
@@ -30,22 +29,22 @@ type ModelManager struct {
 
 // NewModelManager creates a new model manager
 func NewModelManager(repository RepositoryCollector) ModelManager {
+	p := repository.Private()
 	return ModelManager{
-		repository: repository,
 		Users: &userManager{
 			repository: repository.User(),
 		},
 		BankCards: &bankCardManager{
-			pvRepository: repository.Private(),
+			pvRepository: p,
 		},
 		PlainTexts: &plainTextManager{
-			pvRepository: repository.Private(),
+			pvRepository: p,
 		},
 		BinaryData: &binaryDataManager{
-			pvRepository: repository.Private(),
+			pvRepository: p,
 		},
 		Usepass: &usepassManager{
-			pvRepository: repository.Private(),
+			pvRepository: p,
 		},
 	}
 }
@@ -61,12 +60,12 @@ func (c *userManager) New(login, password string) *User {
 }
 
 // FindByLogin  finds a user by login on repository, return ErrUserNotFound if not found
-func (c *userManager) FindByLogin(ctx context.Context, login string) (*User, error) {
+func (c *userManager) FindByLogin(ctx context.Context, login string) (UserAccess, error) {
 	//TODO add logger
 	return findUserByLogin(ctx, login, c.repository)
 }
 
-func (c *userManager) Get(ctx context.Context, id int) (*User, error) {
+func (c *userManager) Get(ctx context.Context, id int) (UserAccess, error) {
 	//TODO add logger
 	return getUserByID(ctx, id, c.repository)
 }
@@ -75,17 +74,17 @@ type usepassManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *usepassManager) New(owner *User, login, password string) *Usepass {
+func (c *usepassManager) New(owner UserAccess, login, password string) *Usepass {
 	usepass := newUsepass(owner, login, password)
 	usepass.dataRepository = c.pvRepository
 	return usepass
 }
 
-func (c *usepassManager) List(ctx context.Context, owner *User) ([]*Usepass, error) {
+func (c *usepassManager) List(ctx context.Context, owner UserAccess) ([]*Usepass, error) {
 	return fillListOfPrivateData[*Usepass](ctx, owner, TypeUsepass, c.pvRepository)
 }
 
-func (c *usepassManager) Get(ctx context.Context, owner *User, id int) (*Usepass, error) {
+func (c *usepassManager) Get(ctx context.Context, owner UserAccess, id int) (*Usepass, error) {
 	//TODO add logger
 	usepass, err := findUsepassByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
@@ -99,13 +98,13 @@ type bankCardManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *bankCardManager) New(owner *User, number string, cvv int, expirationDate time.Time) *BankCard {
+func (c *bankCardManager) New(owner UserAccess, number string, cvv int, expirationDate time.Time) *BankCard {
 	bankCard := newBankCard(owner, number, cvv, expirationDate)
 	bankCard.dataRepository = c.pvRepository
 	return bankCard
 }
 
-func (c *bankCardManager) Get(ctx context.Context, owner *User, id int) (*BankCard, error) {
+func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*BankCard, error) {
 	//TODO add logger
 	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
@@ -115,7 +114,7 @@ func (c *bankCardManager) Get(ctx context.Context, owner *User, id int) (*BankCa
 	return usepass, nil
 }
 
-func (c *bankCardManager) List(ctx context.Context, owner *User) ([]*BankCard, error) {
+func (c *bankCardManager) List(ctx context.Context, owner UserAccess) ([]*BankCard, error) {
 	return fillListOfPrivateData[*BankCard](ctx, owner, TypeBankCard, c.pvRepository)
 }
 
@@ -123,13 +122,13 @@ type plainTextManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *plainTextManager) New(owner *User, text []byte, view string) *PlainText {
+func (c *plainTextManager) New(owner UserAccess, text []byte, view string) *PlainText {
 	plainText := newPlainText(owner, text, view)
 	plainText.dataRepository = c.pvRepository
 	return plainText
 }
 
-func (c *plainTextManager) Get(ctx context.Context, owner *User, id int) (*PlainText, error) {
+func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*PlainText, error) {
 	//TODO add logger
 	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
@@ -139,7 +138,7 @@ func (c *plainTextManager) Get(ctx context.Context, owner *User, id int) (*Plain
 	return plainText, nil
 }
 
-func (c *plainTextManager) List(ctx context.Context, owner *User) ([]*PlainText, error) {
+func (c *plainTextManager) List(ctx context.Context, owner UserAccess) ([]*PlainText, error) {
 	return fillListOfPrivateData[*PlainText](ctx, owner, TypePlainText, c.pvRepository)
 }
 
@@ -147,13 +146,13 @@ type binaryDataManager struct {
 	pvRepository PrivateDataRepository
 }
 
-func (c *binaryDataManager) New(owner *User, data []byte, name string) *BinaryData {
+func (c *binaryDataManager) New(owner UserAccess, data []byte, name string) *BinaryData {
 	binaryData := newBinaryData(owner, data, name)
 	binaryData.dataRepository = c.pvRepository
 	return binaryData
 }
 
-func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int) (*BinaryData, error) {
+func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (*BinaryData, error) {
 	//TODO add logger
 	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
@@ -163,13 +162,13 @@ func (c *binaryDataManager) Get(ctx context.Context, owner *User, id int) (*Bina
 	return binaryData, nil
 }
 
-func (c *binaryDataManager) List(ctx context.Context, owner *User) ([]*BinaryData, error) {
+func (c *binaryDataManager) List(ctx context.Context, owner UserAccess) ([]*BinaryData, error) {
 	return fillListOfPrivateData[*BinaryData](ctx, owner, TypeBinaryData, c.pvRepository)
 }
 
 func fillListOfPrivateData[T *Usepass | *BankCard | *PlainText | *BinaryData](
 	ctx context.Context,
-	owner *User,
+	owner UserAccess,
 	modelType Type,
 	repository PrivateDataRepository) ([]T, error) {
 
@@ -196,8 +195,7 @@ func fillListOfPrivateData[T *Usepass | *BankCard | *PlainText | *BinaryData](
 	return result, nil
 }
 
-func newPrivateDate(pd PrivateDataInfo, modelType Type, owner *User, r PrivateDataRepository) (PrivateData, error) {
-
+func newPrivateDate(pd PrivateDataInfo, modelType Type, owner UserAccess, r PrivateDataRepository) (PrivateData, error) {
 	var pv PrivateData
 
 	meta := make(map[string]string)

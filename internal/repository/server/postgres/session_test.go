@@ -34,13 +34,13 @@ func Test_SessionRepository_Create(t *testing.T) {
 	r := SessionRepository{db}
 	ctx := context.Background()
 	req := repository.CredentialCreate{
-		UserId:    1,
+		UserID:    1,
 		PublicKey: []byte("test"),
 	}
 	expected := 2
 
 	mock.ExpectQuery("INSERT INTO session").
-		WithArgs(req.UserId, req.PublicKey).
+		WithArgs(req.UserID, req.PublicKey).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(2))
 
 	resp, err := r.Create(ctx, req)
@@ -61,7 +61,7 @@ func Test_SessionRepository_Get(t *testing.T) {
 		req := 2
 		expected := repository.CredentialInfo{
 			ID:        2,
-			UserId:    1,
+			UserID:    1,
 			PublicKey: []byte("test"),
 		}
 

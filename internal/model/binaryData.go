@@ -11,7 +11,7 @@ type BinaryData struct {
 	data []byte
 }
 
-func newBinaryData(owner *User, data []byte, name string) *BinaryData {
+func newBinaryData(owner UserAccess, data []byte, name string) *BinaryData {
 	return &BinaryData{
 		model: model{
 			view:      name,
@@ -43,13 +43,13 @@ func (bd *BinaryData) prepareEncryptedData(encoder Encoder) (err error) {
 	return err
 }
 
-func findBinaryDataByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*BinaryData, error) {
+func findBinaryDataByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*BinaryData, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if data.UserID != owner.id {
+	if data.UserID != owner.ID() {
 		return nil, ErrUserNotFound
 	}
 

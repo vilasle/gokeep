@@ -224,10 +224,10 @@ func (mr *MockPrivateDataMockRecorder) Metadata() *gomock.Call {
 }
 
 // Owner mocks base method.
-func (m *MockPrivateData) Owner() *User {
+func (m *MockPrivateData) Owner() UserAccess {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Owner")
-	ret0, _ := ret[0].(*User)
+	ret0, _ := ret[0].(UserAccess)
 	return ret0
 }
 
@@ -333,7 +333,7 @@ func (mr *MockPrivateDataRepositoryMockRecorder) Get(arg0, arg1 interface{}) *go
 }
 
 // List mocks base method.
-func (m *MockPrivateDataRepository) List(ctx context.Context, modelType Type, owner *User) ([]PrivateDataInfo, error) {
+func (m *MockPrivateDataRepository) List(ctx context.Context, modelType Type, owner UserAccess) ([]PrivateDataInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, modelType, owner)
 	ret0, _ := ret[0].([]PrivateDataInfo)

@@ -21,14 +21,14 @@ func NewSessionRepository(db *sql.DB) (*SessionRepository, error) {
 
 func (r *SessionRepository) Create(ctx context.Context, credential repository.CredentialCreate) (id int, err error) {
 	txt := "INSERT INTO session (user_id, public_key) VALUES($1, $2) RETURNING id"
-	err = r.db.QueryRowContext(ctx, txt, credential.UserId, credential.PublicKey).Scan(&id)
+	err = r.db.QueryRowContext(ctx, txt, credential.UserID, credential.PublicKey).Scan(&id)
 	return
 }
 
 func (r *SessionRepository) Get(ctx context.Context, id int) (credential repository.CredentialInfo, err error) {
 	txt := "SELECT id, user_id, public_key FROM session WHERE id = $1"
 
-	err = r.db.QueryRowContext(ctx, txt, id).Scan(&credential.ID, &credential.UserId, &credential.PublicKey)
+	err = r.db.QueryRowContext(ctx, txt, id).Scan(&credential.ID, &credential.UserID, &credential.PublicKey)
 	if err == sql.ErrNoRows {
 		return repository.CredentialInfo{}, repository.ErrNotFound
 	}

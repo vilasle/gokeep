@@ -17,7 +17,7 @@ type BankCard struct {
 	expiration time.Time
 }
 
-func newBankCard(owner *User, cardNumber string, cvv int, expiration time.Time) *BankCard {
+func newBankCard(owner UserAccess, cardNumber string, cvv int, expiration time.Time) *BankCard {
 	ent := &BankCard{
 		model: model{
 			owner:     owner,
@@ -74,13 +74,13 @@ func (bc BankCard) dataForEncryption() []byte {
 }
 
 // FIXME add getting band card by id and check that owner was right id
-func findBankCardByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*BankCard, error) {
+func findBankCardByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*BankCard, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if data.UserID != owner.id {
+	if data.UserID != owner.ID() {
 		return nil, ErrNotFound
 	}
 

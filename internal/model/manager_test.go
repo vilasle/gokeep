@@ -20,7 +20,7 @@ func Test_NewModelManager(t *testing.T) {
 	pvR := NewMockPrivateDataRepository(ctrl)
 
 	m.EXPECT().User().Return(ur)
-	m.EXPECT().Private().Return(pvR).Times(4)
+	m.EXPECT().Private().Return(pvR)
 
 	NewModelManager(m)
 }
@@ -70,9 +70,9 @@ func Test_userManager_Find(t *testing.T) {
 	}
 
 	u, _ := manager.FindByLogin(ctx, "test")
-	assert.Equal(t, user.id, u.id)
-	assert.Equal(t, user.login, u.login)
-	assert.Equal(t, user.password, u.password)
+	assert.Equal(t, user.id, u.ID())
+	assert.Equal(t, user.login, u.Login())
+	assert.Equal(t, user.password, u.Hash())
 
 	//fail case
 	repository.EXPECT().Find(ctx, "test").Return(UserInfo{}, errors.New("user not found"))
@@ -107,9 +107,9 @@ func Test_userManager_Get(t *testing.T) {
 	}
 
 	u, _ := manager.Get(ctx, 1)
-	assert.Equal(t, user.id, u.id)
-	assert.Equal(t, user.login, u.login)
-	assert.Equal(t, user.password, u.password)
+	assert.Equal(t, user.id, u.ID())
+	assert.Equal(t, user.login, u.Login())
+	assert.Equal(t, user.password, u.Hash())
 
 	//fail case
 	repository.EXPECT().Get(ctx, 1).Return(UserInfo{}, errors.New("user not found"))

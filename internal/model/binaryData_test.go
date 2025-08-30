@@ -125,7 +125,7 @@ func Test_BinaryData_Save(t *testing.T) {
 			dto := PrivateDataSave{
 				ID:       tt.id,
 				Type:     entity.modelType,
-				UserID:   entity.owner.id,
+				UserID:   entity.owner.ID(),
 				Data:     tt.encryptedData.Data,
 				DEK:      tt.encryptedData.Key,
 				View:     entity.view,

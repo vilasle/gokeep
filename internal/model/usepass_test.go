@@ -124,7 +124,7 @@ func Test_Usepass_Save(t *testing.T) {
 			dto := PrivateDataSave{
 				ID:       tt.id,
 				Type:     usepass.modelType,
-				UserID:   usepass.Owner().id,
+				UserID:   usepass.Owner().ID(),
 				Data:     tt.encryptedData.Data,
 				DEK:      tt.encryptedData.Key,
 				View:     usepass.String(),

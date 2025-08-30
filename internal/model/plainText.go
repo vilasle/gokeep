@@ -11,7 +11,7 @@ type PlainText struct {
 	text []byte
 }
 
-func newPlainText(owner *User, text []byte, name string) *PlainText {
+func newPlainText(owner UserAccess, text []byte, name string) *PlainText {
 	return &PlainText{
 		model: model{
 			view:      name,
@@ -44,13 +44,13 @@ func (tp *PlainText) SetName(name string) {
 }
 
 // FIXME add getting plain text by id and check that owner was right id
-func findPlainTextByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*PlainText, error) {
+func findPlainTextByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*PlainText, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if data.UserID != owner.id {
+	if data.UserID != owner.ID() {
 		return nil, ErrNotFound
 	}
 

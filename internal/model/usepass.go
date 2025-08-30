@@ -15,7 +15,7 @@ type Usepass struct {
 	password string
 }
 
-func newUsepass(owner *User, login, password string) *Usepass {
+func newUsepass(owner UserAccess, login, password string) *Usepass {
 	return &Usepass{
 		model: model{
 			view:      login,
@@ -59,13 +59,13 @@ func (u Usepass) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-func findUsepassByID(ctx context.Context, id int, owner *User, r PrivateDataRepository) (*Usepass, error) {
+func findUsepassByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*Usepass, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if data.UserID != owner.id {
+	if data.UserID != owner.ID() {
 		return nil, errors.New("user not found")
 	}
 

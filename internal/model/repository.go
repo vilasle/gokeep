@@ -18,7 +18,7 @@ type UserRepository interface {
 type PrivateData interface {
 	ID() int
 	Type() int
-	Owner() *User
+	Owner() UserAccess
 	String() string
 	EncryptedData() EncryptedData
 	Metadata() map[string]string
@@ -30,5 +30,5 @@ type PrivateDataRepository interface {
 	Update(ctx context.Context, data PrivateDataSave) (int, error)
 	Delete(ctx context.Context, id int) error
 	Get(context.Context, int) (PrivateDataInfo, error)
-	List(ctx context.Context, modelType Type, owner *User) ([]PrivateDataInfo, error)
+	List(ctx context.Context, modelType Type, owner UserAccess) ([]PrivateDataInfo, error)
 }

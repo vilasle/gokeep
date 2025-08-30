@@ -8,12 +8,12 @@ type SessionRepository interface {
 }
 
 type CredentialCreate struct {
-	UserId    int
+	UserID    int
 	PublicKey []byte
 }
 
 type CredentialInfo struct {
 	ID        int
-	UserId    int
+	UserID    int
 	PublicKey []byte
 }

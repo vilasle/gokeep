@@ -6,6 +6,13 @@ import (
 	"encoding/hex"
 )
 
+type UserAccess interface {
+	ID() int
+	Login() string
+	Hash() string
+	PasswordIsValid(password string) bool
+}
+
 // User - presentation user in storage, keep login by creating user and checking password
 type User struct {
 	id    int
@@ -31,6 +38,14 @@ func (u *User) PasswordIsValid(password string) bool {
 
 func (u *User) ID() int {
 	return u.id
+}
+
+func (u *User) Hash() string {
+	return u.password
+}
+
+func (u *User) Login() string {
+	return u.login
 }
 
 // Save - save user to storage
