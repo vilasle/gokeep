@@ -8,22 +8,22 @@ import (
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 )
 
-func (c *Client) GetLoginPassword(ctx context.Context, id int) error {
+func (c *CommandLineClient) GetLoginPassword(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeUsepass, id)
 }
-func (c *Client) GetBankCard(ctx context.Context, id int) error {
+func (c *CommandLineClient) GetBankCard(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeBankCard, id)
 }
 
-func (c *Client) GetTextData(ctx context.Context, id int) error {
+func (c *CommandLineClient) GetTextData(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypePlainText, id)
 }
 
-func (c *Client) GetBinaryData(ctx context.Context, id int) error {
+func (c *CommandLineClient) GetBinaryData(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeBinaryData, id)
 }
 
-func (c *Client) get(ctx context.Context, t model.Type, id int) error {
+func (c *CommandLineClient) get(ctx context.Context, t model.Type, id int) error {
 	var (
 		response []repository.GetResponse
 		err      error

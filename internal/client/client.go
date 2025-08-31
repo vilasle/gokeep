@@ -1,6 +1,7 @@
-package cli
+package client
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -13,12 +14,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Client interface {
+	Close() error
+
+	CreateAccount(ctx context.Context, accountName, password string) error
+	Login(ctx context.Context, accountName, password string) (err error)
+
+	DeleteLoginPassword(ctx context.Context, id int) error
+	DeleteBankCard(ctx context.Context, id int) error
+	DeleteTextData(ctx context.Context, id int) error
+	DeleteBinaryData(ctx context.Context, id int) error
+
+	SaveLoginPassword(ctx context.Context, login, password string, id int, meta map[string]string) (err error)
+	SaveBankCard(ctx context.Context, number, expires string, cvv, id int, meta map[string]string) (err error)
+	SaveTextData(ctx context.Context, text string, name string, id int, meta map[string]string) (err error)
+	SaveBinaryData(ctx context.Context, content []byte, name string, id int, meta map[string]string) error
+
+	GetLoginPassword(ctx context.Context, id int) error
+	GetBankCard(ctx context.Context, id int) error
+	GetTextData(ctx context.Context, id int) error
+	GetBinaryData(ctx context.Context, id int) error
+
+	Sync(ctx context.Context) error
+}
+
 const (
-	mainDir                  = ".gokeep"
-	configName               = "config.yaml"
-	uploadName               = "upload"
-	certificateNameDirectory = "cert"
-	creadExt                 = ".cread"
+	PubKeyName  = "public.key"
+	PrivKeyName = "private.key"
+
+	MainDir                  = ".gokeep"
+	ConfigName               = "config.yaml"
+	UploadName               = "upload"
+	CertificateNameDirectory = "cert"
+	CreadExt                 = ".cread"
 )
 
 type Config struct {
@@ -32,23 +60,6 @@ type WorkplaceConfig struct {
 	Config          PathInfo
 	Certificate     PathInfo
 	Credentials     PathInfo
-}
-
-func (w WorkplaceConfig) Report() {
-	fmt.Println("workplace directory:", w.ConfigDirectory.Path)
-	fmt.Println("upload directory:", w.UploadDirectory.Path)
-	fmt.Println("config:", w.Config.Path)
-	fmt.Println("certificate:", w.Certificate.Path)
-}
-
-func (w WorkplaceConfig) PathError() error {
-	return errors.Join(w.ConfigDirectory.Error, w.Config.Error,
-		w.Certificate.Error)
-}
-
-type PathInfo struct {
-	Path  string
-	Error error
 }
 
 func GetCurrentConfiguration(customConfigPath string) (WorkplaceConfig, error) {
@@ -81,6 +92,23 @@ func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error)
 	return generateConfig(workplaceConfig.Config.Path, serverSocket, dbPath)
 }
 
+func (w WorkplaceConfig) Report() {
+	fmt.Println("workplace directory:", w.ConfigDirectory.Path)
+	fmt.Println("upload directory:", w.UploadDirectory.Path)
+	fmt.Println("config:", w.Config.Path)
+	fmt.Println("certificate:", w.Certificate.Path)
+}
+
+func (w WorkplaceConfig) PathError() error {
+	return errors.Join(w.ConfigDirectory.Error, w.Config.Error,
+		w.Certificate.Error)
+}
+
+type PathInfo struct {
+	Path  string
+	Error error
+}
+
 func defaultConfiguration() WorkplaceConfig {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -93,28 +121,16 @@ func defaultConfiguration() WorkplaceConfig {
 func customConfiguration(path string) WorkplaceConfig {
 	return WorkplaceConfig{
 		ConfigDirectory: getPathInfoCheckOnlyExisting(path),
-		UploadDirectory: getPathInfoCheckOnlyExisting(filepath.Join(path, uploadName)),
-		Config:          getPathInfoCheckOnlyExisting(filepath.Join(path, configName)),
-		Certificate:     getCertificatesPathInfo(filepath.Join(path, certificateNameDirectory)),
+		UploadDirectory: getPathInfoCheckOnlyExisting(filepath.Join(path, UploadName)),
+		Config:          getPathInfoCheckOnlyExisting(filepath.Join(path, ConfigName)),
+		Certificate:     getCertificatesPathInfo(filepath.Join(path, CertificateNameDirectory)),
 		Credentials:     getCredentialsPathInfo(path),
 	}
 }
 
-func isExists(path string) error {
-	_, err := os.Stat(path)
-	return err
-}
-
 func getPathInfoCheckOnlyExisting(path string) PathInfo {
-	if err := isExists(path); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-
-			return PathInfo{Path: path, Error: fmt.Errorf("%s does not exists", path)}
-		} else {
-			return PathInfo{Path: path, Error: err}
-		}
-	}
-	return PathInfo{Path: path, Error: nil}
+	_, err := os.Stat(path)
+	return PathInfo{Path: path, Error: err}
 }
 
 func getCertificatesPathInfo(path string) PathInfo {
@@ -139,7 +155,7 @@ func getCredentialsPathInfo(path string) PathInfo {
 	}
 	for _, file := range ls {
 		ext := filepath.Ext(file.Name())
-		if ext == creadExt {
+		if ext == CreadExt {
 			return PathInfo{Path: filepath.Join(path, file.Name()), Error: nil}
 		}
 	}
@@ -182,8 +198,8 @@ func generateRSAKeys(savePath string) error {
 	}
 	publicKeyPEM := pem.EncodeToMemory(publicKeyBlock)
 
-	privKeyPath := filepath.Join(savePath, privKeyName)
-	pubKeyPath := filepath.Join(savePath, pubKeyName)
+	privKeyPath := filepath.Join(savePath, PrivKeyName)
+	pubKeyPath := filepath.Join(savePath, PubKeyName)
 
 	if err := os.WriteFile(privKeyPath, privateKeyPEM, 0644); err != nil {
 		return errors.Join(err, errors.New("write private key"))

@@ -2,11 +2,11 @@ package cli
 
 import "context"
 
-func (c *Client) CreateAccount(ctx context.Context, accountName, password string) error {
+func (c *CommandLineClient) CreateAccount(ctx context.Context, accountName, password string) error {
 	return c.auth.CreateAccount(ctx, accountName, password)
 }
 
-func (c *Client) Login(ctx context.Context, accountName, password string) (err error) {
+func (c *CommandLineClient) Login(ctx context.Context, accountName, password string) (err error) {
 	if err := c.localStorage.CreateScheme(ctx); err != nil {
 		return err
 	}

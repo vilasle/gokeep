@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	config "github.com/vilasle/gokeep/internal/client"
 	"github.com/vilasle/gokeep/internal/encryption"
 	"github.com/vilasle/gokeep/internal/model"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
@@ -36,7 +37,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -84,7 +85,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -119,7 +120,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 		}
 		id := 1
@@ -139,7 +140,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 		}
 		id := 1
@@ -159,7 +160,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			// encoder:      encoder,
 		}
@@ -194,7 +195,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			// encoder:      encoder,
 		}
@@ -228,7 +229,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(nil, errors.New("error"))
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -269,7 +270,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -310,7 +311,7 @@ func TestClient_GetLoginPassword(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -361,7 +362,7 @@ func TestClient_GetBankCard(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -409,7 +410,7 @@ func TestClient_GetBankCard(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
 		}
@@ -464,11 +465,11 @@ func TestClient_GetTextData(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
-			workspace: WorkplaceConfig{
-				UploadDirectory: PathInfo{
+			workspace: config.WorkplaceConfig{
+				UploadDirectory: config.PathInfo{
 					Path: pwd,
 				},
 			},
@@ -524,11 +525,11 @@ func TestClient_GetBinaryData(t *testing.T) {
 		encoder := NewMockEncoder(ctrl)
 		encoder.EXPECT().Decrypt(jsonKey).Return(jsonKey, nil)
 
-		c := Client{
+		c := CommandLineClient{
 			localStorage: local,
 			encoder:      encoder,
-			workspace: WorkplaceConfig{
-				UploadDirectory: PathInfo{
+			workspace: config.WorkplaceConfig{
+				UploadDirectory: config.PathInfo{
 					Path: pwd,
 				},
 			},

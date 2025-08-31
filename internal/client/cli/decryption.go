@@ -2,8 +2,7 @@ package cli
 
 import "github.com/vilasle/gokeep/internal/encryption"
 
-// TODO implement decryption
-func (c *Client) decrypt(dek []byte, content []byte) ([]byte, error) {
+func (c *CommandLineClient) decrypt(dek []byte, content []byte) ([]byte, error) {
 	//decryption DEK before decryption content
 	dekED := encryption.NewEncryptedDataFromReadyData(c.encoder, dek, nil)
 	dekOpened, err := dekED.Decrypt()

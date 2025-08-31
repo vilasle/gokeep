@@ -62,7 +62,7 @@ func (v *entityView) View() string {
 	return fmt.Sprintf("ID: %d|Desc: %s|Metadata: %s", v.ID, v.Description, metadata)
 }
 
-func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) error {
+func (c *CommandLineClient) showFullEntities(tData model.Type, data ...client.GetResponse) error {
 	for _, entity := range data {
 		content, err := c.decrypt(entity.DEK, entity.Data)
 		if err != nil {
@@ -112,7 +112,7 @@ func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) 
 	return nil
 }
 
-func (c *Client) showListOfEntities(data ...client.GetResponse) error {
+func (c *CommandLineClient) showListOfEntities(data ...client.GetResponse) error {
 	for _, entity := range data {
 		ev := entityView{ID: entity.ID, Description: entity.View, Metadata: entity.Metadata}
 		fmt.Println(ev.View())

@@ -8,7 +8,7 @@ import (
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
 
-func (c *Client) SaveLoginPassword(ctx context.Context,
+func (c *CommandLineClient) SaveLoginPassword(ctx context.Context,
 	login, password string, id int, meta map[string]string) (err error) {
 
 	data := svc.LoginPasswordSaveRequest{
@@ -24,7 +24,7 @@ func (c *Client) SaveLoginPassword(ctx context.Context,
 	return c.handleSaveResponse(ctx, model.TypeUsepass, response, err)
 }
 
-func (c *Client) SaveBankCard(ctx context.Context,
+func (c *CommandLineClient) SaveBankCard(ctx context.Context,
 	number, expires string, cvv, id int, meta map[string]string) (err error) {
 
 	data := svc.BankCardSaveRequest{
@@ -41,7 +41,7 @@ func (c *Client) SaveBankCard(ctx context.Context,
 	return c.handleSaveResponse(ctx, model.TypeBankCard, response, err)
 }
 
-func (c *Client) SaveTextData(ctx context.Context,
+func (c *CommandLineClient) SaveTextData(ctx context.Context,
 	text string, name string, id int, meta map[string]string) (err error) {
 
 	data := svc.TextDataSaveRequest{
@@ -57,7 +57,7 @@ func (c *Client) SaveTextData(ctx context.Context,
 	return c.handleSaveResponse(ctx, model.TypePlainText, response, err)
 }
 
-func (c *Client) SaveBinaryData(ctx context.Context,
+func (c *CommandLineClient) SaveBinaryData(ctx context.Context,
 	content []byte, name string, id int, meta map[string]string) error {
 
 	metadata := prepareMetadataForExternalStorage(meta)
@@ -95,7 +95,7 @@ func prepareMetadataForLocalStorage(meta []svc.MetadataValue) []repository.Metad
 	return metadata
 }
 
-func (c *Client) handleSaveResponse(ctx context.Context, t model.Type, response svc.SaveResponse, err error) error {
+func (c *CommandLineClient) handleSaveResponse(ctx context.Context, t model.Type, response svc.SaveResponse, err error) error {
 	if err != nil {
 		return err
 	}

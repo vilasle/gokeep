@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 	"github.com/vilasle/gokeep/internal/client/cli"
 )
 
@@ -63,8 +64,8 @@ func init() {
 	rootCmd.AddCommand(dataCmd)
 }
 
-func initCLIClient() *cli.Client {
-	config, err := cli.GetCurrentConfiguration(customWorkspace)
+func initCLIClient() client.Client {
+	config, err := client.GetCurrentConfiguration(customWorkspace)
 	if err != nil {
 		fmt.Println("getting current configuration failed:")
 		fmt.Println(err)

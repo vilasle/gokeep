@@ -10,6 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	config "github.com/vilasle/gokeep/internal/client"
 )
 
 func TestClient_CreateAccount(t *testing.T) {
@@ -24,7 +25,7 @@ func TestClient_CreateAccount(t *testing.T) {
 
 	authMock.EXPECT().CreateAccount(ctx, account, password).Return(nil)
 
-	client := Client{
+	client := CommandLineClient{
 		auth: authMock,
 	}
 
@@ -48,17 +49,17 @@ func TestClient_Login(t *testing.T) {
 		publicKey := []byte("public key")
 		ctx := context.Background()
 
-		creadPath := filepath.Join(pwd, (account + creadExt))
+		creadPath := filepath.Join(pwd, (account + config.CreadExt))
 
 		authMock.EXPECT().Login(ctx, account, password, publicKey).Return([]byte("cread token"), nil)
 		localStorage.EXPECT().CreateScheme(ctx).Return(nil)
 
-		client := Client{
+		client := CommandLineClient{
 			auth:             authMock,
 			localStorage:     localStorage,
 			publicKeyContent: publicKey,
-			workspace: WorkplaceConfig{
-				Credentials: PathInfo{Path: pwd},
+			workspace: config.WorkplaceConfig{
+				Credentials: config.PathInfo{Path: pwd},
 			},
 		}
 
@@ -88,12 +89,12 @@ func TestClient_Login(t *testing.T) {
 
 		localStorage.EXPECT().CreateScheme(ctx).Return(errors.New("error"))
 
-		client := Client{
+		client := CommandLineClient{
 			auth:             authMock,
 			localStorage:     localStorage,
 			publicKeyContent: publicKey,
-			workspace: WorkplaceConfig{
-				Credentials: PathInfo{Path: pwd},
+			workspace: config.WorkplaceConfig{
+				Credentials: config.PathInfo{Path: pwd},
 			},
 		}
 
@@ -119,12 +120,12 @@ func TestClient_Login(t *testing.T) {
 		authMock.EXPECT().Login(ctx, account, password, publicKey).Return(nil, errors.New("error"))
 		localStorage.EXPECT().CreateScheme(ctx).Return(nil)
 
-		client := Client{
+		client := CommandLineClient{
 			auth:             authMock,
 			localStorage:     localStorage,
 			publicKeyContent: publicKey,
-			workspace: WorkplaceConfig{
-				Credentials: PathInfo{Path: pwd},
+			workspace: config.WorkplaceConfig{
+				Credentials: config.PathInfo{Path: pwd},
 			},
 		}
 
@@ -150,12 +151,12 @@ func TestClient_Login(t *testing.T) {
 		authMock.EXPECT().Login(ctx, account, password, publicKey).Return([]byte{}, nil)
 		localStorage.EXPECT().CreateScheme(ctx).Return(nil)
 
-		client := Client{
+		client := CommandLineClient{
 			auth:             authMock,
 			localStorage:     localStorage,
 			publicKeyContent: publicKey,
-			workspace: WorkplaceConfig{
-				Credentials: PathInfo{Path: pwd},
+			workspace: config.WorkplaceConfig{
+				Credentials: config.PathInfo{Path: pwd},
 			},
 		}
 

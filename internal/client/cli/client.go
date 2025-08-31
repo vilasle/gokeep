@@ -10,17 +10,13 @@ import (
 
 	"github.com/vilasle/gokeep/internal/encryption"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
+	config "github.com/vilasle/gokeep/internal/client"
 	"github.com/vilasle/gokeep/internal/repository/client/sqlite"
 	"github.com/vilasle/gokeep/internal/service/client"
 	grpcSvc "github.com/vilasle/gokeep/internal/service/client/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
-)
-
-const (
-	pubKeyName  = "public.key"
-	privKeyName = "private.key"
 )
 
 type externalServices struct {
@@ -39,9 +35,9 @@ func newDataServices(socket *grpc.ClientConn) *externalServices {
 	}
 }
 
-type Client struct {
-	workspace WorkplaceConfig
-	config    Config
+type CommandLineClient struct {
+	workspace config.WorkplaceConfig
+	config    config.Config
 	//private key use for decryption messages from server
 	encoder encryption.Encoder
 	//publicKeyContent - need only bytes for pass it to server
@@ -53,8 +49,8 @@ type Client struct {
 	conn             *grpc.ClientConn
 }
 
-func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
-	client = &Client{
+func NewClient(workspace config.WorkplaceConfig) (client *CommandLineClient, err error) {
+	client = &CommandLineClient{
 		workspace: workspace,
 	}
 
@@ -84,11 +80,11 @@ func NewClient(workspace WorkplaceConfig) (client *Client, err error) {
 	return client, err
 }
 
-func (c *Client) Close() error {
+func (c *CommandLineClient) Close() error {
 	return errors.Join(c.conn.Close(), c.localStorage.Close())
 }
 
-func (c *Client) loadConfiguration() error {
+func (c *CommandLineClient) loadConfiguration() error {
 	//try load information about grpc server and local database
 	configFd, err := os.Open(c.workspace.Config.Path)
 	if err != nil {
@@ -107,7 +103,7 @@ func (c *Client) loadConfiguration() error {
 	return nil
 }
 
-func (c *Client) loadRSAKeys() error {
+func (c *CommandLineClient) loadRSAKeys() error {
 	publicPath, privatePath, err := findKeysPath(c.workspace.Certificate.Path)
 	if err != nil {
 		return err
@@ -147,7 +143,7 @@ func (c *Client) loadRSAKeys() error {
 }
 
 // loadCredentialIfExists - load credential from file if it exists. if file does not exists method will not return error
-func (c *Client) loadCredentialIfExists() error {
+func (c *CommandLineClient) loadCredentialIfExists() error {
 	if c.workspace.Credentials.Error != nil {
 		return nil
 	}
@@ -164,13 +160,13 @@ func (c *Client) loadCredentialIfExists() error {
 	return nil
 }
 
-func (c *Client) saveCredential(account string) error {
+func (c *CommandLineClient) saveCredential(account string) error {
 	if len(c.credential) == 0 {
 		return errors.New("credential is empty")
 	}
 
 	path := filepath.Join(c.workspace.Credentials.Path, account)
-	path += creadExt
+	path += config.CreadExt
 
 	return os.WriteFile(path, c.credential, 0600)
 }
@@ -185,9 +181,9 @@ func findKeysPath(path string) (string, string, error) {
 	}
 
 	for _, file := range ls {
-		if file.Name() == pubKeyName {
+		if file.Name() == config.PubKeyName {
 			publicPath = filepath.Join(path, file.Name())
-		} else if file.Name() == privKeyName {
+		} else if file.Name() == config.PrivKeyName {
 			privatePath = filepath.Join(path, file.Name())
 		}
 	}

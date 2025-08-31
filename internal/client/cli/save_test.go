@@ -20,7 +20,7 @@ func TestClient_SaveLoginPassword(t *testing.T) {
 		cred := NewMockLoginPasswordDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 			},
@@ -86,7 +86,7 @@ func TestClient_SaveLoginPassword(t *testing.T) {
 		cred := NewMockLoginPasswordDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 			},
@@ -127,7 +127,7 @@ func TestClient_SaveBankCard(t *testing.T) {
 		svc := NewMockBankCardDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				bankCard: svc,
 			},
@@ -178,7 +178,7 @@ func TestClient_SaveTextData(t *testing.T) {
 		svc := NewMockTextDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				text: svc,
 			},
@@ -246,7 +246,7 @@ func TestClient_SaveBinaryData(t *testing.T) {
 		svc := NewMockBinaryDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				binary: svc,
 			},

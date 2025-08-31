@@ -20,7 +20,7 @@ func TestClient_DeleteLoginPassword(t *testing.T) {
 		svc := NewMockLoginPasswordDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: svc,
 			},
@@ -45,7 +45,7 @@ func TestClient_DeleteLoginPassword(t *testing.T) {
 		svc := NewMockLoginPasswordDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: svc,
 			},
@@ -71,7 +71,7 @@ func TestClient_DeleteBankCard(t *testing.T) {
 		svc := NewMockBankCardDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				bankCard: svc,
 			},
@@ -96,7 +96,7 @@ func TestClient_DeleteBankCard(t *testing.T) {
 		svc := NewMockBankCardDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				bankCard: svc,
 			},
@@ -122,7 +122,7 @@ func TestClient_DeleteTextData(t *testing.T) {
 		svc := NewMockTextDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				text: svc,
 			},
@@ -147,7 +147,7 @@ func TestClient_DeleteTextData(t *testing.T) {
 		svc := NewMockTextDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				text: svc,
 			},
@@ -173,7 +173,7 @@ func TestClient_DeleteBinaryData(t *testing.T) {
 		svc := NewMockBinaryDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				binary: svc,
 			},
@@ -198,7 +198,7 @@ func TestClient_DeleteBinaryData(t *testing.T) {
 		svc := NewMockBinaryDataDataService(ctrl)
 		local := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				binary: svc,
 			},

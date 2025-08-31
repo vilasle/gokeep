@@ -9,7 +9,7 @@ import (
 	"github.com/vilasle/gokeep/internal/service/client"
 )
 
-func (c *Client) Sync(ctx context.Context) error {
+func (c *CommandLineClient) Sync(ctx context.Context) error {
 	//get all information from external storage
 	all := make([]repository.SaveRequest, 0)
 

@@ -24,7 +24,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
@@ -122,7 +122,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
@@ -152,7 +152,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
@@ -199,7 +199,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
@@ -263,7 +263,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
@@ -344,7 +344,7 @@ func TestClient_Sync(t *testing.T) {
 
 		localStorage := NewMockClientRepository(ctrl)
 
-		c := Client{
+		c := CommandLineClient{
 			externalServices: &externalServices{
 				credentials: cred,
 				bankCard:    bank,
