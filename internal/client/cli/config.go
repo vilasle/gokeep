@@ -86,18 +86,8 @@ func defaultConfiguration() WorkplaceConfig {
 	if err != nil {
 		return WorkplaceConfig{}
 	}
+	return customConfiguration(homeDir)
 
-	configDir := filepath.Join(homeDir, mainDir)
-	configPath := filepath.Join(configDir, configName)
-	certPath := filepath.Join(configDir, certificateNameDirectory)
-
-	return WorkplaceConfig{
-		ConfigDirectory: getPathInfoCheckOnlyExisting(configDir),
-		UploadDirectory: getPathInfoCheckOnlyExisting(filepath.Join(configDir, uploadName)),
-		Config:          getPathInfoCheckOnlyExisting(configPath),
-		Certificate:     getCertificatesPathInfo(certPath),
-		Credentials:     getCredentialsPathInfo(configDir),
-	}
 }
 
 func customConfiguration(path string) WorkplaceConfig {

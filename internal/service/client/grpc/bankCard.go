@@ -21,6 +21,7 @@ func NewBankCardService(socket *grpc.ClientConn) *BankCardService {
 
 func (s *BankCardService) Save(ctx context.Context, req client.BankCardSaveRequest) (client.SaveResponse, error) {
 	dto := proto.SaveBankCardRequest{
+		Id:         int64(req.ID),
 		Number:     req.Number,
 		Cvv:        int64(req.CVV),
 		Expires:    req.Expires,

@@ -23,6 +23,7 @@ func (s *TextDataService) Save(ctx context.Context,
 	req client.TextDataSaveRequest) (client.SaveResponse, error) {
 
 	dto := proto.SaveTextDataRequest{
+		Id:         int64(req.ID),
 		Name:       req.Name,
 		Data:       req.Text,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},

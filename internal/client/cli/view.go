@@ -112,11 +112,10 @@ func (c *Client) showFullEntities(tData model.Type, data ...client.GetResponse) 
 	return nil
 }
 
-func (c *Client) showListOfEntities(tData model.Type, data ...client.GetResponse) error {
+func (c *Client) showListOfEntities(data ...client.GetResponse) error {
 	for _, entity := range data {
 		ev := entityView{ID: entity.ID, Description: entity.View, Metadata: entity.Metadata}
 		fmt.Println(ev.View())
 	}
-
 	return nil
 }

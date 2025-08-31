@@ -47,13 +47,19 @@ var textAddCmd = &cobra.Command{
 		defer cancel()
 
 		if textAdd.data != "" {
-			if err := app.SaveTextDataAsIs(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
+			if err := app.SaveTextData(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
 			fmt.Println("saving text success")
 		} else {
-			if err := app.SaveTextDataFromFile(ctx, textAdd.file, textAdd.name, 0, metadata); err != nil {
+			content, err := os.ReadFile(textAdd.file)
+			if err != nil {
+				fmt.Printf("reading file failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+
+			if err := app.SaveTextData(ctx, string(content), textAdd.name, 0, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
@@ -126,13 +132,18 @@ var textEditCmd = &cobra.Command{
 		defer cancel()
 
 		if textAdd.data != "" {
-			if err := app.SaveTextDataAsIs(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
+			if err := app.SaveTextData(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}
 			fmt.Println("saving text success")
 		} else {
-			if err := app.SaveTextDataFromFile(ctx, textEdit.file, textEdit.name, textEdit.id, metadata); err != nil {
+			content, err := os.ReadFile(textEdit.file)
+			if err != nil {
+				fmt.Printf("reading file failed: %s\n", err)
+				os.Exit(reasonInternalError)
+			}
+			if err := app.SaveTextData(ctx, string(content), textEdit.name, textEdit.id, metadata); err != nil {
 				fmt.Printf("saving text failed: %s\n", err)
 				os.Exit(reasonInternalError)
 			}

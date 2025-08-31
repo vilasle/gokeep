@@ -45,7 +45,13 @@ var binaryAddCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBinaryData(ctx, binaryAdd.file, binaryAdd.name, 0, metadata); err != nil {
+		content, err := os.ReadFile(binaryAdd.file)
+		if err != nil {
+			fmt.Printf("reading file failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+
+		if err := app.SaveBinaryData(ctx, content, binaryAdd.name, 0, metadata); err != nil {
 			fmt.Printf("saving binary data failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}
@@ -113,7 +119,13 @@ var binaryEditCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.SaveBinaryData(ctx, binaryEdit.file, binaryEdit.name, binaryEdit.id, metadata); err != nil {
+		content, err := os.ReadFile(binaryEdit.file)
+		if err != nil {
+			fmt.Printf("reading file failed: %s\n", err)
+			os.Exit(reasonInternalError)
+		}
+
+		if err := app.SaveBinaryData(ctx, content, binaryEdit.name, binaryEdit.id, metadata); err != nil {
 			fmt.Printf("saving text failed: %s\n", err)
 			os.Exit(reasonInternalError)
 		}

@@ -23,6 +23,7 @@ func (s *LoginPasswordService) Save(ctx context.Context,
 	req client.LoginPasswordSaveRequest) (client.SaveResponse, error) {
 
 	dto := proto.SaveLoginPasswordRequest{
+		Id:         int64(req.ID),
 		Login:      req.Login,
 		Password:   req.Password,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},

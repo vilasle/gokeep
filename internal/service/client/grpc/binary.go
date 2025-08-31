@@ -21,6 +21,7 @@ func NewBinaryDataService(socket *grpc.ClientConn) *BinaryDataService {
 
 func (s *BinaryDataService) Save(ctx context.Context, req client.BinaryDataSaveRequest) (client.SaveResponse, error) {
 	dto := &proto.SaveBinaryDataRequest{
+		Id:         int64(req.ID),
 		Name:       req.Name,
 		Data:       req.Data,
 		Credential: &proto.ConfirmAssess{Token: req.JWT},

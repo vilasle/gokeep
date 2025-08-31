@@ -43,6 +43,6 @@ func (c *Client) get(ctx context.Context, t model.Type, id int) error {
 		if response, err = c.localStorage.All(ctx, t); err != nil {
 			return err
 		}
-		return c.showListOfEntities(t, response...)
+		return c.showListOfEntities(response...)
 	}
 }

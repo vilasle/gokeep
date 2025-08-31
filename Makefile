@@ -30,6 +30,11 @@ generate-mock:
 
 	mockgen -package=grpc -destination=internal/service/client/grpc/pb_mock_test.go -source=proto/service_grpc.pb.go
 
+	mockgen -package=cli -destination=internal/client/cli/service_mock_test.go -source=internal/service/client/service.go
+	mockgen -package=cli -destination=internal/client/cli/repository_mock_test.go -source=internal/repository/client/repository.go
+	mockgen -package=cli -destination=internal/client/cli/encryption_mock_test.go -source=internal/encryption/encryption.go
+	
+
 test:
 	go test ./...
 

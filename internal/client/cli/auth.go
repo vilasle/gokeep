@@ -7,10 +7,6 @@ func (c *Client) CreateAccount(ctx context.Context, accountName, password string
 }
 
 func (c *Client) Login(ctx context.Context, accountName, password string) (err error) {
-	if len(c.credential) > 0 {
-		return nil
-	}
-
 	if err := c.localStorage.CreateScheme(ctx); err != nil {
 		return err
 	}
