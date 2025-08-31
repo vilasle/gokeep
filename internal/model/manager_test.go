@@ -311,7 +311,7 @@ func Test_usepassManager_List(t *testing.T) {
 				pvRepository: pvRepository,
 			}
 			ctx := context.Background()
-			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user).Return(tt.mockArgs.pd, tt.mockArgs.err)
+			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user.id).Return(tt.mockArgs.pd, tt.mockArgs.err)
 
 			actual, err := manager.List(ctx, tt.user)
 
@@ -521,7 +521,7 @@ func Test_bankCardManager_List(t *testing.T) {
 				pvRepository: pvRepository,
 			}
 			ctx := context.Background()
-			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user).Return(tt.mockArgs.pd, tt.mockArgs.err)
+			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user.id).Return(tt.mockArgs.pd, tt.mockArgs.err)
 
 			actual, err := manager.List(ctx, tt.user)
 
@@ -728,7 +728,7 @@ func Test_textDataManager_List(t *testing.T) {
 				pvRepository: pvRepository,
 			}
 			ctx := context.Background()
-			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user).Return(tt.mockArgs.pd, tt.mockArgs.err)
+			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user.id).Return(tt.mockArgs.pd, tt.mockArgs.err)
 
 			actual, err := manager.List(ctx, tt.user)
 
@@ -939,7 +939,7 @@ func Test_binaryDataManager_List(t *testing.T) {
 				pvRepository: pvRepository,
 			}
 			ctx := context.Background()
-			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user).Return(tt.mockArgs.pd, tt.mockArgs.err)
+			pvRepository.EXPECT().List(ctx, tt.modelType, tt.user.id).Return(tt.mockArgs.pd, tt.mockArgs.err)
 
 			actual, err := manager.List(ctx, tt.user)
 

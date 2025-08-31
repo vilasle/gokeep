@@ -172,7 +172,7 @@ func fillListOfPrivateData[T *Usepass | *BankCard | *PlainText | *BinaryData](
 	modelType Type,
 	repository PrivateDataRepository) ([]T, error) {
 
-	ls, err := repository.List(ctx, modelType, owner)
+	ls, err := repository.List(ctx, modelType, owner.ID())
 	if err != nil {
 		return nil, err
 	}

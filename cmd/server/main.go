@@ -17,7 +17,6 @@ import (
 //TODO getting args from ENV of yaml config
 
 func main() {
-
 	logger.Make(os.Stdout, logger.DebugLevel)
 
 	masterKeyPath := "master.key"

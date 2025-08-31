@@ -753,8 +753,6 @@ func Test_PrivateDataRepository_List(t *testing.T) {
 		entityId := 10
 		ctx := context.Background()
 
-		user := &model.User{}
-
 		expected := []model.PrivateDataInfo{
 			{
 				ID:   entityId,
@@ -769,13 +767,13 @@ func Test_PrivateDataRepository_List(t *testing.T) {
 		}
 
 		mock.ExpectQuery("SELECT").
-			WithArgs(0, 1).
+			WithArgs(1, 1).
 			WillReturnRows(
 				sqlmock.NewRows([]string{"id", "view", "data", "dek", "key", "value"}).
 					AddRow(entityId, "view", "data", "dek", "key1", "value1").
 					AddRow(entityId, "view", "data", "dek", "key2", "value2"))
 
-		data, err := r.List(ctx, 1, user)
+		data, err := r.List(ctx, 1, 1)
 		assert.NoError(t, err)
 		assert.Equal(t, expected, data)
 	})
@@ -790,13 +788,11 @@ func Test_PrivateDataRepository_List(t *testing.T) {
 		r := PrivateDataRepository{db}
 		ctx := context.Background()
 
-		user := &model.User{}
-
 		mock.ExpectQuery("SELECT").
 			WithArgs(0, 1).
 			WillReturnError(errors.New("error"))
 
-		data, err := r.List(ctx, 1, user)
+		data, err := r.List(ctx, 1, 1)
 		assert.Error(t, err)
 		assert.Nil(t, data)
 	})

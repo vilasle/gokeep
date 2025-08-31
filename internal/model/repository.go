@@ -30,5 +30,5 @@ type PrivateDataRepository interface {
 	Update(ctx context.Context, data PrivateDataSave) (int, error)
 	Delete(ctx context.Context, id int) error
 	Get(context.Context, int) (PrivateDataInfo, error)
-	List(ctx context.Context, modelType Type, owner UserAccess) ([]PrivateDataInfo, error)
+	List(ctx context.Context, modelType Type, userID int) ([]PrivateDataInfo, error)
 }
