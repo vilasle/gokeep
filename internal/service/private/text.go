@@ -12,6 +12,7 @@ import (
 
 var _ service.TextDataService = (*TextService)(nil)
 
+// TextService - object for work with text data
 type TextService struct {
 	//key encryption key
 	kek encryption.Encoder
@@ -19,6 +20,7 @@ type TextService struct {
 	manager model.ModelManager
 }
 
+// NewTextService - create new TextService object
 func NewTextService(manager model.ModelManager, masterKey encryption.Encoder) *TextService {
 	return &TextService{
 		manager: manager,
@@ -26,6 +28,7 @@ func NewTextService(manager model.ModelManager, masterKey encryption.Encoder) *T
 	}
 }
 
+// List - get list of data by user, and replace KEK to clientKey
 func (s *TextService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	log := logger.With("operation", "TextService.List")
 
@@ -56,6 +59,7 @@ func (s *TextService) List(ctx context.Context, userID int, clientKey encryption
 	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
+// Get - get data by id, and replace KEK to clientKey
 func (s *TextService) Get(ctx context.Context,
 	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
 
@@ -81,6 +85,7 @@ func (s *TextService) Get(ctx context.Context,
 	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
+// Delete - delete data by id
 func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData) error {
 	log := logger.With("operation", "TextService.Delete")
 	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
@@ -99,6 +104,7 @@ func (s *TextService) Delete(ctx context.Context, req service.DeletePrivateData)
 	return entity.Delete(ctx)
 }
 
+// Add - add new data to repository and return data with clientKey as KEK
 func (s *TextService) Add(ctx context.Context,
 	req service.AddTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -120,6 +126,7 @@ func (s *TextService) Add(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+// Update - update existed data to repository and return data with clientKey as KEK
 func (s *TextService) Update(ctx context.Context,
 	req service.UpdateTextData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -148,6 +155,7 @@ func (s *TextService) Update(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+// save - save data to repository and return data with clientKey as KEK
 func (s *TextService) save(ctx context.Context,
 	entity *model.PlainText, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 

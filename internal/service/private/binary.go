@@ -12,6 +12,7 @@ import (
 
 var _ service.BinaryDataService = (*BinaryDataService)(nil)
 
+//BinaryDataService - object for work with binary data
 type BinaryDataService struct {
 	//key encryption key
 	kek encryption.Encoder
@@ -19,6 +20,7 @@ type BinaryDataService struct {
 	manager model.ModelManager
 }
 
+//NewBinaryDataService - create new BinaryDataService object
 func NewBinaryDataService(manager model.ModelManager, masterKey encryption.Encoder) *BinaryDataService {
 	return &BinaryDataService{
 		manager: manager,
@@ -26,6 +28,7 @@ func NewBinaryDataService(manager model.ModelManager, masterKey encryption.Encod
 	}
 }
 
+//List - get list of data by user, and replace KEK to clientKey
 func (s *BinaryDataService) List(ctx context.Context,
 	userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 
@@ -58,6 +61,7 @@ func (s *BinaryDataService) List(ctx context.Context,
 	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
+//Get - get data by id, and replace KEK to clientKey
 func (s *BinaryDataService) Get(ctx context.Context,
 	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
 
@@ -83,6 +87,7 @@ func (s *BinaryDataService) Get(ctx context.Context,
 	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
+//Delete - delete data by id
 func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivateData) error {
 	log := logger.With("operation", "BinaryDataService.Delete")
 	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
@@ -101,6 +106,7 @@ func (s *BinaryDataService) Delete(ctx context.Context, req service.DeletePrivat
 	return entity.Delete(ctx)
 }
 
+//Add - add new data and replace KEK to clientKey
 func (s *BinaryDataService) Add(ctx context.Context,
 	req service.AddBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -122,6 +128,7 @@ func (s *BinaryDataService) Add(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+//Update - update existed data and replace KEK to clientKey
 func (s *BinaryDataService) Update(ctx context.Context,
 	req service.UpdateBinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -150,6 +157,7 @@ func (s *BinaryDataService) Update(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+//save - save data to repository and return data with clientKey as KEK
 func (s *BinaryDataService) save(ctx context.Context,
 	entity *model.BinaryData, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 

@@ -11,8 +11,10 @@ import (
 
 var bankCmd = &cobra.Command{
 	Use:   "bank",
-	Short: "",
-	Long:  ``,
+	Short: "manager of bank cards",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 type bankAddFlags struct {
@@ -25,8 +27,7 @@ var bankAdd = bankAddFlags{}
 
 var bankAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "",
-	Long:  ``,
+	Short: "add bank card on server and on local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -46,8 +47,7 @@ var bankGet = bankGetFlags{}
 
 var bankGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "",
-	Long:  ``,
+	Short: "get bank card from local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -71,7 +71,7 @@ var bankEdit = bankEditFlags{}
 
 var bankEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "",
+	Short: "edit bank card on local storage and on server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
@@ -92,8 +92,7 @@ var bankDelete = bankDeleteFlags{}
 
 var bankDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "",
-	Long:  ``,
+	Short: "delete bank card on local storage and on server",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()

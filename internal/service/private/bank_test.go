@@ -790,11 +790,11 @@ func TestBankCardService_Update(t *testing.T) {
 				Number: "123456890",
 				CVV:    123,
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -830,11 +830,11 @@ func TestBankCardService_Update(t *testing.T) {
 				Number: "123456890",
 				CVV:    123,
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -875,13 +875,14 @@ func TestBankCardService_Update(t *testing.T) {
 				Number: "123456890",
 				CVV:    123,
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
+				Metadata: []service.MetadataValue{
 				{
 					Key:   "key",
 					Value: "value",
 				},
 			},
+			},
+			
 		}, clientKey)
 		assert.Error(t, err)
 	})

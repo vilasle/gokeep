@@ -36,14 +36,17 @@ func (u *User) PasswordIsValid(password string) bool {
 	return u.password == hash256(password)
 }
 
+//ID - return user id
 func (u *User) ID() int {
 	return u.id
 }
 
+//Hash - return user password hash
 func (u *User) Hash() string {
 	return u.password
 }
 
+//Login - return user login
 func (u *User) Login() string {
 	return u.login
 }

@@ -31,6 +31,9 @@ var rootCmd = &cobra.Command{
 	Use:   "gokeep",
 	Short: "",
 	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 // versionCmd represents the 'config report' command

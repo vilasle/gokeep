@@ -11,7 +11,7 @@ type ModelEncoding struct {
 	dek    Encoder
 	dekSrc []byte
 }
-
+// NewModelEncoding - creates new ModelEncoding
 func NewModelEncoding(dekSrc []byte, kek, dek Encoder) *ModelEncoding {
 	return &ModelEncoding{
 		kek:    kek,
@@ -20,6 +20,7 @@ func NewModelEncoding(dekSrc []byte, kek, dek Encoder) *ModelEncoding {
 	}
 }
 
+//Encrypt - encrypts data with DEK and return EncryptedData for model
 func (em ModelEncoding) Encrypt(data []byte) (*model.EncryptedData, error) {
 	ed := &EncryptedData{
 		dek: em.dek,
@@ -35,7 +36,7 @@ func (em ModelEncoding) Encrypt(data []byte) (*model.EncryptedData, error) {
 	}, errors.Join(errs...)
 }
 
-// Decrypt - decrypts data with DEK
+// Decrypt - decrypts data with DEK from model data
 func (em ModelEncoding) Decrypt(data model.EncryptedData) ([]byte, error) {
 	return (&EncryptedData{dek: em.dek, Data: string(data.Data)}).Decrypt()
 }

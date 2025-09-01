@@ -9,6 +9,7 @@ import (
 	"github.com/vilasle/gokeep/internal/service/client"
 )
 
+//Sync - get all information from external storage and save it to local storage
 func (c *CommandLineClient) Sync(ctx context.Context) error {
 	//get all information from external storage
 	all := make([]repository.SaveRequest, 0)

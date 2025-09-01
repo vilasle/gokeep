@@ -12,12 +12,14 @@ import (
 
 var _ service.BankCardService = (*BankCardService)(nil)
 
+// BankCardService - object for work with bank cards
 type BankCardService struct {
 	//key encryption key
 	kek     encryption.Encoder
 	manager model.ModelManager
 }
 
+// NewBankCardService - create new BankCardService object
 func NewBankCardService(manager model.ModelManager, masterKey encryption.Encoder) *BankCardService {
 	return &BankCardService{
 		manager: manager,
@@ -25,6 +27,7 @@ func NewBankCardService(manager model.ModelManager, masterKey encryption.Encoder
 	}
 }
 
+// List - get list of data by user, and replace KEK to clientKey
 func (s *BankCardService) List(ctx context.Context,
 	userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 
@@ -57,6 +60,7 @@ func (s *BankCardService) List(ctx context.Context,
 	return prepareListOfPrivateData(ls, replacementKeys{kek: s.kek, newKek: clientKey})
 }
 
+// Get - get data by id, and replace KEK to clientKey
 func (s *BankCardService) Get(ctx context.Context,
 	req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
 
@@ -82,6 +86,7 @@ func (s *BankCardService) Get(ctx context.Context,
 	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
+// Delete - delete data by id
 func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateData) error {
 	log := logger.With("operation", "BankCardService.Delete")
 	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
@@ -100,6 +105,7 @@ func (s *BankCardService) Delete(ctx context.Context, req service.DeletePrivateD
 	return entity.Delete(ctx)
 }
 
+// Add - add new data, and replace KEK to clientKey
 func (s *BankCardService) Add(ctx context.Context,
 	req service.AddBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -122,6 +128,7 @@ func (s *BankCardService) Add(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+// Update - update existed data, and replace KEK to clientKey
 func (s *BankCardService) Update(ctx context.Context,
 	req service.UpdateBankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 
@@ -153,6 +160,7 @@ func (s *BankCardService) Update(ctx context.Context,
 	return s.save(ctx, entity, clientKey)
 }
 
+// save - save data to database, and replace KEK to clientKey
 func (s *BankCardService) save(ctx context.Context,
 	entity *model.BankCard, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 

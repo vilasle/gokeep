@@ -9,22 +9,26 @@ import (
 
 var _ repository.SessionRepository = (*SessionRepository)(nil)
 
+// SessionRepository is a repository for sessions
 type SessionRepository struct {
 	db *sql.DB
 }
 
+// NewSessionRepository creates a new SessionRepository
 func NewSessionRepository(db *sql.DB) (*SessionRepository, error) {
 	repository := &SessionRepository{db: db}
 
 	return repository, repository.initSchema()
 }
 
+// Create creates a new session
 func (r *SessionRepository) Create(ctx context.Context, credential repository.CredentialCreate) (id int, err error) {
 	txt := "INSERT INTO session (user_id, public_key) VALUES($1, $2) RETURNING id"
 	err = r.db.QueryRowContext(ctx, txt, credential.UserID, credential.PublicKey).Scan(&id)
 	return
 }
 
+// Get gets a session by id
 func (r *SessionRepository) Get(ctx context.Context, id int) (credential repository.CredentialInfo, err error) {
 	txt := "SELECT id, user_id, public_key FROM session WHERE id = $1"
 

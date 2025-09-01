@@ -6,6 +6,7 @@ import (
 	"github.com/vilasle/gokeep/internal/model"
 )
 
+//ClientRepository is interface for local database
 type ClientRepository interface {
 	CreateScheme(ctx context.Context) error
 	Close() error

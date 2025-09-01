@@ -8,17 +8,22 @@ import (
 	repository "github.com/vilasle/gokeep/internal/repository/client"
 )
 
+//GetLoginPassword - get login password from local storage
 func (c *CommandLineClient) GetLoginPassword(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeUsepass, id)
 }
+//GetLoginPassword - get bank card from local storage
 func (c *CommandLineClient) GetBankCard(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeBankCard, id)
 }
 
+//GetLoginPassword - get text data from local storage
 func (c *CommandLineClient) GetTextData(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypePlainText, id)
 }
 
+
+//GetLoginPassword - get binary data from local storage
 func (c *CommandLineClient) GetBinaryData(ctx context.Context, id int) error {
 	return c.get(ctx, model.TypeBinaryData, id)
 }

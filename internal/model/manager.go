@@ -61,12 +61,11 @@ func (c *userManager) New(login, password string) *User {
 
 // FindByLogin  finds a user by login on repository, return ErrUserNotFound if not found
 func (c *userManager) FindByLogin(ctx context.Context, login string) (UserAccess, error) {
-	//TODO add logger
 	return findUserByLogin(ctx, login, c.repository)
 }
 
+//Get - return UserAccess by id
 func (c *userManager) Get(ctx context.Context, id int) (UserAccess, error) {
-	//TODO add logger
 	return getUserByID(ctx, id, c.repository)
 }
 
@@ -74,16 +73,19 @@ type usepassManager struct {
 	pvRepository PrivateDataRepository
 }
 
+// New creates a new usepass with login and password
 func (c *usepassManager) New(owner UserAccess, login, password string) *Usepass {
 	usepass := newUsepass(owner, login, password)
 	usepass.dataRepository = c.pvRepository
 	return usepass
 }
 
+//List returns list of usepass for user
 func (c *usepassManager) List(ctx context.Context, owner UserAccess) ([]*Usepass, error) {
 	return fillListOfPrivateData[*Usepass](ctx, owner, TypeUsepass, c.pvRepository)
 }
 
+//Get returns usepass by id
 func (c *usepassManager) Get(ctx context.Context, owner UserAccess, id int) (*Usepass, error) {
 	//TODO add logger
 	usepass, err := findUsepassByID(ctx, id, owner, c.pvRepository)
@@ -98,12 +100,14 @@ type bankCardManager struct {
 	pvRepository PrivateDataRepository
 }
 
+// New creates a new bank card with number, cvv and expiration date
 func (c *bankCardManager) New(owner UserAccess, number string, cvv int, expirationDate time.Time) *BankCard {
 	bankCard := newBankCard(owner, number, cvv, expirationDate)
 	bankCard.dataRepository = c.pvRepository
 	return bankCard
 }
 
+//Get returns bank card by id
 func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*BankCard, error) {
 	//TODO add logger
 	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
@@ -114,6 +118,7 @@ func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*B
 	return usepass, nil
 }
 
+//List returns list of bank cards for user
 func (c *bankCardManager) List(ctx context.Context, owner UserAccess) ([]*BankCard, error) {
 	return fillListOfPrivateData[*BankCard](ctx, owner, TypeBankCard, c.pvRepository)
 }
@@ -122,12 +127,14 @@ type plainTextManager struct {
 	pvRepository PrivateDataRepository
 }
 
+// New creates a new plain text with text and view
 func (c *plainTextManager) New(owner UserAccess, text []byte, view string) *PlainText {
 	plainText := newPlainText(owner, text, view)
 	plainText.dataRepository = c.pvRepository
 	return plainText
 }
 
+// Get returns plain text by id
 func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*PlainText, error) {
 	//TODO add logger
 	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
@@ -138,6 +145,7 @@ func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*
 	return plainText, nil
 }
 
+// List returns list of plain texts for user
 func (c *plainTextManager) List(ctx context.Context, owner UserAccess) ([]*PlainText, error) {
 	return fillListOfPrivateData[*PlainText](ctx, owner, TypePlainText, c.pvRepository)
 }
@@ -146,12 +154,14 @@ type binaryDataManager struct {
 	pvRepository PrivateDataRepository
 }
 
+// New creates a new binary data with data and name
 func (c *binaryDataManager) New(owner UserAccess, data []byte, name string) *BinaryData {
 	binaryData := newBinaryData(owner, data, name)
 	binaryData.dataRepository = c.pvRepository
 	return binaryData
 }
 
+// Get returns binary data by id
 func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (*BinaryData, error) {
 	//TODO add logger
 	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
@@ -162,6 +172,7 @@ func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (
 	return binaryData, nil
 }
 
+// List returns list of binary data for user
 func (c *binaryDataManager) List(ctx context.Context, owner UserAccess) ([]*BinaryData, error) {
 	return fillListOfPrivateData[*BinaryData](ctx, owner, TypeBinaryData, c.pvRepository)
 }

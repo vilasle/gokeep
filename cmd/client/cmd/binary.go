@@ -11,8 +11,10 @@ import (
 
 var binaryCmd = &cobra.Command{
 	Use:   "binary",
-	Short: "",
-	Long:  ``,
+	Short: "manager of binary data",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 type binaryAddFlags struct {
@@ -24,8 +26,7 @@ var binaryAdd = binaryAddFlags{}
 
 var binaryAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "",
-	Long:  ``,
+	Short: "add a entity from file and save it on server and on local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -45,8 +46,7 @@ var binaryGet = binaryGetFlags{}
 
 var binaryGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "",
-	Long:  ``,
+	Short: "get a entity from local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -68,8 +68,7 @@ var binaryEdit = binaryEditFlags{}
 
 var binaryEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "",
-	Long:  ``,
+	Short: "edit a entity on server and on local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -91,8 +90,7 @@ var binaryDelete = binaryDeleteFlags{}
 
 var binaryDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "",
-	Long:  ``,
+	Short: "delete a entity on server and on local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()

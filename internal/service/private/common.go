@@ -16,6 +16,7 @@ type encryptedData struct {
 	data, key []byte
 }
 
+// prepareListOfPrivateData - prepare list of private data to expected format and replace keys
 func prepareListOfPrivateData(ls []model.PrivateData, keys replacementKeys) (service.ListPrivateDataResponse, error) {
 	response := service.ListPrivateDataResponse{
 		Data: make([]service.PrivateDataResponse, 0, len(ls)),
@@ -34,6 +35,7 @@ func prepareListOfPrivateData(ls []model.PrivateData, keys replacementKeys) (ser
 	return response, errors.Join(errs...)
 }
 
+// getResponseFromModelWithEncryptedDEK - prepare private data to PrivateDataResponse and replace KEK to client key
 func getResponseFromModelWithEncryptedDEK(m model.PrivateData, keys replacementKeys) (service.PrivateDataResponse, error) {
 	savedData := m.EncryptedData()
 

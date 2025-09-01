@@ -18,36 +18,15 @@ import (
 var accountCmd = &cobra.Command{
 	Use:   "account",
 	Short: "create or login account",
-	Long:  ``,
+	Long:  `create or login account on server for getting access for work with private data`,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		app := initCLIClient()
-		defer app.Close()
-
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		fmt.Print("password: ")
-		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
-		if err != nil {
-			fmt.Println("failed to read password")
-			os.Exit(reasonInternalError)
-		}
-		fmt.Print("\n")
-
-		os.Exit(login(ctx, app, string(bytePwd), args))
-	},
-}
-
-var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "",
-	Long:  ``,
+	Short: "create account on server",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -64,6 +43,29 @@ var loginCmd = &cobra.Command{
 		fmt.Print("\n")
 
 		os.Exit(register(ctx, app, string(bytePwd), args))
+	},
+}
+
+var loginCmd = &cobra.Command{
+	Use:   "login",
+	Short: "login account on server",
+	Long:  `login account and save credential on workspace folder`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app := initCLIClient()
+		defer app.Close()
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		fmt.Print("password: ")
+		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			fmt.Println("failed to read password")
+			os.Exit(reasonInternalError)
+		}
+		fmt.Print("\n")
+
+		os.Exit(login(ctx, app, string(bytePwd), args))
 	},
 }
 
@@ -97,6 +99,7 @@ func register(ctx context.Context, app client.Client, readPassword string, args 
 
 	if err := app.CreateAccount(ctx, accountName, readPassword); err != nil {
 		fmt.Println("failed to create account")
+		fmt.Println(err.Error())
 		return reasonInternalError
 	}
 	fmt.Println("account created")

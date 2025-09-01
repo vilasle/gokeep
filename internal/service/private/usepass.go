@@ -12,6 +12,7 @@ import (
 
 var _ service.LoginPasswordService = (*UsepassService)(nil)
 
+// UsepassService - is object for work LoginPassword entity
 type UsepassService struct {
 	//key encryption key
 	kek encryption.Encoder
@@ -19,6 +20,7 @@ type UsepassService struct {
 	manager model.ModelManager
 }
 
+// NewUsepassService - create new UsepassService object
 func NewUsepassService(manager model.ModelManager, masterKey encryption.Encoder) *UsepassService {
 	return &UsepassService{
 		manager: manager,
@@ -26,6 +28,7 @@ func NewUsepassService(manager model.ModelManager, masterKey encryption.Encoder)
 	}
 }
 
+// List - get list of data by user, and replace KEK to clientKey
 func (s *UsepassService) List(ctx context.Context, userID int, clientKey encryption.Encoder) (service.ListPrivateDataResponse, error) {
 	log := logger.With("operation", "UsepassService.List")
 
@@ -57,6 +60,7 @@ func (s *UsepassService) List(ctx context.Context, userID int, clientKey encrypt
 	return prepareListOfPrivateData(ls, keys)
 }
 
+// Get - get data by id, and replace KEK to clientKey
 func (s *UsepassService) Get(ctx context.Context, req service.GetPrivateData, clientKey encryption.Encoder) (response service.PrivateDataResponse, err error) {
 	log := logger.With("operation", "UsepassService.Get")
 	log.Info("getting data by id", "id", req.ID, "userId", req.UserID)
@@ -80,6 +84,7 @@ func (s *UsepassService) Get(ctx context.Context, req service.GetPrivateData, cl
 	return getResponseFromModelWithEncryptedDEK(result, keys)
 }
 
+// Delete - delete data by id
 func (s *UsepassService) Delete(ctx context.Context, req service.DeletePrivateData) error {
 	log := logger.With("operation", "UsepassService.Delete")
 	log.Info("deleting data by id", "id", req.ID, "userId", req.UserID)
@@ -98,6 +103,7 @@ func (s *UsepassService) Delete(ctx context.Context, req service.DeletePrivateDa
 	return entity.Delete(ctx)
 }
 
+// Add - add new data to repository and replace KEK to clientKey
 func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	log := logger.With("operation", "UsepassService.Add")
 
@@ -118,6 +124,7 @@ func (s *UsepassService) Add(ctx context.Context, req service.AddLoginPassword, 
 	return s.save(ctx, entity, clientKey)
 }
 
+// Update - update existed entity in repository, and replace KEK to clientKey
 func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPassword, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	log := logger.With("operation", "UsepassService.Update")
 
@@ -145,6 +152,7 @@ func (s *UsepassService) Update(ctx context.Context, req service.UpdateLoginPass
 	return s.save(ctx, entity, clientKey)
 }
 
+// save - save entity to repository and replace KEK to clientKey
 func (s *UsepassService) save(ctx context.Context, entity *model.Usepass, clientKey encryption.Encoder) (service.PrivateDataResponse, error) {
 	dek, err := encryption.GenerateNewAESKey()
 	if err != nil {

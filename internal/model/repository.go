@@ -2,11 +2,13 @@ package model
 
 import "context"
 
+//RepositoryCollector interface for manager
 type RepositoryCollector interface {
 	User() UserRepository
 	Private() PrivateDataRepository
 }
 
+//UserRepository interface for user repository
 type UserRepository interface {
 	Add(context.Context, UserAdd) (id int, err error)
 	Update(context.Context, UserUpdate) error
@@ -15,6 +17,7 @@ type UserRepository interface {
 	Get(context.Context, int) (UserInfo, error)
 }
 
+//PrivateDataRepository interface for model 
 type PrivateData interface {
 	ID() int
 	Type() int
@@ -24,6 +27,7 @@ type PrivateData interface {
 	Metadata() map[string]string
 }
 
+//PrivateDataRepository interface for private data repository
 type PrivateDataRepository interface {
 	Add(ctx context.Context, data PrivateDataSave) (int, error)
 	//return id and error, but id return only for having same signature with Add method

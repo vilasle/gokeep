@@ -3,22 +3,25 @@ package grpc
 import (
 	"context"
 
+	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
 )
 
-// TODO implement it
+// TextDataService is wrapper over grpc.PrivateDataServiceClient for work with text data
 type TextDataService struct {
 	client proto.PrivateDataServiceClient
 }
 
+// NewTextDataService returns new instance of TextDataService
 func NewTextDataService(socket *grpc.ClientConn) *TextDataService {
 	return &TextDataService{
 		client: proto.NewPrivateDataServiceClient(socket),
 	}
 }
 
+// Save - prepare and send request for grpc server
 func (s *TextDataService) Save(ctx context.Context,
 	req client.TextDataSaveRequest) (client.SaveResponse, error) {
 
@@ -40,10 +43,12 @@ func (s *TextDataService) Save(ctx context.Context,
 	return handleSaveResponse(s.client.SaveTextData(ctx, &dto))
 }
 
+// Get - send Get request to grpc server and cast response to expected view
 func (s *TextDataService) Get(ctx context.Context, req client.GetRequest) ([]client.EncryptedEntity, error) {
 	return get(ctx, s.client, req)
 }
 
+// Delete - send Delete request to grpc server
 func (s *TextDataService) Delete(ctx context.Context, req client.DeleteRequest) error {
-	return delete(ctx, s.client, req)
+	return delete(ctx, model.TypePlainText, s.client, req)
 }

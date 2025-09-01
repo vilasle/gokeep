@@ -6,6 +6,7 @@ import (
 
 var _ PrivateData = (*PlainText)(nil)
 
+//Plain presentation plaint text
 type PlainText struct {
 	model
 	text []byte
@@ -22,6 +23,7 @@ func newPlainText(owner UserAccess, text []byte, name string) *PlainText {
 	}
 }
 
+//Save prepare and encrypt plain text and save it in repository
 func (tp *PlainText) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := tp.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
@@ -35,10 +37,12 @@ func (tp *PlainText) prepareEncryptedData(encoder Encoder) (err error) {
 	return err
 }
 
+//SetText set net text data
 func (tp *PlainText) SetText(text []byte) {
 	tp.text = text
 }
 
+//SetName set new name for plain text
 func (tp *PlainText) SetName(name string) {
 	tp.model.view = name
 }

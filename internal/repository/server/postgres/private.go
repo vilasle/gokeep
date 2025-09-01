@@ -16,15 +16,18 @@ const (
 	EntityTypeBinaryData
 )
 
+// PrivateDataRepository is a repository for private data
 type PrivateDataRepository struct {
 	db *sql.DB
 }
 
+// NewPrivateDataRepository creates a new PrivateDataRepository
 func NewPrivateDataRepository(db *sql.DB) (*PrivateDataRepository, error) {
 	repository := &PrivateDataRepository{db: db}
 	return repository, repository.initSchema()
 }
 
+// Add adds a new private data to the database
 func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataSave) (int, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -53,6 +56,7 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 	return id, err
 }
 
+
 func (r *PrivateDataRepository) addEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) (int, error) {
 	txt := `INSERT INTO entity (user_id, "type", view) VALUES ($1, $2, $3) RETURNING id`
 	var id int
@@ -69,6 +73,7 @@ func (r *PrivateDataRepository) addEncryptedData(ctx context.Context, tx *sql.Tx
 	return err
 }
 
+// Update updates a private data in the database
 func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDataSave) (id int, err error) {
 	if data.ID == 0 {
 		return 0, model.ErrEmptyID
@@ -126,6 +131,7 @@ func (r *PrivateDataRepository) saveMetadata(ctx context.Context, tx *sql.Tx, id
 	return nil
 }
 
+// Delete deletes a private data from the database
 func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 	if id == 0 {
 		return model.ErrEmptyID
@@ -152,14 +158,16 @@ func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 	return tx.Commit()
 }
 
+// Get returns a private data from the database
 func (r *PrivateDataRepository) Get(ctx context.Context, id int) (response model.PrivateDataInfo, err error) {
 	txt := `
-	SELECT t1.id 
+	SELECT t1.id
+		,t1.user_id 
 		,t1.view
 		,t2.data
 		,t2.dek 
 		,COALESCE(t3.key, '')
-		,COALESCEt(3.value, '')
+		,COALESCE(t3.value, '')
 	FROM entity AS t1 
 		LEFT JOIN data_encrypted AS t2 ON t1.id = t2.entity_id
 		LEFT JOIN metadata AS t3 ON t1.id = t3.entity_id
@@ -180,11 +188,13 @@ func (r *PrivateDataRepository) Get(ctx context.Context, id int) (response model
 	return response, err
 }
 
+// List returns a list of private data from the database
 func (r *PrivateDataRepository) List(ctx context.Context,
 	modelType model.Type, userID int) (response []model.PrivateDataInfo, err error) {
 
 	txt := `
 	SELECT t1.id 
+		,t1.user_id
 		,t1.view
 		,t2.data
 		,t2.dek 
@@ -215,7 +225,7 @@ func readGettingRows(rows *sql.Rows) (result map[int]model.PrivateDataInfo, err 
 	for rows.Next() {
 		var d model.PrivateDataInfo
 		var key, value string
-		err := rows.Scan(&d.ID, &d.View, &d.Data, &d.DEK, &key, &value)
+		err := rows.Scan(&d.ID, &d.UserID, &d.View, &d.Data, &d.DEK, &key, &value)
 		if err != nil {
 			return result, err
 		}

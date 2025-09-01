@@ -21,10 +21,8 @@ type AddLoginPassword struct {
 }
 
 type UpdateLoginPassword struct {
-	UserID int
 	ID     int
 	AddLoginPassword
-	Metadata []MetadataValue
 }
 
 type AddBankCard struct {
@@ -38,7 +36,6 @@ type AddBankCard struct {
 type UpdateBankCard struct {
 	ID int
 	AddBankCard
-	Metadata []MetadataValue
 }
 
 type AddTextData struct {
@@ -51,7 +48,6 @@ type AddTextData struct {
 type UpdateTextData struct {
 	ID int
 	AddTextData
-	Metadata []MetadataValue
 }
 
 type AddBinaryData struct {
@@ -64,7 +60,6 @@ type AddBinaryData struct {
 type UpdateBinaryData struct {
 	ID int
 	AddBinaryData
-	Metadata []MetadataValue
 }
 
 type PrivateDataResponse struct {

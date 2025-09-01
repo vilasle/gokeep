@@ -10,6 +10,7 @@ import (
 
 var _ PrivateData = (*Usepass)(nil)
 
+//BandCard is model for presentation bank card
 type BankCard struct {
 	model
 	number     string
@@ -32,6 +33,7 @@ func newBankCard(owner UserAccess, cardNumber string, cvv int, expiration time.T
 	return ent
 }
 
+//SetNumber set new number for bank card and view
 func (u *BankCard) SetNumber(number string) {
 	u.number = number
 	if len(u.number) > 4 {
@@ -39,14 +41,17 @@ func (u *BankCard) SetNumber(number string) {
 	}
 }
 
+//SetCVV set new cvv for bank card
 func (u *BankCard) SetCVV(cvv int) {
 	u.cvv = cvv
 }
 
+//SetExpiration set new expiration for bank card
 func (u *BankCard) SetExpiration(expiration time.Time) {
 	u.expiration = expiration
 }
 
+//Save prepare view of model, encrypt it and save on repository
 func (u *BankCard) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := u.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error

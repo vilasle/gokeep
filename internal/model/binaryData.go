@@ -6,6 +6,7 @@ import (
 
 var _ PrivateData = (*BinaryData)(nil)
 
+//BinaryData is model for presentation binary data
 type BinaryData struct {
 	model
 	data []byte
@@ -22,18 +23,20 @@ func newBinaryData(owner UserAccess, data []byte, name string) *BinaryData {
 	}
 }
 
+//Save prepare and encrypt binary data and save it in repository
 func (bd *BinaryData) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := bd.prepareEncryptedData(encoder); err != nil {
-		//TODO wrap error with package error
 		return err
 	}
 	return bd.model.Save(ctx)
 }
 
+//SetName set new name for binary data
 func (bd *BinaryData) SetName(name string) {
 	bd.model.view = name
 }
 
+//SetData set new data for binary data
 func (bd *BinaryData) SetData(data []byte) {
 	bd.data = data
 }

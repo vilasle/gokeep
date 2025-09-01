@@ -46,7 +46,7 @@ const (
 	ConfigName               = "config.yaml"
 	UploadName               = "upload"
 	CertificateNameDirectory = "cert"
-	CreadExt                 = ".cread"
+	CreadExt                 = ".cred"
 )
 
 type Config struct {
@@ -54,6 +54,7 @@ type Config struct {
 	DBPath       string `yaml:"database-path" env:"GOKEEP_DATABASE_PATH" env-required:"true"`
 }
 
+//WorkplaceConfig - path to file and directories which are necessary for client
 type WorkplaceConfig struct {
 	ConfigDirectory PathInfo
 	UploadDirectory PathInfo
@@ -62,6 +63,7 @@ type WorkplaceConfig struct {
 	Credentials     PathInfo
 }
 
+//GetCurrentConfiguration - find and get current configuration in workplace
 func GetCurrentConfiguration(customConfigPath string) (WorkplaceConfig, error) {
 	var workplace WorkplaceConfig
 	if len(customConfigPath) > 0 {
@@ -73,6 +75,7 @@ func GetCurrentConfiguration(customConfigPath string) (WorkplaceConfig, error) {
 	return workplace, workplace.PathError()
 }
 
+//CreateNewConfiguration - generate new rsa keys and create directories and config file
 func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error) {
 	workplaceConfig := WorkplaceConfig{}
 	if len(configPath) > 0 {
@@ -92,6 +95,7 @@ func CreateNewConfiguration(configPath, serverSocket, dbPath string) (err error)
 	return generateConfig(workplaceConfig.Config.Path, serverSocket, dbPath)
 }
 
+//Report print configuration to stdout
 func (w WorkplaceConfig) Report() {
 	fmt.Println("workplace directory:", w.ConfigDirectory.Path)
 	fmt.Println("upload directory:", w.UploadDirectory.Path)
@@ -99,6 +103,7 @@ func (w WorkplaceConfig) Report() {
 	fmt.Println("certificate:", w.Certificate.Path)
 }
 
+//Path errors make one errors from all of path
 func (w WorkplaceConfig) PathError() error {
 	return errors.Join(w.ConfigDirectory.Error, w.Config.Error,
 		w.Certificate.Error)

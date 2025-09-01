@@ -19,7 +19,7 @@ var configCmd = &cobra.Command{
 	Short: "config ",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("config called")
+		cmd.Usage()
 	},
 }
 

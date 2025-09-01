@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -36,6 +37,7 @@ func newDataServices(socket *grpc.ClientConn) *externalServices {
 	}
 }
 
+//CommandLineClient - client for command line interface
 type CommandLineClient struct {
 	workspace config.WorkplaceConfig
 	config    config.Config
@@ -50,6 +52,7 @@ type CommandLineClient struct {
 	conn             *grpc.ClientConn
 }
 
+//NewClient - create new client, loads config files and path from workspace
 func NewClient(workspace config.WorkplaceConfig, caFile string) (client *CommandLineClient, err error) {
 	client = &CommandLineClient{
 		workspace: workspace,
@@ -91,6 +94,7 @@ func NewClient(workspace config.WorkplaceConfig, caFile string) (client *Command
 	return client, err
 }
 
+//Close - close client
 func (c *CommandLineClient) Close() error {
 	return errors.Join(c.conn.Close(), c.localStorage.Close())
 }
@@ -170,8 +174,18 @@ func (c *CommandLineClient) saveCredential(account string) error {
 		return errors.New("credential is empty")
 	}
 
-	path := filepath.Join(c.workspace.Credentials.Path, account)
-	path += config.CreadExt
+	stat, err := os.Stat(c.workspace.Credentials.Path)
+	if err != nil {
+		return err
+	}
+
+	path := c.workspace.Credentials.Path
+	if stat.IsDir() {
+		path = filepath.Join(c.workspace.Credentials.Path, account)
+		path += config.CreadExt
+	}
+
+	os.RemoveAll(path)
 
 	return os.WriteFile(path, c.credential, 0600)
 }
@@ -194,4 +208,16 @@ func findKeysPath(path string) (string, string, error) {
 	}
 
 	return publicPath, privatePath, nil
+}
+
+func (c *CommandLineClient) getExternalID(ctx context.Context, req repository.GetRequest) int {
+	if req.ID == 0 {
+		return 0
+	}
+
+	response, err := c.localStorage.Get(ctx, req)
+	if err != nil || len(response) == 0 {
+		return 0
+	}
+	return response[0].ExternalID
 }

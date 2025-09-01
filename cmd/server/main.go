@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"database/sql"
 	"os"
 
@@ -15,19 +16,38 @@ import (
 	"github.com/vilasle/gokeep/internal/service/private"
 )
 
+var (
+	buildVersion string
+	buildDate    string
+	buildCommit  string
+)
+
 func main() {
 	logger.Make(os.Stdout, logger.DebugLevel)
+	logger.Info("metadata",
+		"version", cmp.Or(buildVersion, "N/A"),
+		"date", cmp.Or(buildDate, "N/A"),
+		"commit", cmp.Or(buildCommit, "N/A"))
 
 	masterKeyPath := "master.key"
 
-	var caFilePath, dbUrl, jwtKeyPath string
-	pflag.StringVarP(&caFilePath, "ca-file", "c", "", "CA file path")
+	var serverCertificatePath, serverKeyPath, addr, dbUrl, jwtKeyPath string
+	var showHelp bool
+	pflag.StringVarP(&addr, "addr", "a", ":9092", "Listen port")
+	pflag.StringVarP(&serverCertificatePath, "certificate", "c", "", "Server certificate file path")
+	pflag.StringVarP(&serverKeyPath, "private-key", "k", "", "Server key file path")
 
 	pflag.StringVarP(&dbUrl, "db-url", "d", "",
-		"Database URL. Format postgres://postgres:142543@172.17.0.2:5432/gokeep?sslmode=disable")
+		"Database URL. Format postgres://user:password@127.0.0.1:5432/gokeep?sslmode=disable")
 
 	pflag.StringVarP(&jwtKeyPath, "salt", "s", "", "JWT key path")
+	pflag.BoolVarP(&showHelp, "help", "h", false, "Show help")
 	pflag.Parse()
+
+	if showHelp {
+		pflag.Usage()
+		os.Exit(0)
+	}
 
 	if dbUrl == "" {
 		logger.Error("database url is not set")
@@ -109,13 +129,14 @@ func main() {
 	binarySvc := private.NewBinaryDataService(manager, masterKey)
 
 	config := server.Config{
-		Addr:                 ":9092",
+		Addr:                 addr,
 		AuthService:          authSvc,
 		LoginPasswordService: loginPasswordSvc,
 		BankCardService:      bankCardSvc,
 		TextDataService:      textSvc,
 		BinaryDataService:    binarySvc,
-		CertificatePath:      caFilePath,
+		CertificatePath:      serverCertificatePath,
+		PrivateKeyPath:       serverKeyPath,
 	}
 
 	srv, err := server.NewServer(config, server.WithLogger)

@@ -9,16 +9,19 @@ import (
 
 var _ model.UserRepository = (*UserRepository)(nil)
 
+// UserRepository is a repository for users
 type UserRepository struct {
 	db *sql.DB
 }
 
+// NewUserRepository creates a new UserRepository
 func NewUserRepository(db *sql.DB) (*UserRepository, error) {
 	repository := &UserRepository{db: db}
 
 	return repository, repository.initSchema()
 }
 
+// Add adds a new user to the database
 func (r *UserRepository) Add(ctx context.Context, user model.UserAdd) (id int, err error) {
 	err = r.db.QueryRowContext(
 		ctx, `INSERT INTO users (login, password) VALUES($1, $2) RETURNING id`,
@@ -28,6 +31,7 @@ func (r *UserRepository) Add(ctx context.Context, user model.UserAdd) (id int, e
 	return id, err
 }
 
+// Get gets a user by id
 func (r *UserRepository) Get(ctx context.Context, id int) (user model.UserInfo, err error) {
 	err = r.db.QueryRowContext(
 		ctx, `SELECT id, login, password FROM users WHERE id = $1`,
@@ -41,6 +45,7 @@ func (r *UserRepository) Get(ctx context.Context, id int) (user model.UserInfo, 
 	return user, err
 }
 
+// Update updates a user in the database
 func (r *UserRepository) Update(ctx context.Context, user model.UserUpdate) error {
 	_, err := r.db.ExecContext(
 		ctx, `UPDATE users SET login = $1, password = $2 WHERE id = $3`,
@@ -49,6 +54,7 @@ func (r *UserRepository) Update(ctx context.Context, user model.UserUpdate) erro
 	return err
 }
 
+// Delete deletes a user from the database
 func (r *UserRepository) Delete(ctx context.Context, id int) error {
 	_, err := r.db.ExecContext(
 		ctx, `DELETE FROM users WHERE id = $1`,
@@ -57,6 +63,7 @@ func (r *UserRepository) Delete(ctx context.Context, id int) error {
 	return err
 }
 
+// Find finds a user by login
 func (r *UserRepository) Find(ctx context.Context, login string) (user model.UserInfo, err error) {
 	err = r.db.QueryRowContext(
 		ctx, `SELECT id, login, password FROM users WHERE login = $1`,

@@ -46,7 +46,7 @@ func TestUsepassService_List(t *testing.T) {
 		masterKey.EXPECT().Decrypt([]byte(jsonKey)).Return([]byte(jsonKey), nil)
 		masterKey.EXPECT().Decrypt([]byte(jsonKey)).Return([]byte(jsonKey), nil)
 		clientKey.EXPECT().Encrypt([]byte(jsonKey)).Return([]byte(jsonKey), nil)
-			
+
 		private.EXPECT().List(ctx, model.TypeUsepass, 1).Return([]model.PrivateDataInfo{
 			{
 				ID:     1,
@@ -613,16 +613,15 @@ func TestUsepassService_Update(t *testing.T) {
 
 		_, err := svc.Update(ctx, service.UpdateLoginPassword{
 			ID: 1,
-			UserID: userID,
 			AddLoginPassword: service.AddLoginPassword{
 				Username: "123456890",
 				Password: ("123456890"),
 				UserID:   userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -654,16 +653,15 @@ func TestUsepassService_Update(t *testing.T) {
 
 		_, err := svc.Update(ctx, service.UpdateLoginPassword{
 			ID: 1,
-			UserID: userID,
 			AddLoginPassword: service.AddLoginPassword{
 				Username: "123456890",
 				Password: ("123456890"),
 				UserID:   userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -698,19 +696,18 @@ func TestUsepassService_Update(t *testing.T) {
 		}, nil)
 
 		private.EXPECT().Get(ctx, 1).Return(model.PrivateDataInfo{}, errors.New("error"))
-		
+
 		_, err := svc.Update(ctx, service.UpdateLoginPassword{
 			ID: 1,
-			UserID: userID,
 			AddLoginPassword: service.AddLoginPassword{
 				Username: "123456890",
 				Password: ("123456890"),
 				UserID:   userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)

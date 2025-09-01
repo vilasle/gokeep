@@ -13,6 +13,9 @@ var credCmd = &cobra.Command{
 	Use:   "cred",
 	Short: "",
 	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 type credAddFlags struct {

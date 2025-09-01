@@ -68,10 +68,11 @@ func handleGetResponse(resp *proto.GetDataResponse, err error) ([]client.Encrypt
 	return result, nil
 }
 
-func delete(ctx context.Context, svc proto.PrivateDataServiceClient, req client.DeleteRequest) error {
+func delete(ctx context.Context, tData int, svc proto.PrivateDataServiceClient, req client.DeleteRequest) error {
 	resp, err := svc.Delete(ctx, &proto.DeleteDataRequest{
 		Id:         int64(req.ID),
 		Credential: &proto.ConfirmAssess{Token: req.JWT},
+		Type:       int32(tData),
 	})
 	return handleDeleteResponse(resp, err)
 }

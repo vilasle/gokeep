@@ -10,10 +10,12 @@ import (
 	"github.com/vilasle/gokeep/internal/repository/client"
 )
 
+// ClientRepository is a repository for clients
 type ClientRepository struct {
 	db *sql.DB
 }
 
+// NewSQLiteClient creates a new SQLite client
 func NewSQLiteClient(dbPath string) (*ClientRepository, error) {
 	if _, err := os.Stat(dbPath); err != nil {
 		if fd, err := os.Create(dbPath); err == nil {
@@ -31,6 +33,8 @@ func NewSQLiteClient(dbPath string) (*ClientRepository, error) {
 	return &ClientRepository{db: db}, nil
 }
 
+
+// CreateScheme creates the database scheme
 func (r *ClientRepository) CreateScheme(ctx context.Context) error {
 	//enable checks for foreign keys
 	if _, err := r.db.ExecContext(ctx, "PRAGMA foreign_keys = ON;"); err != nil {
@@ -61,10 +65,12 @@ func (r *ClientRepository) CreateScheme(ctx context.Context) error {
 	return nil
 }
 
+// Close closes the database connection
 func (r *ClientRepository) Close() error {
 	return r.db.Close()
 }
 
+//Save - add new private data or update existed record in database
 func (r *ClientRepository) Save(ctx context.Context, req client.SaveRequest) error {
 	if req.ID > 0 {
 		return r.update(ctx, req)
@@ -72,6 +78,7 @@ func (r *ClientRepository) Save(ctx context.Context, req client.SaveRequest) err
 	return r.add(ctx, req)
 }
 
+//Get - get private data from database by id and type of private data
 func (r *ClientRepository) Get(ctx context.Context, req client.GetRequest) ([]client.GetResponse, error) {
 	txt := `SELECT t1.id
 	,t1.external_id
@@ -94,6 +101,7 @@ func (r *ClientRepository) Get(ctx context.Context, req client.GetRequest) ([]cl
 
 }
 
+//All - get all private data from database by type of private data
 func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.GetResponse, error) {
 	txt := `
 		SELECT t1.id
@@ -117,6 +125,7 @@ func (r *ClientRepository) All(ctx context.Context, tData model.Type) ([]client.
 	return readEntityFromRows(rows)
 }
 
+//Delete - delete private data from database by id and type of private data
 func (r *ClientRepository) Delete(ctx context.Context, req client.DeleteRequest) error {
 	if err := r.deleteMetadataByOwner(ctx, req.ID); err != nil {
 		return err
@@ -128,6 +137,8 @@ func (r *ClientRepository) Delete(ctx context.Context, req client.DeleteRequest)
 	return err
 }
 
+
+//Rewrite - clear all data in database and add new data
 func (r *ClientRepository) Rewrite(ctx context.Context, req []client.SaveRequest) error {
 	txt := `
 		DELETE FROM metadata;

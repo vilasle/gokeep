@@ -18,6 +18,7 @@ import (
 
 type Option func(*Server) error
 
+//WithLogger - set logger for grpc server
 func WithLogger(s *Server) error {
 	s.opts = append(s.opts, grpc.UnaryInterceptor(
 		logging.UnaryServerInterceptor(logger.InterceptorLogger()),
@@ -25,6 +26,7 @@ func WithLogger(s *Server) error {
 	return nil
 }
 
+//Config is necessary fields for grpc server
 type Config struct {
 	Addr string
 	service.AuthService
@@ -33,8 +35,10 @@ type Config struct {
 	service.TextDataService
 	service.BinaryDataService
 	CertificatePath string
+	PrivateKeyPath  string
 }
 
+//Server is grpc server and implement pb.PrivateDataServiceServer and pb.AccountServiceServer
 type Server struct {
 	auth service.AuthService
 	//data services
@@ -50,6 +54,8 @@ type Server struct {
 	pb.UnimplementedAccountServiceServer
 }
 
+
+//NewServer returns new instance of Server
 func NewServer(config Config, opts ...Option) (*Server, error) {
 	conn, err := net.Listen("tcp", config.Addr)
 	if err != nil {
@@ -72,8 +78,8 @@ func NewServer(config Config, opts ...Option) (*Server, error) {
 		}
 	}
 
-	if config.CertificatePath != "" {
-		cred, err := credentials.NewClientTLSFromFile(config.CertificatePath, "")
+	if config.CertificatePath != "" && config.PrivateKeyPath != "" {
+		cred, err := credentials.NewServerTLSFromFile(config.CertificatePath, config.PrivateKeyPath)
 		if err != nil {
 			return nil, err
 		}
@@ -84,6 +90,7 @@ func NewServer(config Config, opts ...Option) (*Server, error) {
 	return s, nil
 }
 
+//Listen - start grpc server
 func (s *Server) Listen() error {
 	pb.RegisterPrivateDataServiceServer(s.srv, s)
 	pb.RegisterAccountServiceServer(s.srv, s)
@@ -91,6 +98,8 @@ func (s *Server) Listen() error {
 	return s.srv.Serve(s.conn)
 }
 
+
+//Stop - stop grpc server
 func (s *Server) Stop() {
 	s.srv.GracefulStop()
 	s.conn.Close()
@@ -130,6 +139,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	return resp, nil
 }
 
+//SaveLoginPassword - save login password via service.LoginPasswordService
 func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswordRequest) (*pb.EncryptedDataResponse, error) {
 	resp := &pb.EncryptedDataResponse{}
 	//get session and client key by token
@@ -148,7 +158,17 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 		Metadata: castMetadata(req.Metadata),
 	}
 
-	if result, err := s.cread.Add(ctx, dto, ses.encoder); err != nil {
+	var result service.PrivateDataResponse
+	if req.Id == 0 {
+		result, err = s.cread.Add(ctx, dto, ses.encoder)
+	} else {
+		result, err = s.cread.Update(ctx, service.UpdateLoginPassword{
+			ID:               int(req.Id),
+			AddLoginPassword: dto},
+			ses.encoder)
+	}
+
+	if err != nil {
 		resp.Error = err.Error()
 	} else {
 		resp.Entity = &pb.EncryptedEntity{
@@ -166,6 +186,8 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 	return resp, nil
 }
 
+
+//SaveBankCard - save bank card via service.BankCardService
 func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) (*pb.EncryptedDataResponse, error) {
 	resp := &pb.EncryptedDataResponse{}
 	//get session and client key by token
@@ -191,7 +213,17 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 		Metadata:   castMetadata(req.Metadata),
 	}
 
-	if result, err := s.bank.Add(ctx, dto, ses.encoder); err != nil {
+	var result service.PrivateDataResponse
+	if req.Id == 0 {
+		result, err = s.bank.Add(ctx, dto, ses.encoder)
+	} else {
+		result, err = s.bank.Update(ctx, service.UpdateBankCard{
+			ID:          int(req.Id),
+			AddBankCard: dto},
+			ses.encoder)
+	}
+
+	if err != nil {
 		resp.Error = err.Error()
 	} else {
 		resp.Entity = &pb.EncryptedEntity{
@@ -209,6 +241,7 @@ func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) 
 	return resp, nil
 }
 
+//SaveTextData - save text data via service.TextDataService
 func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) (*pb.EncryptedDataResponse, error) {
 	resp := &pb.EncryptedDataResponse{}
 	//get session and client key by token
@@ -227,7 +260,17 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 		Metadata: castMetadata(req.Metadata),
 	}
 
-	if result, err := s.text.Add(ctx, dto, ses.encoder); err != nil {
+	var result service.PrivateDataResponse
+	if req.Id == 0 {
+		result, err = s.text.Add(ctx, dto, ses.encoder)
+	} else {
+		result, err = s.text.Update(ctx, service.UpdateTextData{
+			ID:          int(req.Id),
+			AddTextData: dto},
+			ses.encoder)
+	}
+
+	if err != nil {
 		resp.Error = err.Error()
 	} else {
 		resp.Entity = &pb.EncryptedEntity{
@@ -245,6 +288,7 @@ func (s *Server) SaveTextData(ctx context.Context, req *pb.SaveTextDataRequest) 
 	return resp, nil
 }
 
+//SaveBinaryData - save binary data via service.BinaryDataService
 func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataRequest) (*pb.EncryptedDataResponse, error) {
 	resp := &pb.EncryptedDataResponse{}
 	//get session and client key by token
@@ -263,7 +307,17 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 		Metadata: castMetadata(req.Metadata),
 	}
 
-	if result, err := s.binary.Add(ctx, dto, ses.encoder); err != nil {
+	var result service.PrivateDataResponse
+	if req.Id == 0 {
+		result, err = s.binary.Add(ctx, dto, ses.encoder)
+	} else {
+		result, err = s.binary.Update(ctx, service.UpdateBinaryData{
+			ID:            int(req.Id),
+			AddBinaryData: dto},
+			ses.encoder)
+	}
+
+	if err != nil {
 		resp.Error = err.Error()
 	} else {
 		resp.Entity = &pb.EncryptedEntity{
@@ -281,6 +335,7 @@ func (s *Server) SaveBinaryData(ctx context.Context, req *pb.SaveBinaryDataReque
 	return resp, nil
 }
 
+//Delete - delete data via service.PrivateDataService
 func (s *Server) Delete(ctx context.Context, req *pb.DeleteDataRequest) (resp *pb.DeleteDataResponse, err error) {
 	resp = &pb.DeleteDataResponse{}
 	//get session and client key by token
@@ -316,6 +371,7 @@ func (s *Server) Delete(ctx context.Context, req *pb.DeleteDataRequest) (resp *p
 	return resp, nil
 }
 
+//Get - get data via service.PrivateDataService
 func (s *Server) Get(ctx context.Context, req *pb.GetDataRequest) (resp *pb.GetDataResponse, err error) {
 	resp = &pb.GetDataResponse{}
 	//get session and client key by token
@@ -342,6 +398,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetDataRequest) (resp *pb.GetD
 
 	return resp, nil
 }
+
 
 func (s *Server) get(ctx context.Context, req *pb.GetDataRequest, ses session) ([]*pb.EncryptedEntity, error) {
 	var data service.PrivateDataResponse

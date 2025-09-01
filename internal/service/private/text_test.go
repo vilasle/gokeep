@@ -617,11 +617,11 @@ func TestTextService_Update(t *testing.T) {
 				Name:   "123456890",
 				Text:   []byte("123456890"),
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -657,11 +657,11 @@ func TestTextService_Update(t *testing.T) {
 				Name:   "123456890",
 				Text:   []byte("123456890"),
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)
@@ -702,11 +702,11 @@ func TestTextService_Update(t *testing.T) {
 				Name:   "123456890",
 				Text:   []byte("123456890"),
 				UserID: userID,
-			},
-			Metadata: []service.MetadataValue{
-				{
-					Key:   "key",
-					Value: "value",
+				Metadata: []service.MetadataValue{
+					{
+						Key:   "key",
+						Value: "value",
+					},
 				},
 			},
 		}, clientKey)

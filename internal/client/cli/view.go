@@ -11,7 +11,7 @@ import (
 )
 
 type viewer interface {
-	View() string
+	view() string
 }
 
 type loginPasswordView struct {
@@ -21,7 +21,7 @@ type loginPasswordView struct {
 	Metadata []client.MetadataValue
 }
 
-func (v *loginPasswordView) View() string {
+func (v *loginPasswordView) view() string {
 	var metadata string
 	for _, m := range v.Metadata {
 		metadata += fmt.Sprintf("%s=%s;", m.Key, m.Value)
@@ -39,7 +39,7 @@ type bankCardView struct {
 	Metadata []client.MetadataValue
 }
 
-func (v *bankCardView) View() string {
+func (v *bankCardView) view() string {
 	var metadata string
 	for _, m := range v.Metadata {
 		metadata += fmt.Sprintf("%s=%s;", m.Key, m.Value)
@@ -54,7 +54,7 @@ type entityView struct {
 	Metadata    []client.MetadataValue
 }
 
-func (v *entityView) View() string {
+func (v *entityView) view() string {
 	var metadata string
 	for _, m := range v.Metadata {
 		metadata += fmt.Sprintf("%s=%s;", m.Key, m.Value)
@@ -105,7 +105,7 @@ func (c *CommandLineClient) showFullEntities(tData model.Type, data ...client.Ge
 			return fmt.Errorf("unknown type of data: %d", tData)
 		}
 
-		fmt.Println(v.View())
+		fmt.Println(v.view())
 
 	}
 
@@ -115,7 +115,7 @@ func (c *CommandLineClient) showFullEntities(tData model.Type, data ...client.Ge
 func (c *CommandLineClient) showListOfEntities(data ...client.GetResponse) error {
 	for _, entity := range data {
 		ev := entityView{ID: entity.ID, Description: entity.View, Metadata: entity.Metadata}
-		fmt.Println(ev.View())
+		fmt.Println(ev.view())
 	}
 	return nil
 }

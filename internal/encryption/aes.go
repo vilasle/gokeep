@@ -18,6 +18,7 @@ type AESKey struct {
 	gcm   cipher.AEAD
 }
 
+//GenerateNewAESKey generates a new AES key
 func GenerateNewAESKey() (*AESKey, error) {
 	key := make([]byte, 32)
 	if _, err := rand.Reader.Read(key); err != nil {
@@ -42,6 +43,7 @@ func GenerateNewAESKey() (*AESKey, error) {
 	return aesKey, nil
 }
 
+//NewAESKeyFromJSON creates a new AES key from a JSON string
 func NewAESKeyFromJSON(content []byte) (*AESKey, error) {
 	key := &AESKey{}
 	err := json.Unmarshal(content, key)
@@ -83,14 +85,17 @@ func (k *AESKey) initGCM() error {
 	return nil
 }
 
+//Encrypt encrypts the data using the AES key
 func (k *AESKey) Encrypt(data []byte) ([]byte, error) {
 	return k.gcm.Seal(nil, k.nonce, data, nil), nil
 }
 
+//Decrypt decrypts the data using the AES key
 func (k *AESKey) Decrypt(data []byte) ([]byte, error) {
 	return k.gcm.Open(nil, k.nonce, data, nil)
 }
 
+//JSON returns the JSON representation of the AES key
 func (k AESKey) JSON() string {
 	buf := strings.Builder{}
 	buf.WriteString(`{"key":"`)

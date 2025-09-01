@@ -8,11 +8,12 @@ import (
 	svc "github.com/vilasle/gokeep/internal/service/client"
 )
 
+//SaveLoginPassword - save login password to external storage and local storage
 func (c *CommandLineClient) SaveLoginPassword(ctx context.Context,
 	login, password string, id int, meta map[string]string) (err error) {
 
 	data := svc.LoginPasswordSaveRequest{
-		ID:       id,
+		ID:       c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass}),
 		Login:    login,
 		Password: password,
 		JWT:      string(c.credential),
@@ -21,14 +22,15 @@ func (c *CommandLineClient) SaveLoginPassword(ctx context.Context,
 
 	response, err := c.externalServices.credentials.Save(ctx, data)
 
-	return c.handleSaveResponse(ctx, model.TypeUsepass, response, err)
+	return c.handleSaveResponse(ctx, id, model.TypeUsepass, response, err)
 }
 
+//SaveBankCard - save band card to external storage and local storage
 func (c *CommandLineClient) SaveBankCard(ctx context.Context,
 	number, expires string, cvv, id int, meta map[string]string) (err error) {
 
 	data := svc.BankCardSaveRequest{
-		ID:       id,
+		ID:       c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeBankCard}),
 		Number:   number,
 		Expires:  expires,
 		CVV:      cvv,
@@ -38,14 +40,15 @@ func (c *CommandLineClient) SaveBankCard(ctx context.Context,
 
 	response, err := c.externalServices.bankCard.Save(ctx, data)
 
-	return c.handleSaveResponse(ctx, model.TypeBankCard, response, err)
+	return c.handleSaveResponse(ctx, id, model.TypeBankCard, response, err)
 }
 
+//SaveTextData - save text data to external storage and local storage
 func (c *CommandLineClient) SaveTextData(ctx context.Context,
 	text string, name string, id int, meta map[string]string) (err error) {
 
 	data := svc.TextDataSaveRequest{
-		ID:       id,
+		ID:       c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypePlainText}),
 		Text:     []byte(text),
 		Name:     name,
 		JWT:      string(c.credential),
@@ -54,15 +57,16 @@ func (c *CommandLineClient) SaveTextData(ctx context.Context,
 
 	response, err := c.externalServices.text.Save(ctx, data)
 
-	return c.handleSaveResponse(ctx, model.TypePlainText, response, err)
+	return c.handleSaveResponse(ctx, id, model.TypePlainText, response, err)
 }
 
+//SaveBinaryData - save binary data to external storage and local storage
 func (c *CommandLineClient) SaveBinaryData(ctx context.Context,
 	content []byte, name string, id int, meta map[string]string) error {
 
 	metadata := prepareMetadataForExternalStorage(meta)
 	data := svc.BinaryDataSaveRequest{
-		ID:       id,
+		ID:       c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeBinaryData}),
 		Data:     content,
 		Name:     name,
 		JWT:      string(c.credential),
@@ -70,7 +74,7 @@ func (c *CommandLineClient) SaveBinaryData(ctx context.Context,
 	}
 
 	response, err := c.externalServices.binary.Save(ctx, data)
-	return c.handleSaveResponse(ctx, model.TypeBinaryData, response, err)
+	return c.handleSaveResponse(ctx, id, model.TypeBinaryData, response, err)
 }
 
 func prepareMetadataForExternalStorage(meta map[string]string) []svc.MetadataValue {
@@ -95,12 +99,13 @@ func prepareMetadataForLocalStorage(meta []svc.MetadataValue) []repository.Metad
 	return metadata
 }
 
-func (c *CommandLineClient) handleSaveResponse(ctx context.Context, t model.Type, response svc.SaveResponse, err error) error {
+func (c *CommandLineClient) handleSaveResponse(ctx context.Context, id int, t model.Type, response svc.SaveResponse, err error) error {
 	if err != nil {
 		return err
 	}
 
 	return c.localStorage.Save(ctx, repository.SaveRequest{
+		ID:         id,
 		ExternalID: response.ID,
 		DEK:        string(response.Data.DEK),
 		Data:       string(response.Data.Data),
@@ -109,3 +114,4 @@ func (c *CommandLineClient) handleSaveResponse(ctx context.Context, t model.Type
 		Type:       t,
 	})
 }
+

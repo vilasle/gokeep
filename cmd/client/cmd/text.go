@@ -13,6 +13,9 @@ var textCmd = &cobra.Command{
 	Use:   "text",
 	Short: "",
 	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 type textAddFlags struct {

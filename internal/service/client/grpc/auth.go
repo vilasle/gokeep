@@ -8,16 +8,19 @@ import (
 	"google.golang.org/grpc"
 )
 
+//GRPCAuthService - client service for registration and login on server
 type GRPCAuthService struct {
 	client proto.AccountServiceClient
 }
 
+//GRPCAuthService - new instance of GRPCAuthService
 func NewGRPCAuthService(socket *grpc.ClientConn) *GRPCAuthService {
 	return &GRPCAuthService{
 		client: proto.NewAccountServiceClient(socket),
 	}
 }
 
+//CreateAccount - send request to GRPC server for creating new account
 func (s *GRPCAuthService) CreateAccount(ctx context.Context, accountName, password string) error {
 	dto := &proto.CreateAccountRequest{
 		Login:    accountName,
@@ -39,6 +42,8 @@ func (s *GRPCAuthService) CreateAccount(ctx context.Context, accountName, passwo
 	return nil
 }
 
+//Login - send request to GRPC server for login. Pass login, password and client public key
+//server has to return JWT token which will be saved on file workspace/{account_name}.cred 
 func (s *GRPCAuthService) Login(ctx context.Context, accountName, password string, publicKey []byte) ([]byte, error) {
 	dto := proto.LoginRequest{
 		Login:     accountName,
