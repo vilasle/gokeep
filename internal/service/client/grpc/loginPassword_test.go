@@ -9,6 +9,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vilasle/gokeep/internal/model"
 	"github.com/vilasle/gokeep/internal/service/client"
 	"github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
@@ -389,6 +390,7 @@ func TestLoginPasswordService_Delete(t *testing.T) {
 		mock.EXPECT().Delete(ctx, &proto.DeleteDataRequest{
 			Id:         1,
 			Credential: &proto.ConfirmAssess{Token: req.JWT},
+			Type:       int32(model.TypeUsepass),
 		}).Return(&proto.DeleteDataResponse{Error: ""}, nil)
 
 		err := svc.Delete(ctx, req)
@@ -414,6 +416,7 @@ func TestLoginPasswordService_Delete(t *testing.T) {
 		mock.EXPECT().Delete(ctx, &proto.DeleteDataRequest{
 			Id:         1,
 			Credential: &proto.ConfirmAssess{Token: req.JWT},
+			Type:       int32(model.TypeUsepass),
 		}).Return(nil, errors.New("client error"))
 
 		err := svc.Delete(ctx, req)
@@ -439,6 +442,7 @@ func TestLoginPasswordService_Delete(t *testing.T) {
 		mock.EXPECT().Delete(ctx, &proto.DeleteDataRequest{
 			Id:         1,
 			Credential: &proto.ConfirmAssess{Token: req.JWT},
+			Type:       int32(model.TypeUsepass),
 		}).Return(nil, nil)
 
 		err := svc.Delete(ctx, req)
@@ -464,6 +468,7 @@ func TestLoginPasswordService_Delete(t *testing.T) {
 		mock.EXPECT().Delete(ctx, &proto.DeleteDataRequest{
 			Id:         1,
 			Credential: &proto.ConfirmAssess{Token: req.JWT},
+			Type:       int32(model.TypeUsepass),
 		}).Return(&proto.DeleteDataResponse{Error: "error"}, nil)
 
 		err := svc.Delete(ctx, req)

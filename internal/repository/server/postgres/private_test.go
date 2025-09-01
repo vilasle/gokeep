@@ -672,10 +672,11 @@ func Test_PrivateDataRepository_Get(t *testing.T) {
 		ctx := context.Background()
 
 		expected := model.PrivateDataInfo{
-			ID:   entityId,
-			View: "view",
-			Data: []byte("data"),
-			DEK:  []byte("dek"),
+			ID:     entityId,
+			View:   "view",
+			UserID: 1,
+			Data:   []byte("data"),
+			DEK:    []byte("dek"),
 			Metadata: map[string]string{
 				"key1": "value1",
 				"key2": "value2",
@@ -685,9 +686,9 @@ func Test_PrivateDataRepository_Get(t *testing.T) {
 		mock.ExpectQuery("SELECT").
 			WithArgs(entityId).
 			WillReturnRows(
-				sqlmock.NewRows([]string{"id", "view", "data", "dek", "key", "value"}).
-					AddRow(entityId, "view", "data", "dek", "key1", "value1").
-					AddRow(entityId, "view", "data", "dek", "key2", "value2"))
+				sqlmock.NewRows([]string{"id", "user_id", "view", "data", "dek", "key", "value"}).
+					AddRow(entityId, 1, "view", "data", "dek", "key1", "value1").
+					AddRow(entityId, 1, "view", "data", "dek", "key2", "value2"))
 
 		data, err := r.Get(ctx, entityId)
 		assert.NoError(t, err)
@@ -732,8 +733,8 @@ func Test_PrivateDataRepository_Get(t *testing.T) {
 		mock.ExpectQuery("SELECT").
 			WithArgs(entityId).
 			WillReturnRows(
-				sqlmock.NewRows([]string{"id", "view", "data", "dek", "key", "value"}).
-					AddRow("wrong_id", 1, 1, 1, 1, true))
+				sqlmock.NewRows([]string{"id", "user_id", "view", "data", "dek", "key", "value"}).
+					AddRow("wrong_id", 1, 1, 1, 1, 1, true))
 
 		data, err := r.Get(ctx, entityId)
 		assert.Error(t, err)
@@ -755,10 +756,11 @@ func Test_PrivateDataRepository_List(t *testing.T) {
 
 		expected := []model.PrivateDataInfo{
 			{
-				ID:   entityId,
-				View: "view",
-				Data: []byte("data"),
-				DEK:  []byte("dek"),
+				ID:     entityId,
+				UserID: 1,
+				View:   "view",
+				Data:   []byte("data"),
+				DEK:    []byte("dek"),
 				Metadata: map[string]string{
 					"key1": "value1",
 					"key2": "value2",
@@ -769,9 +771,9 @@ func Test_PrivateDataRepository_List(t *testing.T) {
 		mock.ExpectQuery("SELECT").
 			WithArgs(1, 1).
 			WillReturnRows(
-				sqlmock.NewRows([]string{"id", "view", "data", "dek", "key", "value"}).
-					AddRow(entityId, "view", "data", "dek", "key1", "value1").
-					AddRow(entityId, "view", "data", "dek", "key2", "value2"))
+				sqlmock.NewRows([]string{"id", "user_id", "view", "data", "dek", "key", "value"}).
+					AddRow(entityId, 1, "view", "data", "dek", "key1", "value1").
+					AddRow(entityId, 1, "view", "data", "dek", "key2", "value2"))
 
 		data, err := r.List(ctx, 1, 1)
 		assert.NoError(t, err)

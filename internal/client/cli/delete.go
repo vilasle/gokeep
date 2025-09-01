@@ -24,7 +24,7 @@ func (c *CommandLineClient) DeleteLoginPassword(ctx context.Context, id int) err
 
 //DeleteLoginPassword - delete bank card from external storage and local storage
 func (c *CommandLineClient) DeleteBankCard(ctx context.Context, id int) error {
-	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass})
+	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeBankCard})
 	if externalId == 0 {
 		return nil
 	}
@@ -38,7 +38,7 @@ func (c *CommandLineClient) DeleteBankCard(ctx context.Context, id int) error {
 
 //DeleteLoginPassword - delete text data from external storage and local storage
 func (c *CommandLineClient) DeleteTextData(ctx context.Context, id int) error {
-	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass})
+	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypePlainText})
 	if externalId == 0 {
 		return nil
 	}
@@ -51,7 +51,7 @@ func (c *CommandLineClient) DeleteTextData(ctx context.Context, id int) error {
 
 //DeleteLoginPassword - delete binary data from external storage and local storage
 func (c *CommandLineClient) DeleteBinaryData(ctx context.Context, id int) error {
-	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass})
+	externalId := c.getExternalID(ctx, repository.GetRequest{ID: id, Type: model.TypeBinaryData})
 	if externalId == 0 {
 		return nil
 	}

@@ -33,7 +33,12 @@ func TestClient_DeleteLoginPassword(t *testing.T) {
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(nil)
 		local.EXPECT().Delete(ctx, repository.DeleteRequest{ID: id, Type: model.TypeUsepass}).Return(nil)
-
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 		err := c.DeleteLoginPassword(ctx, id)
 		assert.NoError(t, err)
 	})
@@ -57,6 +62,12 @@ func TestClient_DeleteLoginPassword(t *testing.T) {
 		id := 1
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(errors.New("error"))
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeUsepass}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 
 		err := c.DeleteLoginPassword(ctx, id)
 		assert.Error(t, err)
@@ -84,6 +95,12 @@ func TestClient_DeleteBankCard(t *testing.T) {
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(nil)
 		local.EXPECT().Delete(ctx, repository.DeleteRequest{ID: id, Type: model.TypeBankCard}).Return(nil)
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeBankCard}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 
 		err := c.DeleteBankCard(ctx, id)
 		assert.NoError(t, err)
@@ -108,6 +125,12 @@ func TestClient_DeleteBankCard(t *testing.T) {
 		id := 1
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(errors.New("error"))
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeBankCard}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 
 		err := c.DeleteBankCard(ctx, id)
 		assert.Error(t, err)
@@ -135,6 +158,12 @@ func TestClient_DeleteTextData(t *testing.T) {
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(nil)
 		local.EXPECT().Delete(ctx, repository.DeleteRequest{ID: id, Type: model.TypePlainText}).Return(nil)
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypePlainText}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 
 		err := c.DeleteTextData(ctx, id)
 		assert.NoError(t, err)
@@ -157,6 +186,13 @@ func TestClient_DeleteTextData(t *testing.T) {
 
 		ctx := context.Background()
 		id := 1
+
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypePlainText}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(errors.New("error"))
 
@@ -186,7 +222,12 @@ func TestClient_DeleteBinaryData(t *testing.T) {
 
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(nil)
 		local.EXPECT().Delete(ctx, repository.DeleteRequest{ID: id, Type: model.TypeBinaryData}).Return(nil)
-
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeBinaryData}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 		err := c.DeleteBinaryData(ctx, id)
 		assert.NoError(t, err)
 	})
@@ -208,6 +249,12 @@ func TestClient_DeleteBinaryData(t *testing.T) {
 		ctx := context.Background()
 		id := 1
 
+		local.EXPECT().Get(ctx, repository.GetRequest{ID: id, Type: model.TypeBinaryData}).Return([]repository.GetResponse{
+			{
+				ID:         1,
+				ExternalID: 1,
+			},
+		}, nil)
 		svc.EXPECT().Delete(ctx, client.DeleteRequest{ID: 1, JWT: string(c.credential)}).Return(errors.New("error"))
 
 		err := c.DeleteBinaryData(ctx, id)
