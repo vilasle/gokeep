@@ -5,6 +5,7 @@ import (
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/spf13/pflag"
 	"github.com/vilasle/gokeep/internal/encryption"
 	"github.com/vilasle/gokeep/internal/logger"
 	"github.com/vilasle/gokeep/internal/model"
@@ -14,13 +15,24 @@ import (
 	"github.com/vilasle/gokeep/internal/service/private"
 )
 
-//TODO getting args from ENV of yaml config
-
 func main() {
 	logger.Make(os.Stdout, logger.DebugLevel)
 
 	masterKeyPath := "master.key"
-	databaseUrl := "postgres://postgres:142543@172.17.0.2:5432/gokeep?sslmode=disable"
+
+	var caFilePath, dbUrl, jwtKeyPath string
+	pflag.StringVarP(&caFilePath, "ca-file", "c", "", "CA file path")
+
+	pflag.StringVarP(&dbUrl, "db-url", "d", "",
+		"Database URL. Format postgres://postgres:142543@172.17.0.2:5432/gokeep?sslmode=disable")
+
+	pflag.StringVarP(&jwtKeyPath, "salt", "s", "", "JWT key path")
+	pflag.Parse()
+
+	if dbUrl == "" {
+		logger.Error("database url is not set")
+		os.Exit(1)
+	}
 
 	_, err := os.Stat(masterKeyPath)
 	if os.IsNotExist(err) {
@@ -51,7 +63,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := sql.Open("pgx/v5", databaseUrl)
+	conn, err := sql.Open("pgx/v5", dbUrl)
 	if err != nil {
 		logger.Error("can not create database connection", "err", err)
 		os.Exit(1)
@@ -83,7 +95,13 @@ func main() {
 
 	manager := model.NewModelManager(collector)
 
-	authSvc := auth.NewAuthService(manager, sessionRepository, []byte{})
+	jwt, err := os.ReadFile(jwtKeyPath)
+	if err != nil {
+		logger.Error("can not read jwt key file", "err", err)
+		os.Exit(1)
+	}
+
+	authSvc := auth.NewAuthService(manager, sessionRepository, jwt)
 
 	loginPasswordSvc := private.NewUsepassService(manager, masterKey)
 	bankCardSvc := private.NewBankCardService(manager, masterKey)
@@ -97,6 +115,7 @@ func main() {
 		BankCardService:      bankCardSvc,
 		TextDataService:      textSvc,
 		BinaryDataService:    binarySvc,
+		CertificatePath:      caFilePath,
 	}
 
 	srv, err := server.NewServer(config, server.WithLogger)

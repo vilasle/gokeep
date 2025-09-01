@@ -8,13 +8,14 @@ import (
 	"os"
 	"path/filepath"
 
+	config "github.com/vilasle/gokeep/internal/client"
 	"github.com/vilasle/gokeep/internal/encryption"
 	repository "github.com/vilasle/gokeep/internal/repository/client"
-	config "github.com/vilasle/gokeep/internal/client"
 	"github.com/vilasle/gokeep/internal/repository/client/sqlite"
 	"github.com/vilasle/gokeep/internal/service/client"
 	grpcSvc "github.com/vilasle/gokeep/internal/service/client/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"gopkg.in/yaml.v3"
 )
@@ -49,7 +50,7 @@ type CommandLineClient struct {
 	conn             *grpc.ClientConn
 }
 
-func NewClient(workspace config.WorkplaceConfig) (client *CommandLineClient, err error) {
+func NewClient(workspace config.WorkplaceConfig, caFile string) (client *CommandLineClient, err error) {
 	client = &CommandLineClient{
 		workspace: workspace,
 	}
@@ -65,8 +66,18 @@ func NewClient(workspace config.WorkplaceConfig) (client *CommandLineClient, err
 	if err = client.loadRSAKeys(); err != nil {
 		return nil, err
 	}
-	//FIXME use TLS
-	conn, err := grpc.NewClient(client.config.ServerSocket, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	var transportOpt credentials.TransportCredentials
+	if caFile != "" {
+		transportOpt, err = credentials.NewClientTLSFromFile(caFile, "")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		transportOpt = insecure.NewCredentials()
+	}
+
+	conn, err := grpc.NewClient(client.config.ServerSocket, grpc.WithTransportCredentials(transportOpt))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +99,6 @@ func (c *CommandLineClient) loadConfiguration() error {
 	//try load information about grpc server and local database
 	configFd, err := os.Open(c.workspace.Config.Path)
 	if err != nil {
-		//TODO add error context
 		return err
 	}
 	defer configFd.Close()
@@ -110,31 +120,26 @@ func (c *CommandLineClient) loadRSAKeys() error {
 	}
 
 	if publicPath == "" || privatePath == "" {
-		//TODO add error context
 		return fmt.Errorf("public and private keys not found")
 	}
 	//save raw content of public key
 	if c.publicKeyContent, err = os.ReadFile(publicPath); err != nil {
-		//TODO add error context
 		return err
 	}
 
 	//get raw content of private key
 	privateKeyContent, err := os.ReadFile(privatePath)
 	if err != nil {
-		//TODO add error context
 		return err
 	}
 	//parse and store private key
 	block, _ := pem.Decode(privateKeyContent)
 	if block == nil {
-		//TODO add error context
 		return fmt.Errorf("failed to decode private key")
 	}
 
 	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		//TODO add error context
 		return err
 	}
 

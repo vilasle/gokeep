@@ -20,6 +20,7 @@ const (
 
 var (
 	customWorkspace string
+	caFile          string
 	Version         string
 	Date            string
 	Commit          string
@@ -57,6 +58,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&customWorkspace,
 		"workspace", "c", "",
 		"custom workplace, with gokeep directories and files. Default workplace is $HOME/.gokeep")
+	rootCmd.PersistentFlags().StringVarP(&caFile,
+		"ca-file", "a", "",
+		"path to CA file",
+	)
 
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(versionCmd)
@@ -74,7 +79,7 @@ func initCLIClient() client.Client {
 		os.Exit(reasonWrongConfig)
 	}
 
-	app, err := cli.NewClient(config)
+	app, err := cli.NewClient(config, caFile)
 	if err != nil {
 		fmt.Println("failed to create client")
 		fmt.Println(err)

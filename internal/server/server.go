@@ -13,6 +13,7 @@ import (
 	"github.com/vilasle/gokeep/internal/service"
 	pb "github.com/vilasle/gokeep/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type Option func(*Server) error
@@ -31,6 +32,7 @@ type Config struct {
 	service.BankCardService
 	service.TextDataService
 	service.BinaryDataService
+	CertificatePath string
 }
 
 type Server struct {
@@ -68,6 +70,14 @@ func NewServer(config Config, opts ...Option) (*Server, error) {
 		if err := opt(s); err != nil {
 			return nil, err
 		}
+	}
+
+	if config.CertificatePath != "" {
+		cred, err := credentials.NewClientTLSFromFile(config.CertificatePath, "")
+		if err != nil {
+			return nil, err
+		}
+		s.opts = append(s.opts, grpc.Creds(cred))
 	}
 
 	s.srv = grpc.NewServer(s.opts...)
