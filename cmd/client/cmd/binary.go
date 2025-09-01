@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 )
 
 var binaryCmd = &cobra.Command{
@@ -29,33 +30,10 @@ var binaryAddCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		if binaryAdd.file == "" {
-			fmt.Println("--file argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if binaryAdd.name == "" {
-			fmt.Println("--name argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		metadata := prepareMetadata()
-
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		content, err := os.ReadFile(binaryAdd.file)
-		if err != nil {
-			fmt.Printf("reading file failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
-
-		if err := app.SaveBinaryData(ctx, content, binaryAdd.name, 0, metadata); err != nil {
-			fmt.Printf("saving binary data failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
-		fmt.Println("saving binary data success")
+		os.Exit(binaryAddHandle(ctx, app))
 	},
 }
 
@@ -73,14 +51,10 @@ var binaryGetCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.GetBinaryData(ctx, binaryGet.id); err != nil {
-			fmt.Printf("getting binary data failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
+		os.Exit(binaryGetHandle(ctx, app))
 	},
 }
 
@@ -100,36 +74,12 @@ var binaryEditCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		if binaryEdit.file == "" {
-			fmt.Println("--file argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if binaryEdit.name == "" {
-			fmt.Println("--name argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if binaryEdit.id == 0 {
-			fmt.Println("--id argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-		metadata := prepareMetadata()
 		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		content, err := os.ReadFile(binaryEdit.file)
-		if err != nil {
-			fmt.Printf("reading file failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
+		os.Exit(binaryEditHandle(ctx, app))
 
-		if err := app.SaveBinaryData(ctx, content, binaryEdit.name, binaryEdit.id, metadata); err != nil {
-			fmt.Printf("saving text failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
-		fmt.Println("saving binary data success")
 	},
 }
 
@@ -146,21 +96,10 @@ var binaryDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
-
-		if textDelete.id == 0 {
-			fmt.Println("--id argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		//TODO add waiting SIGNAL and cancel if got it
+		// TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-
-		if err := app.DeleteBinaryData(ctx, binaryDelete.id); err != nil {
-			fmt.Printf("deleting binary data failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
-		fmt.Println("deleting binary data is completed")
+		os.Exit(binaryDeleteHandle(ctx, app))
 	},
 }
 
@@ -180,4 +119,84 @@ func init() {
 	binaryCmd.AddCommand(binaryGetCmd)
 	binaryCmd.AddCommand(binaryEditCmd)
 	binaryCmd.AddCommand(binaryDeleteCmd)
+}
+
+func binaryAddHandle(ctx context.Context, app client.Client) int {
+	if binaryAdd.file == "" {
+		fmt.Println("--file argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if binaryAdd.name == "" {
+		fmt.Println("--name argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	metadata := prepareMetadata()
+
+	content, err := os.ReadFile(binaryAdd.file)
+	if err != nil {
+		fmt.Printf("reading file failed: %s\n", err)
+		return reasonInternalError
+	}
+
+	if err := app.SaveBinaryData(ctx, content, binaryAdd.name, 0, metadata); err != nil {
+		fmt.Printf("saving binary data failed: %s\n", err)
+		return reasonInternalError
+	}
+	fmt.Println("saving binary data success")
+	return 0
+}
+
+func binaryEditHandle(ctx context.Context, app client.Client) int {
+	if binaryEdit.file == "" {
+		fmt.Println("--file argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if binaryEdit.name == "" {
+		fmt.Println("--name argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if binaryEdit.id == 0 {
+		fmt.Println("--id argument is required")
+		return reasonNotFillRequiredArgs
+	}
+	metadata := prepareMetadata()
+
+	content, err := os.ReadFile(binaryEdit.file)
+	if err != nil {
+		fmt.Printf("reading file failed: %s\n", err)
+		return reasonInternalError
+	}
+
+	if err := app.SaveBinaryData(ctx, content, binaryEdit.name, binaryEdit.id, metadata); err != nil {
+		fmt.Printf("saving text failed: %s\n", err)
+		return reasonInternalError
+	}
+	fmt.Println("saving binary data success")
+	return 0
+}
+
+func binaryGetHandle(ctx context.Context, app client.Client) int {
+	if err := app.GetBinaryData(ctx, binaryGet.id); err != nil {
+		fmt.Printf("getting binary data failed: %s\n", err)
+		return reasonInternalError
+	}
+	return 0
+}
+
+func binaryDeleteHandle(ctx context.Context, app client.Client) int {
+	if binaryDelete.id == 0 {
+		fmt.Println("--id argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if err := app.DeleteBinaryData(ctx, binaryDelete.id); err != nil {
+		fmt.Printf("deleting binary data failed: %s\n", err)
+		return reasonInternalError
+	}
+	fmt.Println("deleting binary data is completed")
+	return 0
 }

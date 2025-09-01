@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 )
 
 var textCmd = &cobra.Command{
@@ -30,41 +31,10 @@ var textAddCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		if textAdd.name == "" {
-			fmt.Println("--name argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if textAdd.data == "" && textAdd.file == "" {
-			fmt.Println("'--data' or '--file' argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		metadata := prepareMetadata()
-
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if textAdd.data != "" {
-			if err := app.SaveTextData(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
-				fmt.Printf("saving text failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-			fmt.Println("saving text success")
-		} else {
-			content, err := os.ReadFile(textAdd.file)
-			if err != nil {
-				fmt.Printf("reading file failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-
-			if err := app.SaveTextData(ctx, string(content), textAdd.name, 0, metadata); err != nil {
-				fmt.Printf("saving text failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-			fmt.Println("saving text success")
-		}
+		os.Exit(textAddHandle(ctx, app))
 	},
 }
 
@@ -82,14 +52,10 @@ var textGetCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.GetTextData(ctx, textGet.id); err != nil {
-			fmt.Printf("getting text data failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
+		os.Exit(textGetHandle(ctx, app))
 	},
 }
 
@@ -110,45 +76,10 @@ var textEditCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		if textEdit.name == "" {
-			fmt.Println("--name argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if textEdit.data == "" && textEdit.file == "" {
-			fmt.Println("'data' or 'file' argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		if textEdit.id == 0 {
-			fmt.Println("--id is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		metadata := prepareMetadata()
-
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if textAdd.data != "" {
-			if err := app.SaveTextData(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
-				fmt.Printf("saving text failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-			fmt.Println("saving text success")
-		} else {
-			content, err := os.ReadFile(textEdit.file)
-			if err != nil {
-				fmt.Printf("reading file failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-			if err := app.SaveTextData(ctx, string(content), textEdit.name, textEdit.id, metadata); err != nil {
-				fmt.Printf("saving text failed: %s\n", err)
-				os.Exit(reasonInternalError)
-			}
-			fmt.Println("saving text success")
-		}
+		os.Exit(textEditHandle(ctx, app))
 	},
 }
 
@@ -166,20 +97,10 @@ var textDeleteCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		if textDelete.id == 0 {
-			fmt.Println("--id argument is required")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		if err := app.DeleteTextData(ctx, textDelete.id); err != nil {
-			fmt.Printf("deleting text data failed: %s\n", err)
-			os.Exit(reasonInternalError)
-		}
-		fmt.Println("deleting text data is completed")
+		os.Exit(textDeleteHandle(ctx, app))
 	},
 }
 
@@ -201,4 +122,101 @@ func init() {
 	textCmd.AddCommand(textGetCmd)
 	textCmd.AddCommand(textEditCmd)
 	textCmd.AddCommand(textDeleteCmd)
+}
+
+func textAddHandle(ctx context.Context, app client.Client) int {
+	if textAdd.name == "" {
+		fmt.Println("--name argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if textAdd.data == "" && textAdd.file == "" {
+		fmt.Println("'--data' or '--file' argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	metadata := prepareMetadata()
+
+	if textAdd.data != "" {
+		if err := app.SaveTextData(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
+			fmt.Printf("saving text failed: %s\n", err)
+			return reasonInternalError
+		}
+		fmt.Println("saving text success")
+	} else {
+		content, err := os.ReadFile(textAdd.file)
+		if err != nil {
+			fmt.Printf("reading file failed: %s\n", err)
+			return reasonInternalError
+		}
+
+		if err := app.SaveTextData(ctx, string(content), textAdd.name, 0, metadata); err != nil {
+			fmt.Printf("saving text failed: %s\n", err)
+			return reasonInternalError
+		}
+		fmt.Println("saving text success")
+	}
+
+	return 0
+}
+
+func textEditHandle(ctx context.Context, app client.Client) int {
+	if textEdit.name == "" {
+		fmt.Println("--name argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if textEdit.data == "" && textEdit.file == "" {
+		fmt.Println("'data' or 'file' argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if textEdit.id == 0 {
+		fmt.Println("--id is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	metadata := prepareMetadata()
+
+	if textEdit.data != "" {
+		if err := app.SaveTextData(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
+			fmt.Printf("saving text failed: %s\n", err)
+			return reasonInternalError
+		}
+		fmt.Println("saving text success")
+	} else {
+		content, err := os.ReadFile(textEdit.file)
+		if err != nil {
+			fmt.Printf("reading file failed: %s\n", err)
+			return reasonInternalError
+		}
+		if err := app.SaveTextData(ctx, string(content), textEdit.name, textEdit.id, metadata); err != nil {
+			fmt.Printf("saving text failed: %s\n", err)
+			return reasonInternalError
+		}
+		fmt.Println("saving text success")
+	}
+	return 0
+}
+
+func textGetHandle(ctx context.Context, app client.Client) int {
+	if err := app.GetTextData(ctx, textGet.id); err != nil {
+		fmt.Printf("getting text data failed: %s\n", err)
+		return reasonInternalError
+	}
+	return 0
+}
+
+func textDeleteHandle(ctx context.Context, app client.Client) int {
+	if textDelete.id == 0 {
+		fmt.Println("--id argument is required")
+		return reasonNotFillRequiredArgs
+	}
+
+	if err := app.DeleteTextData(ctx, textDelete.id); err != nil {
+		fmt.Printf("deleting text data failed: %s\n", err)
+		return reasonInternalError
+	}
+	fmt.Println("deleting text data is completed")
+	return 0
 }

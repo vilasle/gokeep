@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/vilasle/gokeep/internal/client"
 	"golang.org/x/term"
 )
 
@@ -25,16 +26,12 @@ var createCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("does not define account name")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-		accountName := args[0]
-
 		app := initCLIClient()
 		defer app.Close()
 
-		fmt.Println("login:", accountName)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
 		fmt.Print("password: ")
 		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
@@ -42,16 +39,8 @@ var createCmd = &cobra.Command{
 			os.Exit(reasonInternalError)
 		}
 		fmt.Print("\n")
-		pass := string(bytePwd)
 
-		//TODO cancel if got signal
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		if err := app.CreateAccount(ctx, accountName, pass); err != nil {
-			fmt.Println("failed to create account")
-			os.Exit(reasonInternalError)
-		}
-		fmt.Println("account created")
+		os.Exit(login(ctx, app, string(bytePwd), args))
 	},
 }
 
@@ -60,39 +49,56 @@ var loginCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Println("does not define account name")
-			os.Exit(reasonNotFillRequiredArgs)
-		}
-		accountName := args[0]
+		app := initCLIClient()
+		defer app.Close()
 
-		fmt.Println("login:", accountName)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
 		fmt.Print("password: ")
 		bytePwd, err := term.ReadPassword(int(syscall.Stdin))
 		if err != nil {
 			fmt.Println("failed to read password")
-			os.Exit(1)
-		}
-		fmt.Print("\n")
-		pass := string(bytePwd)
-
-		app := initCLIClient()
-		defer app.Close()
-
-		//TODO cancel if got signal
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-
-		if err := app.Login(ctx, accountName, pass); err != nil {
-			fmt.Println("login failed")
-			fmt.Println(err.Error())
 			os.Exit(reasonInternalError)
 		}
-		fmt.Println("login operation completed")
+		fmt.Print("\n")
+
+		os.Exit(register(ctx, app, string(bytePwd), args))
 	},
 }
 
 func init() {
 	accountCmd.AddCommand(createCmd)
 	accountCmd.AddCommand(loginCmd)
+}
+
+func login(ctx context.Context, app client.Client, readPassword string, args []string) int {
+	if len(args) == 0 {
+		fmt.Println("does not define account name")
+		return reasonNotFillRequiredArgs
+	}
+	accountName := args[0]
+
+	if err := app.Login(ctx, accountName, readPassword); err != nil {
+		fmt.Println("login failed")
+		fmt.Println(err.Error())
+		return reasonInternalError
+	}
+	fmt.Println("login operation completed")
+	return 0
+}
+
+func register(ctx context.Context, app client.Client, readPassword string, args []string) int {
+	if len(args) == 0 {
+		fmt.Println("does not define account name")
+		return reasonNotFillRequiredArgs
+	}
+	accountName := args[0]
+
+	if err := app.CreateAccount(ctx, accountName, readPassword); err != nil {
+		fmt.Println("failed to create account")
+		return reasonInternalError
+	}
+	fmt.Println("account created")
+	return 0
 }

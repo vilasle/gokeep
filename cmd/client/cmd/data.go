@@ -23,7 +23,7 @@ var meta []string
 func init() {
 	dataCmd.PersistentFlags().StringArrayVarP(&meta, "metadata", "m", []string{}, "metadata")
 
-	dataCmd.AddCommand(creadCmd)
+	dataCmd.AddCommand(credCmd)
 	dataCmd.AddCommand(bankCmd)
 	dataCmd.AddCommand(textCmd)
 	dataCmd.AddCommand(binaryCmd)

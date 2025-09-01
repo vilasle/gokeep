@@ -34,6 +34,8 @@ generate-mock:
 	mockgen -package=cli -destination=internal/client/cli/repository_mock_test.go -source=internal/repository/client/repository.go
 	mockgen -package=cli -destination=internal/client/cli/encryption_mock_test.go -source=internal/encryption/encryption.go
 	
+	mockgen -package=cmd -destination=cmd/client/cmd/client_mock_test.go -source=internal/client/client.go
+	
 
 test:
 	go test ./...
@@ -45,5 +47,7 @@ coverage:
 
 coverage-percent:
 	go test ./... -coverprofile=cover.out
-	go tool cover -func cover.out | tail -n 1 && rm -rf cover.out
+	#exclude generated proto files
+	cat cover.out | grep -v "github.com/vilasle/gokeep/proto/" > filtered_cover.out 
+	go tool cover -func filtered_cover.out | tail -n 1 && rm -rf cover.out && rm -rf filtered_cover.out
 	

@@ -26,5 +26,6 @@ func TestCommandLineClient_New(t *testing.T) {
 	require.NoError(t, err)
 
 	c, err := NewClient(config)
+	require.NoError(t, err)
 	require.NoError(t, c.Close())
 }

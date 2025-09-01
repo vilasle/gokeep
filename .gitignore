@@ -4,3 +4,4 @@ bin/
 cert/
 config/
 master.key
+testdata/
