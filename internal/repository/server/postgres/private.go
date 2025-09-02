@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/vilasle/gokeep/internal/model"
 )
@@ -37,16 +38,16 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 
 	id, err := r.addEntity(ctx, tx, data)
 	if err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving new entity failed"), err)
 	}
 
 	err = r.addEncryptedData(ctx, tx, id, data.Data, data.DEK)
 	if err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving encrypted data failed"), err)
 	}
 
 	if err := r.saveMetadata(ctx, tx, id, data.Metadata); err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving metadata failed"), err)
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -55,7 +56,6 @@ func (r *PrivateDataRepository) Add(ctx context.Context, data model.PrivateDataS
 
 	return id, err
 }
-
 
 func (r *PrivateDataRepository) addEntity(ctx context.Context, tx *sql.Tx, data model.PrivateDataSave) (int, error) {
 	txt := `INSERT INTO entity (user_id, "type", view) VALUES ($1, $2, $3) RETURNING id`
@@ -87,15 +87,15 @@ func (r *PrivateDataRepository) Update(ctx context.Context, data model.PrivateDa
 	defer tx.Rollback()
 
 	if err := r.updateEntity(ctx, tx, data); err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving existed entity failed"), err)
 	}
 
 	if err := r.updateEncryptedData(ctx, tx, data.ID, data.Data, data.DEK); err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving existed encrypted data failed"), err)
 	}
 
 	if err := r.saveMetadata(ctx, tx, data.ID, data.Metadata); err != nil {
-		return 0, err
+		return 0, errors.Join(errors.New("saving metadata entity failed"), err)
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -151,7 +151,7 @@ func (r *PrivateDataRepository) Delete(ctx context.Context, id int) error {
 
 	for _, txt := range txt {
 		if _, err := r.db.ExecContext(ctx, txt, id); err != nil {
-			return err
+			return errors.Join(errors.New("deleting entity and related data failed"), err)
 		}
 	}
 

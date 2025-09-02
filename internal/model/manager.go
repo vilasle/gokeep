@@ -61,11 +61,13 @@ func (c *userManager) New(login, password string) *User {
 
 // FindByLogin  finds a user by login on repository, return ErrUserNotFound if not found
 func (c *userManager) FindByLogin(ctx context.Context, login string) (UserAccess, error) {
+	logger.Debug("search user by login", "login", login)
 	return findUserByLogin(ctx, login, c.repository)
 }
 
-//Get - return UserAccess by id
+// Get - return UserAccess by id
 func (c *userManager) Get(ctx context.Context, id int) (UserAccess, error) {
+	logger.Debug("get user by id", "id", id)
 	return getUserByID(ctx, id, c.repository)
 }
 
@@ -80,15 +82,16 @@ func (c *usepassManager) New(owner UserAccess, login, password string) *Usepass 
 	return usepass
 }
 
-//List returns list of usepass for user
+// List returns list of usepass for user
 func (c *usepassManager) List(ctx context.Context, owner UserAccess) ([]*Usepass, error) {
+	logger.Debug("getting list of entities", "owner", owner.Login(), "entity", "usepass")
 	return fillListOfPrivateData[*Usepass](ctx, owner, TypeUsepass, c.pvRepository)
 }
 
-//Get returns usepass by id
+// Get returns usepass by id
 func (c *usepassManager) Get(ctx context.Context, owner UserAccess, id int) (*Usepass, error) {
-	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "usepass")
-	
+	logger.Debug("getting entity by id", "owner", owner.Login(), "id", id, "entity", "usepass")
+
 	usepass, err := findUsepassByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -108,9 +111,9 @@ func (c *bankCardManager) New(owner UserAccess, number string, cvv int, expirati
 	return bankCard
 }
 
-//Get returns bank card by id
+// Get returns bank card by id
 func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*BankCard, error) {
-	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "bank card")
+	logger.Debug("getting entity by id", "owner", owner.Login(), "id", id, "entity", "bank card")
 	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -119,8 +122,9 @@ func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*B
 	return usepass, nil
 }
 
-//List returns list of bank cards for user
+// List returns list of bank cards for user
 func (c *bankCardManager) List(ctx context.Context, owner UserAccess) ([]*BankCard, error) {
+	logger.Debug("getting list of entities", "owner", owner.Login(), "entity", "bank card")
 	return fillListOfPrivateData[*BankCard](ctx, owner, TypeBankCard, c.pvRepository)
 }
 
@@ -137,7 +141,7 @@ func (c *plainTextManager) New(owner UserAccess, text []byte, view string) *Plai
 
 // Get returns plain text by id
 func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*PlainText, error) {
-	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "text")
+	logger.Info("getting entity by id", "owner", owner.Login(), "id", id, "entity", "plain text")
 	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -148,6 +152,7 @@ func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*
 
 // List returns list of plain texts for user
 func (c *plainTextManager) List(ctx context.Context, owner UserAccess) ([]*PlainText, error) {
+	logger.Debug("getting list of entities", "owner", owner.Login(), "entity", "plain text")
 	return fillListOfPrivateData[*PlainText](ctx, owner, TypePlainText, c.pvRepository)
 }
 
@@ -164,7 +169,7 @@ func (c *binaryDataManager) New(owner UserAccess, data []byte, name string) *Bin
 
 // Get returns binary data by id
 func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (*BinaryData, error) {
-	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "binary")
+	logger.Info("getting entity by id", "owner", owner.Login(), "id", id, "entity", "binary")
 	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -175,6 +180,7 @@ func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (
 
 // List returns list of binary data for user
 func (c *binaryDataManager) List(ctx context.Context, owner UserAccess) ([]*BinaryData, error) {
+	logger.Debug("getting list of entities", "owner", owner.Login(), "entity", "binary")
 	return fillListOfPrivateData[*BinaryData](ctx, owner, TypeBinaryData, c.pvRepository)
 }
 

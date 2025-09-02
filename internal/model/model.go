@@ -77,7 +77,7 @@ func (m model) Metadata() map[string]string {
 // Save prepare dto for writing data on repository
 func (m *model) save(ctx context.Context, content []byte, encoder Encoder) (err error) {
 	if m.encryptedData, err = encoder.Encrypt(content); err != nil {
-		return err
+		return errors.Join(ErrEncryption, err)
 	}
 
 	dto := PrivateDataSave{

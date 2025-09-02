@@ -78,7 +78,7 @@ func (s *AuthService) checkToken(ctx context.Context, token string) (resp servic
 		return s.jwtKey, nil
 	})
 	if err != nil {
-		return resp, err
+		return resp, errors.Join(service.ErrInvalidToken, err)
 	}
 
 	var userID, sessionID int
