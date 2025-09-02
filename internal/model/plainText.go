@@ -25,15 +25,7 @@ func newPlainText(owner UserAccess, text []byte, name string) *PlainText {
 
 //Save prepare and encrypt plain text and save it in repository
 func (tp *PlainText) Save(ctx context.Context, encoder Encoder) (err error) {
-	if err := tp.prepareEncryptedData(encoder); err != nil {
-		return err
-	}
-	return tp.model.Save(ctx)
-}
-
-func (tp *PlainText) prepareEncryptedData(encoder Encoder) (err error) {
-	tp.encryptedData, err = encoder.Encrypt(tp.text)
-	return err
+	return tp.model.save(ctx, tp.text, encoder)
 }
 
 //SetText set net text data

@@ -53,17 +53,7 @@ func (u *BankCard) SetExpiration(expiration time.Time) {
 
 //Save prepare view of model, encrypt it and save on repository
 func (u *BankCard) Save(ctx context.Context, encoder Encoder) (err error) {
-	if err := u.prepareEncryptedData(encoder); err != nil {
-		return err
-	}
-	return u.model.Save(ctx)
-}
-
-func (u *BankCard) prepareEncryptedData(encoder Encoder) (err error) {
-	data := u.dataForEncryption()
-
-	u.encryptedData, err = encoder.Encrypt(data)
-	return err
+	return u.model.save(ctx, u.dataForEncryption(), encoder)
 }
 
 func (bc BankCard) dataForEncryption() []byte {

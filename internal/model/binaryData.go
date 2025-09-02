@@ -25,10 +25,7 @@ func newBinaryData(owner UserAccess, data []byte, name string) *BinaryData {
 
 //Save prepare and encrypt binary data and save it in repository
 func (bd *BinaryData) Save(ctx context.Context, encoder Encoder) (err error) {
-	if err := bd.prepareEncryptedData(encoder); err != nil {
-		return err
-	}
-	return bd.model.Save(ctx)
+	return bd.model.save(ctx, bd.data, encoder)
 }
 
 //SetName set new name for binary data
@@ -39,11 +36,6 @@ func (bd *BinaryData) SetName(name string) {
 //SetData set new data for binary data
 func (bd *BinaryData) SetData(data []byte) {
 	bd.data = data
-}
-
-func (bd *BinaryData) prepareEncryptedData(encoder Encoder) (err error) {
-	bd.encryptedData, err = encoder.Encrypt(bd.data)
-	return err
 }
 
 func findBinaryDataByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*BinaryData, error) {

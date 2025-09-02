@@ -29,10 +29,7 @@ func newUsepass(owner UserAccess, login, password string) *Usepass {
 
 // Save - prepare view of model, encrypt it and save on repository
 func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
-	if err := u.prepareEncryptedData(encoder); err != nil {
-		return err
-	}
-	return u.model.Save(ctx)
+	return u.model.save(ctx, u.dataForEncryption(), encoder)
 }
 
 // SetUsername - set new username
@@ -44,13 +41,6 @@ func (u *Usepass) SetUsername(username string) {
 // SetPassword - set new password
 func (u *Usepass) SetPassword(password string) {
 	u.password = password
-}
-
-func (u *Usepass) prepareEncryptedData(encoder Encoder) (err error) {
-	data := u.dataForEncryption()
-
-	u.encryptedData, err = encoder.Encrypt(data)
-	return err
 }
 
 func (u Usepass) dataForEncryption() []byte {
