@@ -49,7 +49,6 @@ func (m *model) Delete(ctx context.Context) (err error) {
 	isExists := m.isExists()
 
 	if !isExists {
-		//TODO use package error
 		return errors.New("entity is not exists")
 	}
 	return m.dataRepository.Delete(ctx, m.id)

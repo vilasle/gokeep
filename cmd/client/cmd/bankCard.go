@@ -35,7 +35,10 @@ var bankAddCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		bankCardAddHandle(ctx, app)
+		if code := bankCardAddHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -55,8 +58,10 @@ var bankGetCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		bankCardGetHandle(ctx, app)
-
+		if code := bankCardGetHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -80,7 +85,10 @@ var bankEditCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		bankCardEditHandle(ctx, app)
+		if code := bankCardEditHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -100,7 +108,10 @@ var bankDeleteCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		bankCardDeleteHandle(ctx, app)
+		if code := bankCardDeleteHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -124,77 +135,81 @@ func init() {
 	bankCmd.AddCommand(bankDeleteCmd)
 }
 
-func bankCardAddHandle(ctx context.Context, app client.Client) {
+func bankCardAddHandle(ctx context.Context, app client.Client) int {
 	if bankAdd.number == "" {
 		fmt.Println("--number argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if bankAdd.cvv == 0 {
 		fmt.Println("--cvv argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if bankAdd.expires == "" {
 		fmt.Println("--expires argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	metadata := prepareMetadata()
 
 	if err := app.SaveBankCard(ctx, bankAdd.number, bankAdd.expires, bankAdd.cvv, 0, metadata); err != nil {
 		fmt.Printf("saving bank card failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("saving bank card success")
+	return 0
 }
 
-func bankCardEditHandle(ctx context.Context, app client.Client) {
+func bankCardEditHandle(ctx context.Context, app client.Client) int {
 	if bankEdit.number == "" {
 		fmt.Println("--number argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if bankEdit.cvv == 0 {
 		fmt.Println("--cvv argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if bankEdit.expires == "" {
 		fmt.Println("--expires argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if bankEdit.id == 0 {
 		fmt.Println("--id argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	metadata := prepareMetadata()
 
 	if err := app.SaveBankCard(ctx, bankEdit.number, bankEdit.expires, bankEdit.cvv, bankEdit.id, metadata); err != nil {
 		fmt.Printf("saving bank card failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("saving bank card success")
+	return 0
 }
 
-func bankCardGetHandle(ctx context.Context, app client.Client) {
+func bankCardGetHandle(ctx context.Context, app client.Client) int {
 	if err := app.GetBankCard(ctx, bankGet.id); err != nil {
 		fmt.Printf("getting bank card failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
+	return 0
 }
 
-func bankCardDeleteHandle(ctx context.Context, app client.Client) {
+func bankCardDeleteHandle(ctx context.Context, app client.Client) int {
 	if bankDelete.id == 0 {
 		fmt.Println("--id argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if err := app.DeleteBankCard(ctx, bankDelete.id); err != nil {
 		fmt.Printf("deleting bank card failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("deleting band card is completed")
+	return 0
 }

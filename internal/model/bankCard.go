@@ -54,7 +54,6 @@ func (u *BankCard) SetExpiration(expiration time.Time) {
 //Save prepare view of model, encrypt it and save on repository
 func (u *BankCard) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := u.prepareEncryptedData(encoder); err != nil {
-		//TODO wrap error with package error
 		return err
 	}
 	return u.model.Save(ctx)
@@ -78,7 +77,6 @@ func (bc BankCard) dataForEncryption() []byte {
 	return buf.Bytes()
 }
 
-// FIXME add getting band card by id and check that owner was right id
 func findBankCardByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*BankCard, error) {
 	data, err := r.Get(ctx, id)
 	if err != nil {

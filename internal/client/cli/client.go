@@ -110,7 +110,6 @@ func (c *CommandLineClient) loadConfiguration() error {
 	dec := yaml.NewDecoder(configFd)
 
 	if err := dec.Decode(&c.config); err != nil {
-		//TODO add error context
 		return err
 	}
 
@@ -195,7 +194,6 @@ func findKeysPath(path string) (string, string, error) {
 
 	ls, err := os.ReadDir(path)
 	if err != nil {
-		//TODO add error context
 		return "", "", err
 	}
 

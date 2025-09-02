@@ -29,8 +29,6 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gokeep",
-	Short: "",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},

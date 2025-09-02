@@ -87,7 +87,6 @@ func replaceKey(ed encryptedData, keys replacementKeys) (encryptedData, error) {
 	encData := encryption.NewEncryptedDataFromReadyData(keys.dek, ed.data, ed.key)
 
 	if err := encData.ReplaceKey(keys.kek, keys.newKek); err != nil {
-		//TODO improve message
 		return encryptedData{},
 			errors.Join(ErrReplaceKey, err)
 	}

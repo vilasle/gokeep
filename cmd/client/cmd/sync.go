@@ -10,13 +10,11 @@ import (
 
 var syncCmd = &cobra.Command{
 	Use:   "sync",
-	Short: "",
-	Long:  ``,
+	Short: "pull all entities from server and rewrite local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 

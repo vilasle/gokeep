@@ -11,8 +11,7 @@ import (
 
 var credCmd = &cobra.Command{
 	Use:   "cred",
-	Short: "",
-	Long:  ``,
+	Short: "manager for work with logins and passwords",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},
@@ -27,17 +26,18 @@ var credAdd = credAddFlags{}
 
 var credAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "",
-	Long:  ``,
+	Short: "add new entity",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		credAddHandle(ctx, app)
+		if code := credAddHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -50,17 +50,18 @@ var credGet = createGetFlags{}
 
 var credGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "",
-	Long:  ``,
+	Short: "get all entities or specific entity(use --id argument)",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		credGetHandle(ctx, app)
+		if code := credGetHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -74,15 +75,17 @@ var credEdit = credEditFlags{}
 
 var credEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "",
-	Long:  ``,
+	Short: "edit existed entity",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		credEditHandle(ctx, app)
+		if code := credEditHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -94,15 +97,17 @@ var credDelete = credDeleteFlags{}
 
 var credDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "",
-	Long:  ``,
+	Short: "delete entity from server and local storage",
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
 
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		credDeleteHandle(ctx, app)
+		if code := credDeleteHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -125,66 +130,70 @@ func init() {
 	credCmd.AddCommand(credDeleteCmd)
 }
 
-func credAddHandle(ctx context.Context, app client.Client) {
+func credAddHandle(ctx context.Context, app client.Client) int {
 	if credAdd.login == "" {
 		fmt.Println("--login argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if credAdd.password == "" {
 		fmt.Println("--password argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 	metadata := prepareMetadata()
 
 	if err := app.SaveLoginPassword(ctx, credAdd.login, credAdd.password, 0, metadata); err != nil {
 		fmt.Printf("saving login password failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("saving login password success")
+	return 0
 }
 
-func credEditHandle(ctx context.Context, app client.Client) {
+func credEditHandle(ctx context.Context, app client.Client) int {
 	if credEdit.login == "" {
 		fmt.Println("--login argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if credEdit.password == "" {
 		fmt.Println("--password argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if credEdit.id == 0 {
 		fmt.Println("--id argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	metadata := prepareMetadata()
 
 	if err := app.SaveLoginPassword(ctx, credEdit.login, credEdit.password, credEdit.id, metadata); err != nil {
 		fmt.Printf("saving login password failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("saving login password success")
+	return 0
 }
 
-func credGetHandle(ctx context.Context, app client.Client) {
+func credGetHandle(ctx context.Context, app client.Client) int {
 	if err := app.GetLoginPassword(ctx, credGet.id); err != nil {
 		fmt.Printf("getting login failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
+	return 0
 }
 
-func credDeleteHandle(ctx context.Context, app client.Client) {
+func credDeleteHandle(ctx context.Context, app client.Client) int {
 	if credDelete.id == 0 {
 		fmt.Println("--id argument is required")
-		os.Exit(reasonNotFillRequiredArgs)
+		return reasonNotFillRequiredArgs
 	}
 
 	if err := app.DeleteLoginPassword(ctx, credDelete.id); err != nil {
 		fmt.Printf("deleting login password failed: %s\n", err)
-		os.Exit(reasonInternalError)
+		return reasonInternalError
 	}
 	fmt.Println("deleting login password is completed")
+	return 0
 }

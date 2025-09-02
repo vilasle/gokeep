@@ -12,7 +12,6 @@ import (
 var textCmd = &cobra.Command{
 	Use:   "text",
 	Short: "manager for work with text data",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},
@@ -28,7 +27,6 @@ var textAdd = textAddFlags{}
 var textAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "add new entity",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -52,7 +50,6 @@ var textGet = textGetFlags{}
 var textGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get all entities or specific entity(use --id argument)",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -78,7 +75,6 @@ var textEdit = textEditFlags{}
 var textEditCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "edit existed entity",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
@@ -102,7 +98,6 @@ var textDelete = textDeleteFlags{}
 var textDeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete entity from server and local storage",
-	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()

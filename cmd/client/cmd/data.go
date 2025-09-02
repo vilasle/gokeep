@@ -14,8 +14,7 @@ import (
 // dataCmd represents the data command
 var dataCmd = &cobra.Command{
 	Use:   "data",
-	Short: "",
-	Long:  ``,
+	Short: "manager for work with data",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},

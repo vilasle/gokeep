@@ -78,7 +78,6 @@ func (s *AuthService) checkToken(ctx context.Context, token string) (resp servic
 		return s.jwtKey, nil
 	})
 	if err != nil {
-		//TODO wrap error
 		return resp, err
 	}
 

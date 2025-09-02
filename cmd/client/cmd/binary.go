@@ -34,7 +34,10 @@ var binaryAddCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(binaryAddHandle(ctx, app))
+		if code := binaryAddHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -54,7 +57,10 @@ var binaryGetCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(binaryGetHandle(ctx, app))
+		if code := binaryGetHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -73,12 +79,13 @@ var binaryEditCmd = &cobra.Command{
 		app := initCLIClient()
 		defer app.Close()
 
-		//TODO add waiting SIGNAL and cancel if got it
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(binaryEditHandle(ctx, app))
-
+		if code := binaryEditHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -94,10 +101,13 @@ var binaryDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
 		defer app.Close()
-		// TODO add waiting SIGNAL and cancel if got it
+		
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		os.Exit(binaryDeleteHandle(ctx, app))
+		if code := binaryDeleteHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 

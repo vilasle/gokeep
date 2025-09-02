@@ -87,7 +87,8 @@ func (c *usepassManager) List(ctx context.Context, owner UserAccess) ([]*Usepass
 
 //Get returns usepass by id
 func (c *usepassManager) Get(ctx context.Context, owner UserAccess, id int) (*Usepass, error) {
-	//TODO add logger
+	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "usepass")
+	
 	usepass, err := findUsepassByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -109,7 +110,7 @@ func (c *bankCardManager) New(owner UserAccess, number string, cvv int, expirati
 
 //Get returns bank card by id
 func (c *bankCardManager) Get(ctx context.Context, owner UserAccess, id int) (*BankCard, error) {
-	//TODO add logger
+	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "bank card")
 	usepass, err := findBankCardByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -136,7 +137,7 @@ func (c *plainTextManager) New(owner UserAccess, text []byte, view string) *Plai
 
 // Get returns plain text by id
 func (c *plainTextManager) Get(ctx context.Context, owner UserAccess, id int) (*PlainText, error) {
-	//TODO add logger
+	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "text")
 	plainText, err := findPlainTextByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err
@@ -163,7 +164,7 @@ func (c *binaryDataManager) New(owner UserAccess, data []byte, name string) *Bin
 
 // Get returns binary data by id
 func (c *binaryDataManager) Get(ctx context.Context, owner UserAccess, id int) (*BinaryData, error) {
-	//TODO add logger
+	logger.Info("got request for getting entity", "owner", owner.Login(), "id", id, "entity", "binary")
 	binaryData, err := findBinaryDataByID(ctx, id, owner, c.pvRepository)
 	if err != nil {
 		return nil, err

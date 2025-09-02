@@ -30,7 +30,6 @@ func newUsepass(owner UserAccess, login, password string) *Usepass {
 // Save - prepare view of model, encrypt it and save on repository
 func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := u.prepareEncryptedData(encoder); err != nil {
-		//TODO wrap error with package error
 		return err
 	}
 	return u.model.Save(ctx)
