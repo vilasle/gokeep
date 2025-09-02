@@ -27,7 +27,7 @@ func newUsepass(owner UserAccess, login, password string) *Usepass {
 	}
 }
 
-//Save - prepare view of model, encrypt it and save on repository
+// Save - prepare view of model, encrypt it and save on repository
 func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
 	if err := u.prepareEncryptedData(encoder); err != nil {
 		//TODO wrap error with package error
@@ -36,16 +36,16 @@ func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
 	return u.model.Save(ctx)
 }
 
-//SetUsername - set new username
+// SetUsername - set new username
 func (u *Usepass) SetUsername(username string) {
 	u.login = username
+	u.model.view = username
 }
 
-//SetPassword - set new password
+// SetPassword - set new password
 func (u *Usepass) SetPassword(password string) {
 	u.password = password
 }
-
 
 func (u *Usepass) prepareEncryptedData(encoder Encoder) (err error) {
 	data := u.dataForEncryption()

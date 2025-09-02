@@ -11,7 +11,7 @@ import (
 
 var textCmd = &cobra.Command{
 	Use:   "text",
-	Short: "",
+	Short: "manager for work with text data",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
@@ -20,7 +20,6 @@ var textCmd = &cobra.Command{
 
 type textAddFlags struct {
 	data string
-	file string
 	name string
 }
 
@@ -28,7 +27,7 @@ var textAdd = textAddFlags{}
 
 var textAddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "",
+	Short: "add new entity",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
@@ -37,7 +36,10 @@ var textAddCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(textAddHandle(ctx, app))
+		if code := textAddHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -49,7 +51,7 @@ var textGet = textGetFlags{}
 
 var textGetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "",
+	Short: "get all entities or specific entity(use --id argument)",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
@@ -58,14 +60,16 @@ var textGetCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(textGetHandle(ctx, app))
+		if code := textGetHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
 type textEditFlags struct {
 	id   int
 	data string
-	file string
 	name string
 }
 
@@ -73,7 +77,7 @@ var textEdit = textEditFlags{}
 
 var textEditCmd = &cobra.Command{
 	Use:   "edit",
-	Short: "",
+	Short: "edit existed entity",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
@@ -82,7 +86,10 @@ var textEditCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(textEditHandle(ctx, app))
+		if code := textEditHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
@@ -94,7 +101,7 @@ var textDelete = textDeleteFlags{}
 
 var textDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "",
+	Short: "delete entity from server and local storage",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := initCLIClient()
@@ -103,21 +110,22 @@ var textDeleteCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		os.Exit(textDeleteHandle(ctx, app))
+		if code := textDeleteHandle(ctx, app); code != 0 {
+			cmd.Usage()
+			os.Exit(code)
+		}
 	},
 }
 
 func init() {
-	textAddCmd.PersistentFlags().StringVarP(&textAdd.data, "data", "", "", "data")
-	textAddCmd.PersistentFlags().StringVarP(&textAdd.file, "file", "", "", "file")
-	textAddCmd.PersistentFlags().StringVarP(&textAdd.name, "name", "", "", "name")
+	textAddCmd.PersistentFlags().StringVarP(&textAdd.data, "data", "", "", "text sting which need to save")
+	textAddCmd.PersistentFlags().StringVarP(&textAdd.name, "name", "", "", "name of entity")
 
 	textGetCmd.PersistentFlags().IntVarP(&textGet.id, "id", "", 0, "id")
 
 	textEditCmd.PersistentFlags().IntVarP(&textEdit.id, "id", "", 0, "id")
-	textEditCmd.PersistentFlags().StringVarP(&textEdit.data, "data", "", "", "data")
-	textEditCmd.PersistentFlags().StringVarP(&textEdit.name, "name", "", "", "name")
-	textEditCmd.PersistentFlags().StringVarP(&textEdit.file, "file", "", "", "file")
+	textEditCmd.PersistentFlags().StringVarP(&textEdit.data, "data", "", "", "text sting which need to save")
+	textEditCmd.PersistentFlags().StringVarP(&textEdit.name, "name", "", "", "name of entity")
 
 	textDeleteCmd.PersistentFlags().IntVarP(&textDelete.id, "id", "", 0, "id")
 
@@ -133,32 +141,18 @@ func textAddHandle(ctx context.Context, app client.Client) int {
 		return reasonNotFillRequiredArgs
 	}
 
-	if textAdd.data == "" && textAdd.file == "" {
-		fmt.Println("'--data' or '--file' argument is required")
+	if textAdd.data == "" {
+		fmt.Println("'--data' argument is required")
 		return reasonNotFillRequiredArgs
 	}
 
 	metadata := prepareMetadata()
 
-	if textAdd.data != "" {
-		if err := app.SaveTextData(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
-			fmt.Printf("saving text failed: %s\n", err)
-			return reasonInternalError
-		}
-		fmt.Println("saving text success")
-	} else {
-		content, err := os.ReadFile(textAdd.file)
-		if err != nil {
-			fmt.Printf("reading file failed: %s\n", err)
-			return reasonInternalError
-		}
-
-		if err := app.SaveTextData(ctx, string(content), textAdd.name, 0, metadata); err != nil {
-			fmt.Printf("saving text failed: %s\n", err)
-			return reasonInternalError
-		}
-		fmt.Println("saving text success")
+	if err := app.SaveTextData(ctx, textAdd.data, textAdd.name, 0, metadata); err != nil {
+		fmt.Printf("saving text failed: %s\n", err)
+		return reasonInternalError
 	}
+	fmt.Println("saving text success")
 
 	return 0
 }
@@ -169,8 +163,8 @@ func textEditHandle(ctx context.Context, app client.Client) int {
 		return reasonNotFillRequiredArgs
 	}
 
-	if textEdit.data == "" && textEdit.file == "" {
-		fmt.Println("'data' or 'file' argument is required")
+	if textEdit.data == "" {
+		fmt.Println("'data' argument is required")
 		return reasonNotFillRequiredArgs
 	}
 
@@ -183,17 +177,6 @@ func textEditHandle(ctx context.Context, app client.Client) int {
 
 	if textEdit.data != "" {
 		if err := app.SaveTextData(ctx, textEdit.data, textEdit.name, textEdit.id, metadata); err != nil {
-			fmt.Printf("saving text failed: %s\n", err)
-			return reasonInternalError
-		}
-		fmt.Println("saving text success")
-	} else {
-		content, err := os.ReadFile(textEdit.file)
-		if err != nil {
-			fmt.Printf("reading file failed: %s\n", err)
-			return reasonInternalError
-		}
-		if err := app.SaveTextData(ctx, string(content), textEdit.name, textEdit.id, metadata); err != nil {
 			fmt.Printf("saving text failed: %s\n", err)
 			return reasonInternalError
 		}

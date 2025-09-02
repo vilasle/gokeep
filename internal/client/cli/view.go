@@ -69,8 +69,7 @@ func (c *CommandLineClient) showFullEntities(tData model.Type, data ...client.Ge
 			return err
 		}
 
-		if tData == model.TypePlainText ||
-			tData == model.TypeBinaryData {
+		if tData == model.TypeBinaryData {
 			path := filepath.Join(c.workspace.UploadDirectory.Path, entity.View)
 			fd, err := os.Create(path)
 			if err != nil {
@@ -82,6 +81,11 @@ func (c *CommandLineClient) showFullEntities(tData model.Type, data ...client.Ge
 			}
 
 			fmt.Printf("File '%s' saved to '%s'\n", entity.View, path)
+			continue
+		}
+
+		if tData == model.TypePlainText {
+			fmt.Println(string(content))
 			continue
 		}
 

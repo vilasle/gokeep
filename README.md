@@ -9,9 +9,9 @@ Server use PostgreSQL how storage
 git clone https://github.com/vilasle/gokeep.git
 cd gokeep
 go mod tidy
-#create certificates
-make rsa
 make server
+#create certificates
+./rsa.sh
 
 #create salt for 
 sha1pass bin/gokeep-backend > cert/salt   

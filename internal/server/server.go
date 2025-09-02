@@ -186,7 +186,6 @@ func (s *Server) SaveLoginPassword(ctx context.Context, req *pb.SaveLoginPasswor
 	return resp, nil
 }
 
-
 //SaveBankCard - save bank card via service.BankCardService
 func (s *Server) SaveBankCard(ctx context.Context, req *pb.SaveBankCardRequest) (*pb.EncryptedDataResponse, error) {
 	resp := &pb.EncryptedDataResponse{}

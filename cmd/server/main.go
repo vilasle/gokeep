@@ -54,6 +54,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	logger.Debug("running arguments",
+		"cert", serverCertificatePath,
+		"key", serverKeyPath,
+		"addr", addr,
+		"db-url", dbUrl,
+		"jwt-key", jwtKeyPath)
+
 	_, err := os.Stat(masterKeyPath)
 	if os.IsNotExist(err) {
 		masterKey, err := encryption.GenerateNewAESKey()
