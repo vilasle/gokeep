@@ -1,0 +1,79 @@
+package model
+
+import (
+	"bytes"
+	"context"
+	"errors"
+)
+
+var _ PrivateData = (*Usepass)(nil)
+
+// Usepass - work with logins and password and encrypt it
+type Usepass struct {
+	model
+	login    string
+	password string
+}
+
+func newUsepass(owner UserAccess, login, password string) *Usepass {
+	return &Usepass{
+		model: model{
+			view:      login,
+			owner:     owner,
+			modelType: TypeUsepass,
+		},
+		login:    login,
+		password: password,
+	}
+}
+
+// Save - prepare view of model, encrypt it and save on repository
+func (u *Usepass) Save(ctx context.Context, encoder Encoder) (err error) {
+	return u.model.save(ctx, u.dataForEncryption(), encoder)
+}
+
+// SetUsername - set new username
+func (u *Usepass) SetUsername(username string) {
+	u.login = username
+	u.model.view = username
+}
+
+// SetPassword - set new password
+func (u *Usepass) SetPassword(password string) {
+	u.password = password
+}
+
+func (u Usepass) dataForEncryption() []byte {
+	buf := bytes.Buffer{}
+	buf.WriteString(u.login)
+	buf.WriteString("\n")
+	buf.WriteString(u.password)
+
+	return buf.Bytes()
+}
+
+func findUsepassByID(ctx context.Context, id int, owner UserAccess, r PrivateDataRepository) (*Usepass, error) {
+	data, err := r.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if data.UserID != owner.ID() {
+		return nil, errors.New("user not found")
+	}
+
+	model := model{
+		id:             id,
+		view:           data.View,
+		owner:          owner,
+		modelType:      TypeUsepass,
+		dataRepository: r,
+		encryptedData: &EncryptedData{
+			Data: data.Data,
+			Key:  data.DEK,
+		},
+		metadata: data.Metadata,
+	}
+
+	return &Usepass{model: model}, nil
+}

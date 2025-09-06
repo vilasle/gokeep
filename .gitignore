@@ -1,0 +1,7 @@
+bin/
+.vscode
+*.yaml
+cert/
+config/
+master.key
+testdata/
